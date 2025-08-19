@@ -16,7 +16,7 @@ export const toastConfig = {
   // Success toast configuration
   success: {
     ...baseToastConfig,
-    autoClose: 6000, // 6 seconds for success messages
+    autoClose: 2000, // 2 seconds for success messages
     style: {
       backgroundColor: toastColors.success.background, // #16a34a
       color: toastColors.success.text,
@@ -29,7 +29,7 @@ export const toastConfig = {
   // Error toast configuration
   error: {
     ...baseToastConfig,
-    autoClose: 8000, // 8 seconds for error messages (longer for users to read)
+    autoClose: 2000, // 2 seconds for error messages (longer for users to read)
     style: {
       backgroundColor: toastColors.error.background,
       color: toastColors.error.text,
@@ -42,7 +42,7 @@ export const toastConfig = {
   // Warning toast configuration
   warning: {
     ...baseToastConfig,
-    autoClose: 7000, // 7 seconds for warnings
+    autoClose: 2000, // 2 seconds for warnings
     style: {
       backgroundColor: toastColors.warning.background,
       color: toastColors.warning.text,
@@ -55,7 +55,7 @@ export const toastConfig = {
   // Info toast configuration
   info: {
     ...baseToastConfig,
-    autoClose: 5000, // 5 seconds for info messages
+    autoClose: 2000, // 2 seconds for info messages
     style: {
       backgroundColor: toastColors.info.background,
       color: toastColors.info.text,

@@ -1,15 +1,24 @@
-import Link from 'next/link';
+'use client';
 
-export default function AdminDashboard() {
+import Link from 'next/link';
+import { AuthGuard, useAuth } from '../../contexts/AuthContext';
+
+function AdminDashboardContent() {
+  const { user, logout } = useAuth();
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header */}
       <header className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Easy Tenant Admin
-            </h1>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Easy Tenant Admin
+              </h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Welcome, {user?.name}
+              </p>
+            </div>
             
             <nav className="flex items-center space-x-4">
               <Link 
@@ -24,6 +33,12 @@ export default function AdminDashboard() {
               >
                 Properties
               </Link>
+              <button
+                onClick={() => logout()}
+                className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white font-medium transition-colors"
+              >
+                Logout
+              </button>
             </nav>
           </div>
         </div>
@@ -136,5 +151,13 @@ export default function AdminDashboard() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <AuthGuard allowedRoles={['admin']}>
+      <AdminDashboardContent />
+    </AuthGuard>
   );
 }

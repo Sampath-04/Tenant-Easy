@@ -88,7 +88,6 @@ export default function UserCreationForm({ onSuccess, onError }: UserCreationFor
 
     createUserMutation.mutate(formData, {
       onSuccess: (data) => {
-        // Reset form on success
         setFormData({
           name: '',
           phone: '',
@@ -251,7 +250,7 @@ export default function UserCreationForm({ onSuccess, onError }: UserCreationFor
             className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white transition-colors"
           >
             <option value="admin">Admin</option>
-            <option value="manager">Manager</option>
+            <option value="staff">Staff</option>
             <option value="tenant">Tenant</option>
             <option value="owner">Owner</option>
           </select>

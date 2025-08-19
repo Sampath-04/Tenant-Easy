@@ -61,7 +61,7 @@ export const apiClient = {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        mode: 'cors',
+        credentials: 'include',
       });
 
       const data = await response.json();
@@ -93,6 +93,7 @@ export const apiClient = {
           'Accept': 'application/json',
         },
         mode: 'cors',
+        credentials: 'include',
         body: JSON.stringify(body),
       });
 
