@@ -30,6 +30,7 @@ import {
 } from '@mui/material';
 import { ExpandMore } from '@mui/icons-material';
 import DateRangePicker from '../../../components/ui/DateRange';
+import { LAYOUT_CLASSES } from '../../../lib/constants/styles';
 
 function TenantsContent() {
   const { selectedProperty } = useProperty();
@@ -109,21 +110,6 @@ function TenantsContent() {
     });
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      onboarded: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-400', label: 'Active' },
-      notice_serving: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-400', label: 'Notice Period' },
-      evicted: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-400', label: 'Evicted' },
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig];
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config?.bg} ${config?.text}`}>
-        {config?.label || status}
-      </span>
-    );
-  };
-
   const handleFilterChange = (key: keyof TenantFilters, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
     setCurrentPage(1); // Reset to first page when filters change
@@ -163,7 +149,7 @@ function TenantsContent() {
           showBackButton
           backHref="/dashboard"
         />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               {propertyError ? (

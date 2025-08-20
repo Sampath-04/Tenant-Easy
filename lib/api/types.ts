@@ -74,10 +74,20 @@ export interface RoomsListResponse {
   data: RoomDetail[];
 }
 
+export interface Property {
+  _id: string;
+  propertyName: string;
+  propertyAddress: string;
+  electricitySettings: {
+    ratePerUnit: number;
+  };
+}
+
 // Tenant related types
 export interface Tenant {
   _id: string;
   room: Room;
+  property: Property;
   tenantName: string;
   tenantNumber: string;
   tenantEmail?: string;
@@ -89,10 +99,22 @@ export interface Tenant {
   monthlyRent: number;
   securityDepositPaid?: number;
   status: 'onboarded' | 'notice_serving' | 'evicted';
-  notice?: string;
   evictedDate?: Date;
   checkInDate: string;
   checkOutDate?: Date;
+  notice: {
+    _id: string;
+    noticeDate: Date;
+    noticeEndsOn: Date;
+    rent: number;
+    totalAmount: number;
+  };
+  recentPayments?:  RentHistory[];
+  pendingRents?: {
+    pendingRentRecords: RentHistory[];
+    totalPending: number;
+    count: number;
+  };
   emergencyContact?: {
     name?: string;
     phone?: string;
@@ -182,4 +204,55 @@ export interface ProfilesResponse {
 export interface GetUsersResponse {
   users: User[];
   total: number;
+}
+
+// Rent History types
+export interface RentHistory {
+  _id: string;
+  tenant: string;
+  property: string;
+  room: {
+    roomNo: string;
+  };
+  startDate: string;
+  endDate: string;
+  month: string; // Format: "YYYY-MM"
+  rent: number;
+  electricityReadings: string[];
+  electricityBill: number;
+  electricityUnits: number;
+  totalAmount: number;
+  isPaid: boolean;
+  isOverdue?: boolean;
+  paidDate?: string;
+  daysOverdue?: number;
+  dueDate: string;
+  transactionRef?: string;
+  notice?: string;
+  recordedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RentHistoryResponse {
+  success: boolean;
+  count: number;
+  total: number;
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+  data: RentHistory[];
+}
+
+export interface GetRentHistoryRequest {
+  page?: number;
+  limit?: number;
+  tenantId?: string;
+  propertyId?: string;
+  roomId?: string;
+  month?: string;
+  isPaid?: boolean;
 }

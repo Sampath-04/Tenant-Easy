@@ -71,21 +71,34 @@ export async function getTenants({
  * Get a single tenant by ID
  */
 export async function getTenantById(id: string): Promise<Tenant> {
-  return apiClient.get<Tenant>(`/tenants/${id}`);
+  const response = await apiClient.get<{ success: boolean; data: Tenant }>(`/tenants/${id}`);
+  return response.data;
 }
 
 /**
  * Create a new tenant
  */
-export async function createTenant(tenantData: Partial<Tenant>): Promise<Tenant> {
-  return apiClient.post<Tenant>('/tenants', tenantData);
+export async function createTenant(tenantData: {
+  property: string;
+  room: string;
+  tenantName: string;
+  tenantNumber: string;
+  tenantEmail?: string;
+  monthlyRent: number;
+  securityDepositPaid?: number;
+  currentReading?: number;
+  checkInDate: string;
+}): Promise<Tenant> {
+  const response = await apiClient.post<{ success: boolean; data: Tenant }>('/tenants', tenantData);
+  return response.data;
 }
 
 /**
  * Update an existing tenant
  */
 export async function updateTenant(id: string, tenantData: Partial<Tenant>): Promise<Tenant> {
-  return apiClient.put<Tenant>(`/tenants/${id}`, tenantData);
+  const response = await apiClient.put<{ success: boolean; data: Tenant }>(`/tenants/${id}`, tenantData);
+  return response.data;
 }
 
 /**

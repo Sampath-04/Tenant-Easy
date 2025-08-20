@@ -126,6 +126,7 @@ export const apiClient = {
           'Accept': 'application/json',
         },
         mode: 'cors',
+        credentials: 'include',
         body: JSON.stringify(body),
       });
 
@@ -157,6 +158,7 @@ export const apiClient = {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
+        credentials: 'include',
         mode: 'cors',
       });
 

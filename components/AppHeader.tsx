@@ -12,7 +12,6 @@ interface AppHeaderProps {
   subtitle?: string;
   showBackButton?: boolean;
   backHref?: string;
-  actions?: React.ReactNode;
 }
 
 export function AppHeader({ 
@@ -20,7 +19,6 @@ export function AppHeader({
   subtitle, 
   showBackButton = false, 
   backHref = '/dashboard',
-  actions 
 }: AppHeaderProps) {
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

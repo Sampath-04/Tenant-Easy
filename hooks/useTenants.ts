@@ -46,7 +46,8 @@ export function useTenant(id: string) {
     queryKey: tenantKeys.detail(id),
     queryFn: () => getTenantById(id),
     enabled: !!id,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    gcTime: 0,
   });
 }
 
