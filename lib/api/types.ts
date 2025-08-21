@@ -38,6 +38,24 @@ export interface Room {
 }
 
 // Detailed Room interface for API response
+export interface ElectricityReading {
+  _id: string;
+  recordedBy: {
+    name: string;
+    role: string;
+  };
+  room: string;
+  meterReading: number;
+  previousReading: number;
+  tenantsPresent: {
+    _id: string;
+    tenantName: string;
+  }[];
+  consumption: number;
+  perTenantCost: number;
+  id: string;
+}
+
 export interface RoomDetail {
   _id: string;
   property: {
@@ -59,6 +77,7 @@ export interface RoomDetail {
   createdAt: string;
   updatedAt: string;
   __v: number;
+  electricityReadings: ElectricityReading[];
 }
 
 export interface RoomsListResponse {
@@ -199,6 +218,56 @@ export interface Profile {
 export interface ProfilesResponse {
   success: boolean;
   data: Profile[];
+}
+
+// Types for getAllProfiles response
+export interface ProfilePropertyData {
+  _id: string;
+  propertyName: string;
+  propertyAddress: string;
+  isActive: boolean;
+  totalRooms: number;
+  occupiedRooms: number;
+  availableRooms: number;
+  totalTenants: number;
+  occupancyRate: number;
+}
+
+export interface ProfileOwner {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+  id: string;
+}
+
+export interface ProfileWithProperties {
+  _id: string;
+  owner: ProfileOwner;
+  businessName: string;
+  ownerName: string;
+  contactNumber: string;
+  email: string;
+  address: string;
+  properties: ProfilePropertyData[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface GetAllProfilesResponse {
+  success: boolean;
+  count: number;
+  total: number;
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+  data: ProfileWithProperties[];
 }
 
 export interface GetUsersResponse {

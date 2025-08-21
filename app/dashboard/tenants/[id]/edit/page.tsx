@@ -80,19 +80,19 @@ function TenantEditContent() {
     );
   };
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex items-center justify-center min-h-screen">
-  //       <div className="text-center">
-  //         <div className="relative w-16 h-16 mx-auto mb-4">
-  //           <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-200 dark:border-blue-800 rounded-full"></div>
-  //           <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-600 rounded-full animate-spin border-t-transparent"></div>
-  //         </div>
-  //         <p className="text-gray-600 dark:text-gray-400 font-medium">Loading tenant details...</p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="relative w-16 h-16 mx-auto mb-4">
+            <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-200 dark:border-blue-800 rounded-full"></div>
+            <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-600 rounded-full animate-spin border-t-transparent"></div>
+          </div>
+          <p className="text-gray-600 dark:text-gray-400 font-medium">Loading tenant details...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (fetchError && !tenant) {
     return (

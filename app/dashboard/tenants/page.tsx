@@ -186,17 +186,6 @@ function TenantsContent() {
         subtitle={`Manage tenants for ${selectedProperty.name}`}
         showBackButton
         backHref="/dashboard"
-        actions={
-          <Link
-            href="/dashboard/tenants/add"
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-          >
-            <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Tenant
-          </Link>
-        }
       />
 
       {/* Main Content */}

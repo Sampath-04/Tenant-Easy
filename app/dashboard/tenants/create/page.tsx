@@ -74,9 +74,6 @@ function CreateTenantContent() {
       return;
     }
 
-
-    console.log("formData", formData);
-
     createTenantMutation.mutate(formData, {
       onSuccess: () => {
         showSuccessToast('Tenant created successfully!');
