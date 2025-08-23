@@ -6,22 +6,17 @@ import { useProperty } from '@/contexts/PropertyContext';
 import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
 import { useRooms, useUpdateRoom } from '@/hooks/useRooms';
-import { RoomCard } from '@/components/RoomCard';
+import { RoomCard } from '@/app/components/RoomCard';
 import { 
   Button,
   Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  IconButton
 } from '@mui/material';
 import {
   Add as AddIcon,
   MeetingRoom as RoomIcon,
-  Close as CloseIcon
 } from '@mui/icons-material';
 import RoomCreationForm from '@/app/components/RoomCreationForm';
-import { toast } from 'react-toastify';
+import { showSuccessToast } from '@/lib/toast-config';
 
 function RoomsContent() {
   const { selectedProperty } = useProperty();
@@ -40,7 +35,7 @@ function RoomsContent() {
       { roomId, roomData: updatedData },
       {
         onSuccess: () => {
-          toast.success('Room updated successfully');
+          showSuccessToast('Room updated successfully');
         }
       }
     );
@@ -118,9 +113,7 @@ function RoomsContent() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <AppHeader
         title="Rooms"
-        subtitle={`${selectedProperty?.name || ''} - Room Management`}
-        showBackButton
-        backHref="/dashboard"
+        subtitle={`${selectedProperty?.name || ''} - Room Management`}    
       />
       
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
@@ -134,12 +127,12 @@ function RoomsContent() {
                   Manage rooms, tenants, and electricity readings
                 </p>
               </div>
-              <button
+             {rooms.length > 0 && <button
                 onClick={handleAddRoom}
                 className="cursor-pointer hidden md:block bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 rounded-[30px] text-white px-4 py-2"
               >
                 Add Room
-              </button>
+              </button>}
             </div>
 
             {/* Rooms Grid */}
@@ -162,14 +155,12 @@ function RoomsContent() {
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   No rooms have been added to this property yet.
                 </p>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  className="bg-blue-600 hover:bg-blue-700"
+                <button
+                  className="bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 text-white px-4 py-2 rounded-[30px] cursor-pointer"
                   onClick={handleAddRoom}
                 >
                   Add First Room
-                </Button>
+                </button>
               </div>
             )}
           </div>

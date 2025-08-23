@@ -150,6 +150,48 @@ export const apiClient = {
     }
   },
 
+  async patch<T>(endpoint: string, body: any): Promise<T> {
+    try {
+      // Handle FormData differently from JSON
+      const isFormData = body instanceof FormData;
+      
+      const headers: Record<string, string> = {
+        'Accept': 'application/json',
+      };
+      
+      // Don't set Content-Type for FormData (browser will set it with boundary)
+      if (!isFormData) {
+        headers['Content-Type'] = 'application/json';
+      }
+
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'PATCH',
+        headers,
+        mode: 'cors',
+        credentials: 'include',
+        body: isFormData ? body : JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw ApiError.fromResponse(response, data);
+      }
+
+      return data;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      // Handle network errors
+      throw new ApiError(
+        'Network error: Unable to connect to the server',
+        0,
+        { originalError: error }
+      );
+    }
+  },
+
   async delete<T>(endpoint: string): Promise<T> {
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {

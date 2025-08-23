@@ -1,249 +1,413 @@
 'use client';
 
 import React, { useState } from 'react';
-import { RentHistory } from '@/lib/api';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  Typography,
+  Box,
+  IconButton,
+  Theme,
+} from '@mui/material';
+import { Close as CloseIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
+import { CircularProgress } from '@mui/material';
+import { RentHistoryItem } from '@/lib/api/rentHistory';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
+import NoticeForm from './NoticeForm';
+import { useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { useMarkRentAsPaid } from '@/hooks/useRentRecords';
 
 interface PaymentCollectionFormProps {
   isOpen: boolean;
   onClose: () => void;
-  rentRecord: RentHistory | null;
-  onSubmit: (data: {
-    rentRecord: RentHistory;
-    transactionId?: string;
+  rentRecord: RentHistoryItem | null;
+  onSubmitCallback?: (data: {
+    rentRecord: RentHistoryItem;
     comments?: string;
-    action: 'collect' | 'collectAndStartNew' | 'collectAndApplyNotice';
+    paymentProofs?: File[];
   }) => void;
+  setPaymentFormOpen: (value: boolean) => void;
 }
 
 export default function PaymentCollectionForm({
   isOpen,
   onClose,
   rentRecord,
-  onSubmit
+  onSubmitCallback,
+  setPaymentFormOpen
 }: PaymentCollectionFormProps) {
-  const [transactionId, setTransactionId] = useState('');
-  const [comments, setComments] = useState('');
-  const [selectedAction, setSelectedAction] = useState<'collect' | 'collectAndStartNew' | 'collectAndApplyNotice'>('collect');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [comments, setComments] = useState( rentRecord?.comments || '');
+  const [selectedImages, setSelectedImages] = useState<File[]>( rentRecord?.paymentProofs || []);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>( rentRecord?.paymentProofs?.map(proof => URL.createObjectURL(proof)) || []);
+  const [showNoticeForm, setShowNoticeForm] = useState(false);
+  const [isCollectingStartNew, setIsCollectingStartNew] = useState(false);
+  const [isCollectingApplyNotice, setIsCollectingApplyNotice] = useState(false);
+  const [cycleEndDate, setCycleEndDate] = useState<string>(rentRecord?.endDate || '');
+
+  const markRentAsPaidMutation = useMarkRentAsPaid();
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (selectedImages.length + acceptedFiles.length > 4) {
+      alert('You can only upload up to 4 images');
+      return;
+    }
+
+    const newImages = [...selectedImages, ...acceptedFiles];
+    setSelectedImages(newImages);
+
+    // Create preview URLs for new files
+    const newPreviewUrls = acceptedFiles.map(file => URL.createObjectURL(file));
+    setImagePreviewUrls(prev => [...prev, ...newPreviewUrls]);
+  }, [selectedImages]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp']
+    },
+    maxFiles: 4 - selectedImages.length,
+    disabled: selectedImages.length >= 4
+  });
 
   if (!isOpen || !rentRecord) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      await onSubmit({
-        rentRecord,
-        transactionId: transactionId.trim() || undefined,
-        comments: comments.trim() || undefined,
-        action: selectedAction
+  const handleClose = () => {
+    if (!isCollectingStartNew && !isCollectingApplyNotice) {
+      // Clean up object URLs to prevent memory leaks
+      imagePreviewUrls.forEach(url => {
+        URL.revokeObjectURL(url);
       });
       
-      // Reset form
-      setTransactionId('');
       setComments('');
-      setSelectedAction('collect');
+      setSelectedImages([]);
+      setImagePreviewUrls([]);
+      setShowNoticeForm(false);
+      onClose();
+    }
+  };
+
+  const removeImage = (index: number) => {
+    // Revoke the object URL to free memory
+    if (imagePreviewUrls[index]) {
+      URL.revokeObjectURL(imagePreviewUrls[index]);
+    }
+    
+    const newImages = selectedImages.filter((_, i) => i !== index);
+    const newPreviewUrls = imagePreviewUrls.filter((_, i) => i !== index);
+    
+    setSelectedImages(newImages);
+    setImagePreviewUrls(newPreviewUrls);
+  };
+
+  const handleCollectAndStartNew = async () => {
+    try {
+      setIsCollectingStartNew(true);
+      await markRentAsPaidMutation.mutateAsync({
+        rentId: rentRecord._id,
+        data: {
+          comments: comments.trim() || undefined,
+          paymentProofs: selectedImages.length > 0 ? selectedImages : undefined
+        }
+      });
+      
+      // Clean up object URLs
+      imagePreviewUrls.forEach(url => {
+        URL.revokeObjectURL(url);
+      });
+
+      onSubmitCallback?.({
+        rentRecord: rentRecord,
+        comments: comments.trim() || undefined,
+        paymentProofs: selectedImages.length > 0 ? selectedImages : undefined
+      });
+      
+      // Reset form and close
+      setComments('');
+      setSelectedImages([]);
+      setImagePreviewUrls([]);
       onClose();
     } catch (error) {
-      console.error('Payment collection error:', error);
+      console.error('Failed to mark rent as paid:', error);
     } finally {
-      setIsSubmitting(false);
+      setIsCollectingStartNew(false);
     }
   };
 
-  const handleClose = () => {
-    if (!isSubmitting) {
-      setTransactionId('');
-      setComments('');
-      setSelectedAction('collect');
-      onClose();
+  const handleCollectAndApplyNotice = async () => {
+    try {
+      setIsCollectingApplyNotice(true);
+      // Step 1: Mark rent as paid first
+     if(!rentRecord.isPaid) {
+        await markRentAsPaidMutation.mutateAsync({
+        rentId: rentRecord._id,
+        data: {
+          comments: comments.trim() || undefined,
+          paymentProofs: selectedImages.length > 0 ? selectedImages : undefined
+        }
+      });
+
+      onSubmitCallback?.({
+        rentRecord: rentRecord,
+        comments: comments.trim() || undefined,
+        paymentProofs: selectedImages.length > 0 ? selectedImages : undefined
+      });
+    }
+    
+    const nextMonthCycleEndDate = new Date(rentRecord.endDate);
+    nextMonthCycleEndDate.setMonth(nextMonthCycleEndDate.getMonth() + 1);
+    setCycleEndDate(nextMonthCycleEndDate.toISOString().split('T')[0]);
+
+      // Step 2: Open notice form after successful payment collection
+      setShowNoticeForm(true);
+    } catch (error) {
+      console.error('Failed to mark rent as paid:', error);
+    } finally {
+      setIsCollectingApplyNotice(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        {/* Background overlay */}
-        <div 
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-          onClick={handleClose}
-        />
+  const handleNoticeSubmit = () => {
+    // Clean up object URLs
+    imagePreviewUrls.forEach(url => {
+      URL.revokeObjectURL(url);
+    });
+    
+    // Reset form and close
+    setComments('');
+    setSelectedImages([]);
+    setImagePreviewUrls([]);
+    setShowNoticeForm(false);
+    setPaymentFormOpen(false);
+  };
 
-        {/* Modal panel */}
-        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <form onSubmit={handleSubmit}>
-            {/* Header */}
-            <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                  Collect Payment
-                </h3>
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  disabled={isSubmitting}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+    return (
+    <>
+      {/* Main Payment Collection Dialog */}
+      <Dialog 
+        open={isOpen && !showNoticeForm} 
+        onClose={handleClose}
+        maxWidth="sm"
+        fullWidth
+        sx= {(theme: Theme) => ({
+          '& .MuiDialog-paper': {
+            borderRadius: '20px',
+            backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+            '@media (max-width: 600px)': {
+              margin: '16px',
+              width: '100%',
+            }
+          }
+        })}
+      >
+        <DialogTitle className="flex items-center justify-between">
+          <p className="font-semibold text-lg">Collect Payment</p>
+          <IconButton onClick={handleClose} disabled={isCollectingStartNew || isCollectingApplyNotice}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        
+        <DialogContent>
+          {/* Rent Details */}
+          <Box className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <Typography variant="subtitle2" className="text-blue-800 dark:text-blue-300 mb-3">
+              Rent Details
+            </Typography>
+            <Box className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Period:</Typography>
+                <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
+                  {formatDate(rentRecord.startDate)} - {formatDate(rentRecord.endDate)}
+                </Typography>
               </div>
-            </div>
+              <div>
+                <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Room:</Typography>
+                <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
+                  {rentRecord.room?.roomNo || '-'}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Rent:</Typography>
+                <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
+                  {formatCurrency(rentRecord.rent)}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Electricity:</Typography>
+                <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
+                  {formatCurrency(rentRecord.electricityBill)}
+                </Typography>
+              </div>
+              <div className="col-span-2">
+                <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Total Amount:</Typography>
+                <Typography variant="h6" className="font-bold text-green-600 dark:text-green-400">
+                  {formatCurrency(rentRecord.totalAmount)}
+                </Typography>
+              </div>
+            </Box>
+          </Box>
 
-            {/* Content */}
-            <div className="px-6 py-4">
-              {/* Rent Details */}
-              <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-3">
-                  Rent Details
-                </h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-600 dark:text-gray-400">Period:</span>
-                    <div className="font-medium text-gray-900 dark:text-white">
-                      {formatDate(rentRecord.startDate)} - {formatDate(rentRecord.endDate)}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-gray-600 dark:text-gray-400">Room:</span>
-                    <div className="font-medium text-gray-900 dark:text-white">
-                      {rentRecord.room?.roomNo || '-'}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-gray-600 dark:text-gray-400">Rent:</span>
-                    <div className="font-medium text-gray-900 dark:text-white">
-                      {formatCurrency(rentRecord.rent)}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-gray-600 dark:text-gray-400">Electricity:</span>
-                    <div className="font-medium text-gray-900 dark:text-white">
-                      {formatCurrency(rentRecord.electricityBill)}
-                    </div>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="text-gray-600 dark:text-gray-400">Total Amount:</span>
-                    <div className="text-lg font-bold text-green-600 dark:text-green-400">
-                      {formatCurrency(rentRecord.totalAmount)}
-                    </div>
-                  </div>
+          {/* Comments */}
+          <TextField
+            fullWidth
+            label="Comments (Optional)"
+            value={comments}
+            onChange={(e) => setComments(e.target.value)}
+            placeholder="Add any additional notes or comments"
+            margin="normal"
+            variant="outlined"
+            multiline
+            rows={1}
+            sx= {(theme: Theme) => ({
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
+                  '&:hover': {
+                    borderColor: theme.palette.mode === 'dark' ? '#B3B3B3' : 'rgba(0, 0, 0, 0.23)',
+                  },
+                },
+              },
+            })}
+          />
+
+        {/* Image Upload */}
+          <Box className="mt-4">
+            <p className='text-gray-600 dark:text-gray-400 text-md mb-2'>
+              Upload Proofs (Optional) - Max 4 images
+            </p>
+            
+            <div
+              {...getRootProps()}
+              className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                isDragActive 
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
+                  : selectedImages.length >= 4
+                  ? 'border-gray-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600 cursor-not-allowed'
+                  : 'border-gray-300 hover:border-gray-400 dark:border-gray-400 dark:hover:border-gray-500'
+              }`}
+            >
+              <input {...getInputProps()} />
+              <CloudUploadIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              {isDragActive ? (
+                <p className="text-blue-600 dark:text-blue-400">Drop the images here...</p>
+              ) : selectedImages.length >= 4 ? (
+                <p className="text-gray-500 dark:text-gray-400">Maximum 4 images reached</p>
+              ) : (
+                <div>
+                  <p className="text-gray-600 dark:text-gray-400 mb-2">
+                    Drag & drop images here, or click to select
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Supports: JPG, PNG, GIF, BMP, WebP
+                  </p>
                 </div>
-              </div>
+              )}
+            </div>
+            
+            <p className="mt-2 text-gray-600 dark:text-gray-400 text-sm">
+              {selectedImages.length}/4 images selected
+            </p>
 
-              {/* Action Selection */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Action After Payment
-                </label>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="action"
-                      value="collect"
-                      checked={selectedAction === 'collect'}
-                      onChange={(e) => setSelectedAction(e.target.value as any)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      Collect payment only
-                    </span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="action"
-                      value="collectAndStartNew"
-                      checked={selectedAction === 'collectAndStartNew'}
-                      onChange={(e) => setSelectedAction(e.target.value as any)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      Collect payment and start new cycle
-                    </span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="action"
-                      value="collectAndApplyNotice"
-                      checked={selectedAction === 'collectAndApplyNotice'}
-                      onChange={(e) => setSelectedAction(e.target.value as any)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      Collect payment and apply notice period
-                    </span>
-                  </label>
+            {/* Image Previews */}
+            {imagePreviewUrls.length > 0 && (
+              <Box className="mt-4">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  Selected Images:
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {imagePreviewUrls.map((url, index) => (
+                    <div key={index} className="relative group">
+                      <div className="aspect-square rounded-lg overflow-hidden border border-gray-200 ">
+                        <img
+                          src={url}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <IconButton
+                        onClick={() => removeImage(index)}
+                        size="small"
+                        sx={{
+                          position: 'absolute',
+                          top: -8,
+                          right: -8,
+                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                          backdropFilter: 'blur(4px)',
+                          border: '1px solid rgba(0, 0, 0, 0.1)',
+                          borderRadius: '50%',
+                          width: 24,
+                          height: 24,
+                          '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 1)',
+                            transform: 'scale(1.1)',
+                          },
+                          transition: 'all 0.2s ease-in-out',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                        }}
+                        title="Remove image"
+                      >
+                        <CloseIcon sx={{ fontSize: 14, color: '#ef4444' }} />
+                      </IconButton>
+                      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 text-center">
+                        Image {index + 1}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
+              </Box>
+            )}
+          </Box>
+        </DialogContent>
 
-              {/* Transaction ID */}
-              <div className="mb-4">
-                <label htmlFor="transactionId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Transaction ID (Optional)
-                </label>
-                <input
-                  type="text"
-                  id="transactionId"
-                  value={transactionId}
-                  onChange={(e) => setTransactionId(e.target.value)}
-                  placeholder="Enter transaction ID or reference number"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                />
-              </div>
+        <DialogActions sx={{
+          padding: '20px',
+          paddingTop: '16px',
+          borderTop: '1px solid #e0e0e0',
+          gap: '10px',
+          '@media (max-width: 600px)': {
+            justifyContent: 'center',
+            gap: '8px',
+          }
+        }}>
+          <button onClick={handleClose} disabled={isCollectingStartNew || isCollectingApplyNotice} className='hidden md:block border-2 border-gray-300 text-gray-600 px-4 py-2 rounded-[30px] cursor-pointer dark:border-gray-400 dark:text-gray-200'>
+            Cancel
+          </button>
+          <button 
+            onClick={handleCollectAndStartNew}
+            disabled={isCollectingStartNew || isCollectingApplyNotice}
+            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"
+          >
+            {isCollectingStartNew && <CircularProgress size={16} color="inherit" />}
+            Collect - Start New
+          </button>
+          <button 
+            onClick={handleCollectAndApplyNotice}
+            disabled={isCollectingStartNew || isCollectingApplyNotice}
+            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"
+          >
+            {isCollectingApplyNotice && <CircularProgress size={16} color="inherit" />}
+            Collect - Apply Notice
+          </button>
+        </DialogActions>
+      </Dialog>
 
-              {/* Comments */}
-              <div className="mb-6">
-                <label htmlFor="comments" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Comments (Optional)
-                </label>
-                <textarea
-                  id="comments"
-                  value={comments}
-                  onChange={(e) => setComments(e.target.value)}
-                  placeholder="Add any additional notes or comments"
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-none"
-                />
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-t border-gray-200 dark:border-gray-600 flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={handleClose}
-                disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500 transition-colors duration-200"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Processing...
-                  </div>
-                ) : (
-                  'Collect Payment'
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+      {/* Notice Form Dialog */}
+      <NoticeForm
+        isOpen={showNoticeForm}
+        onClose={() => {
+          handleClose()
+        }}
+        onSubmitCallback={handleNoticeSubmit}
+        tenantName={rentRecord?.tenant.tenantName || ''}
+        roomData={`Room ${rentRecord?.room.roomNo || ''}`}
+        cycleEndDate={cycleEndDate}
+        monthlyRent={rentRecord?.rent || 0}
+        tenantId={rentRecord?.tenant._id || ''}
+      />
+    </>
   );
 }

@@ -120,8 +120,6 @@ function TenantEditContent() {
       <AppHeader
         title="Edit Tenant"
         subtitle={`Editing details for ${tenant?.tenantName || 'Tenant'}`}
-        showBackButton
-        backHref={`/dashboard/tenants`}
       />
       
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>

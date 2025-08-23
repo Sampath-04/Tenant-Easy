@@ -58,7 +58,7 @@ export default function AddRoomForm({ onClose, onSubmit, isPending = false, erro
     roomNo: "",
     roomType: "sharing",
     maxCapacity: 2,
-    amenities: ["ac", "attached_bathroom", "wifi", "balcony"],
+    amenities: ["ac", "attached_bathroom", "wifi", "balcony", 'tv'],
     currentMeterReading: 0,
     previousMeterReading: 0,
     isActive: true,
@@ -69,8 +69,7 @@ export default function AddRoomForm({ onClose, onSubmit, isPending = false, erro
   };
 
   const handleButtonSubmit = () => {
-    console.log("Room Data:", formData);
-    
+
     // Use the mutation if no onSubmit prop is provided
     if (onSubmit) {
       onSubmit(formData);

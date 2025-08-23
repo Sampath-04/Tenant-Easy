@@ -4,12 +4,13 @@ import Link from 'next/link';
 import { AuthGuard, useAuth } from '../../contexts/AuthContext';
 import { useProperty } from '../../contexts/PropertyContext';
 import { AppHeader } from '../../components/AppHeader';
-import { colors } from '../../lib/colors';
+import { useEffect } from 'react';
+import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 
 function DashboardContent() {
   const { user } = useAuth();
 
-  const { selectedProperty } = useProperty();
+  const { selectedProperty, refreshProperties } = useProperty();
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -52,7 +53,7 @@ function DashboardContent() {
         </svg>
       ),
       color: 'orange',
-      href: '/dashboard/rent/pending',
+      href: '/dashboard/pending-rents',
     },
     {
       title: 'Due Rent',
@@ -79,6 +80,16 @@ function DashboardContent() {
       href: '/dashboard/tenants/create',
       color: 'blue',
     },
+    // electricity symbol
+    {
+      title: "Take Electricity Reading",
+      description: "Take electricity reading from the property",
+      icon: (
+        <ElectricBoltIcon className="w-6 h-6" />
+      ),
+      href: '/dashboard/electricity/take-reading',
+      color: 'yellow',
+    },
     {
       title: 'Collect Rent',
       description: 'Record rent payments from tenants',
@@ -89,6 +100,28 @@ function DashboardContent() {
       ),
       href: '/dashboard/rent/collect',
       color: 'green',
+    },
+    {
+      title: 'Apply for Notice Period',
+      description: 'Apply for notice period to tenants',
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      href: '/dashboard/apply-notice',
+      color: 'purple',
+    },
+    {
+      title: 'All Rent Records',
+      description: 'View complete rent history for the property',
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+      href: '/dashboard/rent-records',
+      color: 'teal',
     },
     {
       title: 'Property Reports',
@@ -111,11 +144,18 @@ function DashboardContent() {
       red: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400',
       purple: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
       indigo: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400',
+      yellow: 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400',
+      teal: 'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400',
     };
     return colorMap[color as keyof typeof colorMap] || colorMap.blue;
   };
 
   const { error: propertyError } = useProperty();
+
+  
+  useEffect(() => {
+    refreshProperties();
+  }, []);
 
   if (!selectedProperty) {
     return (

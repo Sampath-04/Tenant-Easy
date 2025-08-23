@@ -1,0 +1,131 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getAllRentRecordsForProperty, markRentAsPaid, getPendingRents, createNotice } from '@/lib/api/rentHistory';
+import { useProperty } from '@/contexts/PropertyContext';
+import { toast } from 'react-toastify';
+import { showSuccessToast } from '@/lib/toast-config';
+
+interface UseRentRecordsParams {
+  propertyId: string;
+  page?: number;
+  limit?: number;
+  tenant?: string;
+  month?: string;
+  isPaid?: boolean;
+  search?: string;
+  enabled?: boolean;
+}
+
+export function useRentRecords({
+  propertyId,
+  page = 1,
+  limit = 10,
+  tenant,
+  month,
+  isPaid,
+  search,
+  enabled = true,
+}: UseRentRecordsParams) {
+  return useQuery({
+    queryKey: ['rent-records', propertyId, page, limit, tenant, month, isPaid, search],
+    queryFn: () => getAllRentRecordsForProperty(propertyId, {
+      page,
+      limit,
+      tenant,
+      month,
+      isPaid,
+      search,
+    }),
+    enabled: enabled && !!propertyId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+}
+
+/**
+ * Hook to fetch pending rents for a property
+ */
+export function usePendingRents(propertyId: string) {
+  return useQuery({
+    queryKey: ['pending-rents', propertyId],
+    queryFn: () => getPendingRents(propertyId),
+    enabled: !!propertyId && propertyId !== '', // Only run when propertyId is valid
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+}
+
+interface MarkRentAsPaidData {
+  comments?: string;
+  paymentProofs?: File[];
+}
+
+export function useMarkRentAsPaid() {
+  const queryClient = useQueryClient();
+  const { selectedProperty } = useProperty();
+
+  return useMutation({
+    mutationFn: ({ rentId, data }: { rentId: string; data: MarkRentAsPaidData }) =>
+      markRentAsPaid(rentId, data),
+    
+    onSuccess: () => {
+      // Show success toast
+      const successToast = showSuccessToast('Payment collected successfully!');
+      toast.success(successToast.message, successToast.config);
+      
+      // Invalidate and refetch pending rents
+      if (selectedProperty) {
+        queryClient.invalidateQueries({
+          queryKey: ['pending-rents', selectedProperty.id]
+        });
+        
+        // Also invalidate rent records if they exist
+        queryClient.invalidateQueries({
+          queryKey: ['rent-records', selectedProperty.id]
+        });
+      }
+    },
+    
+    onError: (error) => {
+      console.error('Failed to mark rent as paid:', error);
+    }
+  });
+}
+
+interface CreateNoticeData {
+  tenantId: string;
+  noticeDate: string;
+  noticeEndsOn: string;
+  rent: number;
+}
+
+export function useCreateNotice() {
+  const queryClient = useQueryClient();
+  const { selectedProperty } = useProperty();
+
+  return useMutation({
+    mutationFn: (data: CreateNoticeData) => createNotice(data),
+    
+    onSuccess: () => {
+      // Show success toast
+      const successToast = showSuccessToast('Notice created successfully!');
+      toast.success(successToast.message, successToast.config);
+      
+      // Invalidate and refetch pending rents
+      if (selectedProperty) {
+        queryClient.invalidateQueries({
+          queryKey: ['pending-rents', selectedProperty.id]
+        });
+        
+        // Also invalidate rent records if they exist
+        queryClient.invalidateQueries({
+          queryKey: ['rent-records', selectedProperty.id]
+        });
+      }
+    },
+    
+    onError: (error) => {
+      console.error('Failed to create notice:', error);
+    }
+  });
+}
+

@@ -9,7 +9,7 @@ interface FormData {
   phone: string;
   email: string;
   password: string;
-  role: 'admin' | 'manager' | 'tenant' | 'owner';
+  role: 'admin' | 'tenant' | 'owner';
 }
 
 interface FormErrors {

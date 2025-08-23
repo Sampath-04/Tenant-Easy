@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { AuthGuard } from '@/contexts/AuthContext';
 import { AppHeader } from '@/components/AppHeader';
@@ -14,15 +14,19 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import BadgeIcon from '@mui/icons-material/Badge';
 import WarningIcon from '@mui/icons-material/Warning';
-import RentHistoryTable from '@/components/RentHistoryTable';
+import RentHistoryTable from '@/app/components/RentHistoryTable';
+import NoticeForm from '@/components/NoticeForm';
+import { Button } from '@mui/material';
+import { NotificationsActive as NoticeIcon } from '@mui/icons-material';
 
 function TenantViewContent() {
   const params = useParams();
   const tenantId = params.id as string;
 
   const [activeTab, setActiveTab] = useState('rent');
+  const [showNoticeForm, setShowNoticeForm] = useState(false);
+  const [localTenant, setLocalTenant] = useState<any>(null);
 
   const { data: tenant, isLoading, error: fetchError } = useTenant(tenantId);
   const error = fetchError?.message;
@@ -70,14 +74,42 @@ function TenantViewContent() {
     }
   };
 
+  const handleApplyNotice = () => {
+    setShowNoticeForm(true);
+  };
+
+  const handleNoticeSubmit = (noticeData?: any) => {
+    setShowNoticeForm(false);
+    
+    // Update tenant notice data if notice was successfully created
+    if (noticeData && localTenant) {
+      // Update the tenant object with the new notice data
+      const updatedTenant = {
+        ...localTenant,
+        notice: noticeData,
+        status: 'notice_serving' // Update status to notice_serving
+      };
+      
+      // Update local tenant state
+      setLocalTenant(updatedTenant);
+      
+      console.log('Notice applied successfully:', noticeData);
+      console.log('Updated tenant:', updatedTenant);
+    }
+  };
+
+  useEffect(() => {
+    if (tenant) {
+      setLocalTenant(tenant);
+    }
+  }, [tenant]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <AppHeader
         title="Tenant Details"
         subtitle="Loading tenant details..."
-        showBackButton
-        backHref="/dashboard/tenants"
       />
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -92,7 +124,9 @@ function TenantViewContent() {
     );
   }
 
-  if (error || !tenant) {
+  if (error || !localTenant) {
+    console.log('error', error);
+    console.log('localTenant', localTenant);
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -117,9 +151,7 @@ function TenantViewContent() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <AppHeader
         title="Tenant Details"
-        subtitle={`Viewing details for ${tenant.tenantName}`}
-        showBackButton
-        backHref="/dashboard/tenants"
+        subtitle={`Viewing details for ${localTenant.tenantName}`}
       />
 
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
@@ -129,18 +161,18 @@ function TenantViewContent() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
               <div className="flex items-center space-x-4">
                 <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                  {tenant.tenantName.charAt(0).toUpperCase()}
+                  {localTenant.tenantName.charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    {tenant.tenantName}
+                    {localTenant.tenantName}
                   </h1>
                   <div className="flex items-center space-x-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(tenant.status)}`}>
-                      {getStatusLabel(tenant.status)}
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(localTenant.status)}`}>
+                      {getStatusLabel(localTenant.status)}
                     </span>
                     <span className="text-gray-600 dark:text-gray-400">
-                      Room {tenant.room.roomNo}
+                      Room {localTenant.room.roomNo}
                     </span>
                   </div>
                 </div>
@@ -148,7 +180,7 @@ function TenantViewContent() {
 
               <div className="mt-4 md:mt-0 text-right">
                 <div className="text-2xl text-green-600 dark:text-green-400 font-bold">
-                  {formatCurrency(tenant.monthlyRent)}
+                  {formatCurrency(localTenant.monthlyRent)}
                 </div>
                 <div className="text-gray-600 dark:text-gray-400">
                   Monthly Rent
@@ -167,12 +199,12 @@ function TenantViewContent() {
                       Phone Number
                     </div>
                     <div className="font-medium text-gray-900 dark:text-white">
-                      {tenant.tenantNumber}
+                      {localTenant.tenantNumber}
                     </div>
                   </div>
                 </div>
 
-                {tenant.tenantEmail && (
+                {localTenant.tenantEmail && (
                   <div className="flex items-center space-x-3">
                     <EmailIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     <div>
@@ -180,7 +212,7 @@ function TenantViewContent() {
                         Email
                       </div>
                       <div className="font-medium text-gray-900 dark:text-white">
-                        {tenant.tenantEmail}
+                        {localTenant.tenantEmail}
                       </div>
                     </div>
                   </div>
@@ -193,12 +225,12 @@ function TenantViewContent() {
                       Property
                     </div>
                     <div className="font-medium text-gray-900 dark:text-white">
-                      {tenant.property?.propertyName || 'N/A'}
+                      {localTenant.property?.propertyName || 'N/A'}
                     </div>
                   </div>
                 </div>
 
-                {tenant.currentReading && (
+                {localTenant.currentReading > 0 && (
                   <div className="flex items-center space-x-3">
                     <ReceiptIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     <div>
@@ -206,7 +238,7 @@ function TenantViewContent() {
                         Current Meter Reading
                       </div>
                       <div className="font-medium text-gray-900 dark:text-white">
-                        {tenant.currentReading} units
+                        {localTenant.currentReading} units
                       </div>
                     </div>
                   </div>
@@ -221,12 +253,12 @@ function TenantViewContent() {
                       Check-in Date
                     </div>
                     <div className="font-medium text-gray-900 dark:text-white">
-                      {formatDate(tenant.checkInDate)}
+                      {formatDate(localTenant.checkInDate)}
                     </div>
                   </div>
                 </div>
 
-                {tenant.checkOutDate && (
+                {localTenant.checkOutDate && (
                   <div className="flex items-center space-x-3">
                     <CalendarTodayIcon className="w-5 h-5 text-red-500 dark:text-red-400" />
                     <div>
@@ -234,7 +266,7 @@ function TenantViewContent() {
                         Check-out Date
                       </div>
                       <div className="font-medium text-red-600 dark:text-red-400">
-                        {formatDate(tenant.checkOutDate.toISOString())}
+                        {formatDate(localTenant.checkOutDate.toISOString())}
                       </div>
                     </div>
                   </div>
@@ -247,28 +279,15 @@ function TenantViewContent() {
                       Security Deposit
                     </div>
                     <div className="font-medium text-gray-900 dark:text-white">
-                      {formatCurrency(tenant.securityDepositPaid || 0)}
+                      {formatCurrency(localTenant.securityDepositPaid || 0)}
                     </div>
                   </div>
                 </div>
 
-                {tenant.tenantIdProof && (
-                  <div className="flex items-center space-x-3">
-                    <BadgeIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                    <div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        ID Proof Type
-                      </div>
-                      <div className="font-medium text-gray-900 dark:text-white capitalize">
-                        {tenant.tenantIdProof.idType || 'Not provided'}
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
-            {tenant.notice && (
+            {localTenant.notice && (
               <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                 <div className="flex items-center space-x-3">
                   <WarningIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
@@ -277,10 +296,36 @@ function TenantViewContent() {
                       Notice Period
                     </div>
                     <div className="text-sm text-yellow-700 dark:text-yellow-400">
-                      {formatDate(tenant.notice.noticeDate.toString())} - {formatDate(tenant.notice.noticeEndsOn.toString())}
+                      {formatDate(localTenant.notice.noticeDate.toString())} - {formatDate(localTenant.notice.noticeEndsOn.toString())}
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Apply Notice Button - Only show for onboarded tenants without notice */}
+            {localTenant.status === 'onboarded' && !localTenant.notice && localTenant.currentCycle && (
+              <div className="flex justify-end">
+                <Button
+                  variant="contained"
+                  startIcon={<NoticeIcon />}
+                  onClick={handleApplyNotice}
+                  sx={{
+                    backgroundColor: '#FFC04D',
+                    boxShadow: 'none',
+                    borderRadius: '12px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    padding: '10px 16px',
+                    '&:hover': {
+                      backgroundColor: '#d97706',
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  Apply Notice Period
+                </Button>
               </div>
             )}
           </div>
@@ -300,9 +345,9 @@ function TenantViewContent() {
                 >
                   <span className="flex items-center">
                     Pending Rents
-                    {tenant.pendingRents?.count && tenant.pendingRents.count > 0 && (
+                    {localTenant.pendingRents?.count && localTenant.pendingRents.count > 0 && (
                       <span className="ml-2 bg-blue-500 text-white text-xs rounded-full px-2 py-1">
-                        {tenant.pendingRents.count}
+                        {localTenant.pendingRents.count}
                       </span>
                     )}
                   </span>
@@ -322,7 +367,7 @@ function TenantViewContent() {
 
             {activeTab === "rent" && (
               <RentHistoryTable
-                records={tenant.pendingRents?.pendingRentRecords || []}
+                records={localTenant.pendingRents?.pendingRentRecords || []}
                 emptyMessage="No Rent History Found"
                 showUnits={true}
               />
@@ -330,7 +375,7 @@ function TenantViewContent() {
 
             {activeTab === "completed" && (
               <RentHistoryTable
-                records={tenant.recentPayments || []}
+                records={localTenant.recentPayments || []}
                 emptyMessage="No Completed Rents Found"
                 showUnits={false}
               />
@@ -339,6 +384,18 @@ function TenantViewContent() {
           </div>
         </div>
       </main>
+
+      {/* Notice Form */}
+      <NoticeForm
+        isOpen={showNoticeForm}
+        onClose={() => setShowNoticeForm(false)}
+        onSubmitCallback={handleNoticeSubmit}
+        tenantName={localTenant?.tenantName || ''}
+        roomData={`Room ${localTenant?.room?.roomNo || ''}`}
+        cycleEndDate={localTenant?.currentCycle?.endDate || ''}
+        monthlyRent={localTenant?.monthlyRent || 0}
+        tenantId={localTenant?._id || ''}
+      />
     </div>
   );
 }

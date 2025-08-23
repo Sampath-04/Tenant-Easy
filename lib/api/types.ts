@@ -1,11 +1,12 @@
 // API Types for the application
+import { RentHistoryItem } from './rentHistory';
 
 export interface CreateUserRequest {
   name: string;
   phone: string;
   email: string;
   password: string;
-  role: 'admin' | 'manager' | 'tenant' | 'owner';
+  role: 'admin' | 'tenant' | 'owner';
 }
 
 export interface User {
@@ -14,7 +15,7 @@ export interface User {
   name: string;
   phone: string;
   email: string;
-  role: 'admin' | 'manager' | 'tenant' | 'owner';
+  role: 'admin' | 'tenant' | 'owner';
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -103,6 +104,15 @@ export interface Property {
 }
 
 // Tenant related types
+interface CycleInfo {
+  month: string;
+  isPaid: boolean;
+  totalAmount: number;
+  dueDate: string;
+  startDate?: string;
+  endDate: string;
+}
+
 export interface Tenant {
   _id: string;
   room: Room;
@@ -111,10 +121,6 @@ export interface Tenant {
   tenantNumber: string;
   tenantEmail?: string;
   currentReading?: number;
-  tenantIdProof?: {
-    idType?: 'aadhar' | 'pan' | 'passport' | 'driving_license' | 'other';
-    idImageUrl?: string;
-  };
   monthlyRent: number;
   securityDepositPaid?: number;
   status: 'onboarded' | 'notice_serving' | 'evicted';
@@ -128,17 +134,15 @@ export interface Tenant {
     rent: number;
     totalAmount: number;
   };
-  recentPayments?:  RentHistory[];
+  recentPayments?:  RentHistoryItem[];
   pendingRents?: {
-    pendingRentRecords: RentHistory[];
+    pendingRentRecords: RentHistoryItem[];
     totalPending: number;
     count: number;
   };
-  emergencyContact?: {
-    name?: string;
-    phone?: string;
-    relation?: string;
-  };
+  currentCycle?: CycleInfo;
+  previousCycle?: CycleInfo;
+  isPreviousCyclePaid?: boolean;
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -275,46 +279,7 @@ export interface GetUsersResponse {
   total: number;
 }
 
-// Rent History types
-export interface RentHistory {
-  _id: string;
-  tenant: string;
-  property: string;
-  room: {
-    roomNo: string;
-  };
-  startDate: string;
-  endDate: string;
-  month: string; // Format: "YYYY-MM"
-  rent: number;
-  electricityReadings: string[];
-  electricityBill: number;
-  electricityUnits: number;
-  totalAmount: number;
-  isPaid: boolean;
-  isOverdue?: boolean;
-  paidDate?: string;
-  daysOverdue?: number;
-  dueDate: string;
-  transactionRef?: string;
-  notice?: string;
-  recordedBy?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface RentHistoryResponse {
-  success: boolean;
-  count: number;
-  total: number;
-  pagination: {
-    currentPage: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-  data: RentHistory[];
-}
+// Rent History types - moved to rentHistory.ts
 
 export interface GetRentHistoryRequest {
   page?: number;

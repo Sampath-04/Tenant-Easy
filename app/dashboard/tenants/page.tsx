@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { AuthGuard } from '../../../contexts/AuthContext';
 import { useProperty } from '../../../contexts/PropertyContext';
@@ -140,14 +140,13 @@ function TenantsContent() {
 
   const { error: propertyError } = useProperty();
 
+  
   if (!selectedProperty) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <AppHeader
           title="Tenants"
           subtitle="Manage your property tenants"
-          showBackButton
-          backHref="/dashboard"
         />
         <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
           <div className="flex items-center justify-center py-12">
@@ -184,8 +183,6 @@ function TenantsContent() {
       <AppHeader
         title="Tenants"
         subtitle={`Manage tenants for ${selectedProperty.name}`}
-        showBackButton
-        backHref="/dashboard"
       />
 
       {/* Main Content */}
@@ -233,7 +230,6 @@ function TenantsContent() {
                     { value: 'notice_serving', label: 'Notice Period' },
                     { value: 'evicted', label: 'Evicted' }
                   ]}
-                  isDark={false}
                 />
               </div>
 
@@ -250,7 +246,6 @@ function TenantsContent() {
                       label: `Room ${room.roomNo} (${room.roomType})`
                     })) : [])
                   ]}
-                  isDark={false}
                 />
               </div>
             </div>
@@ -317,7 +312,6 @@ function TenantsContent() {
                       { value: 'monthlyRent', label: 'Monthly Rent' },
                       { value: 'createdAt', label: 'Created Date' }
                     ]}
-                    isDark={false}
                   />
                 </div>
                 <div className="space-y-2 w-[140px]">
@@ -329,7 +323,6 @@ function TenantsContent() {
                       { value: 'asc', label: 'Ascending' },
                       { value: 'desc', label: 'Descending' }
                     ]}
-                    isDark={false}
                   />
                 </div>
               </div>
@@ -646,7 +639,7 @@ function TenantsContent() {
 
 export default function TenantsPage() {
   return (
-    <AuthGuard allowedRoles={['owner', 'admin', 'manager']}>
+    <AuthGuard allowedRoles={['owner', 'admin']}>
       <TenantsContent />
     </AuthGuard>
   );

@@ -117,7 +117,7 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
       <Card className="transition-all duration-300 h-full bg-white/70 dark:bg-gray-900/70 backdrop-blur-md border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md" sx={{ borderRadius: "20px", boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.1)" }}>
         <CardContent className="p-0 flex flex-col">
           {/* Header */}
-          <div className="md:p-6 p-4 md:pb-4 pb-0">
+          <div className=" p-4 md:pb-4 pb-0">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <RoomIcon className="text-gray-500 dark:text-gray-400 mr-3 text-3xl" />

@@ -1,9 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getProfilesByOwner } from '../lib/api/profiles';
 import { PropertyData } from '../lib/api/types';
 import { useAuth } from './AuthContext';
+import { useProfile } from '../hooks/useProfile';
 
 export interface Property {
   id: string;
@@ -23,6 +23,7 @@ interface PropertyContextType {
   properties: Property[];
   isLoading: boolean;
   error: string | null;
+  refreshProperties: () => void;
 }
 
 const PropertyContext = createContext<PropertyContextType | undefined>(undefined);
@@ -45,60 +46,45 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [selectedProperty, setSelectedPropertyState] = useState<Property | null>(null);
   const [properties, setProperties] = useState<Property[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
+  // Use the useProfile hook to fetch profiles
+  const { data: profilesResponse, isLoading, error: profileError, refetch } = useProfile();
 
-  // Fetch properties from API when user is available
+  // Process profiles data when it changes
   useEffect(() => {
-    const fetchProperties = async () => {
-      if (!user?.id) {
-        setIsLoading(false);
-        return;
-      }
+    if (!user?.id || !profilesResponse) {
+      return;
+    }
 
-      try {
-        setError(null);
-        const response = await getProfilesByOwner();
-        
-        if (response.data && response.data.length > 0) {
-          // Always pick the first profile from the array
-          const firstProfile = response.data[0];
-          const propertiesData = firstProfile.properties.filter(p => p.isActive);
-          
-          // Convert to Property format
-          const convertedProperties = propertiesData.map(convertToProperty);
-          setProperties(convertedProperties);
+    
+    if (profilesResponse.data && profilesResponse.data.length > 0) {
+      // Always pick the first profile from the array
+      const firstProfile = profilesResponse.data[0];
+      const propertiesData = firstProfile.properties.filter((p: any) => p.isActive);
+      
+      // Convert to Property format
+      const convertedProperties = propertiesData.map(convertToProperty);
+      setProperties(convertedProperties);
 
-          // Set initial property from localStorage or first property
-          const savedPropertyId = localStorage.getItem('selectedPropertyId');
-          let initialProperty = convertedProperties[0];
+      // Set initial property from localStorage or first property
+      const savedPropertyId = localStorage.getItem('selectedPropertyId');
+      let initialProperty = convertedProperties[0];
 
-          if (savedPropertyId) {
-            const savedProperty = convertedProperties.find(p => p.id === savedPropertyId);
-            if (savedProperty) {
-              initialProperty = savedProperty;
-            }
-          }
-
-          if (initialProperty) {
-            setSelectedPropertyState(initialProperty);
-          }
-        } else {
-          setProperties([]);
-          setSelectedPropertyState(null);
+      if (savedPropertyId) {
+        const savedProperty = convertedProperties.find((p: any) => p.id === savedPropertyId);
+        if (savedProperty) {
+          initialProperty = savedProperty;
         }
-      } catch (err) {
-        console.error('Failed to fetch properties:', err);
-        setError('Failed to load properties');
-        setProperties([]);
-        setSelectedPropertyState(null);
-      } finally {
-        setIsLoading(false);
       }
-    };
 
-    fetchProperties();
-  }, [user?.id]);
+      if (initialProperty) {
+        setSelectedPropertyState(initialProperty);
+      }
+    } else {
+      setProperties([]);
+      setSelectedPropertyState(null);
+    }
+  }, [user?.id, profilesResponse]);
 
   const setSelectedProperty = (property: Property) => {
     setSelectedPropertyState(property);
@@ -110,7 +96,8 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
     setSelectedProperty,
     properties,
     isLoading,
-    error,
+    error: profileError?.message || null,
+    refreshProperties: refetch,
   };
 
   return (

@@ -90,8 +90,6 @@ function PropertyDetailsContent() {
         <AppHeader
           title="Property Details"
           subtitle="Loading property information..."
-          showBackButton
-          backHref="/admin/properties"
         />
         <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
           <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
@@ -116,8 +114,6 @@ function PropertyDetailsContent() {
         <AppHeader
           title="Property Details"
           subtitle="Error loading property"
-          showBackButton
-          backHref="/admin/properties"
         />
         <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
           <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
@@ -142,8 +138,6 @@ function PropertyDetailsContent() {
         <AppHeader
           title="Property Details"
           subtitle="Property not found"
-          showBackButton
-          backHref="/admin/properties"
         />
         <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
           <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
@@ -165,8 +159,6 @@ function PropertyDetailsContent() {
       <AppHeader
         title={property.propertyName}
         subtitle="Property Management"
-        showBackButton
-        backHref="/admin/properties"
       />
       
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>

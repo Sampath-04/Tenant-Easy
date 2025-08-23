@@ -27,8 +27,6 @@ const redirectToDashboard = (user: AuthUser) => {
     switch (user.role) {
         case 'admin':
             return '/admin';
-        case 'manager':
-            return '/admin';
         case 'owner':
             return '/dashboard';
         case 'tenant':
@@ -83,8 +81,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           // Navigate based on role
           if (response.user.role === 'admin') {
             router.push('/admin');
-          } else if (response.user.role === 'manager') {
-            router.push('/admin'); // Managers also go to admin dashboard
           } else if (response.user.role === 'owner') {
             console.log("user logged in as owner");
             router.push('/dashboard'); // Fallback to home for now
@@ -187,7 +183,7 @@ export function useAuth(): AuthContextType {
 // Auth guard component
 interface AuthGuardProps {
   children: ReactNode;
-  allowedRoles?: ('admin' | 'manager' | 'tenant' | 'owner')[];
+  allowedRoles?: ('admin' | 'tenant' | 'owner' | 'staff')[];
   fallback?: ReactNode;
 }
 
@@ -204,7 +200,7 @@ export function AuthGuard({ children, allowedRoles, fallback }: AuthGuardProps) 
     if (!isLoading && isAuthenticated && allowedRoles && user) {
       if (!allowedRoles.includes(user.role)) {
         // Redirect to appropriate dashboard based on role
-        if (user.role === 'admin' || user.role === 'manager') {
+        if (user.role === 'admin') {
           router.push('/admin');
         } else if (user.role === 'owner') {
           router.push('/dashboard');

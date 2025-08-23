@@ -3,6 +3,7 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { formatDateToYYYYMMDD } from "@/lib/utils/formatters";
 
 type DateRange = {
   from: string | null;
@@ -14,15 +15,6 @@ interface DateRangePickerProps {
   value: DateRange;
   onChange: (newValue: DateRange) => void;
 }
-
-const formatDate = (date: Date | null) => {
-  if (!date) return "";
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-
 
 const DateRangePicker: React.FC<DateRangePickerProps> = ({
   label = "Date Range",
@@ -116,7 +108,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
           <DatePicker
             value={value.from ? new Date(value.from) : null}
             onChange={(date) =>
-              handleChange("from", date ? new Date(formatDate(date)) : null)
+              handleChange("from", date ? new Date(formatDateToYYYYMMDD(date)) : null)
             }
             slotProps={{
               textField: {
@@ -130,7 +122,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
           <DatePicker
             value={value.to ? new Date(value.to) : null}
             onChange={(date) =>
-              handleChange("to", date ? new Date(formatDate(date)) : null)
+              handleChange("to", date ? new Date(formatDateToYYYYMMDD(date)) : null)
             }
             slotProps={{
               textField: {

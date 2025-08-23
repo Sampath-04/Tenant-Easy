@@ -8,7 +8,7 @@ import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
 import { useCreateTenant } from '@/hooks/useTenants';
 import { useRooms } from '@/hooks/useRooms';
-import { showSuccessToast } from '@/lib/toast-config';
+import { showErrorToast, showSuccessToast } from '@/lib/toast-config';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import NumberInput from '@/components/ui/NumberInput';
@@ -18,6 +18,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import SaveIcon from '@mui/icons-material/Save';
 
 import { RoomDetail } from '@/lib/api/types';
+import { formatDateToYYYYMMDD } from '@/lib/utils/formatters';
+import { toast } from 'react-toastify';
 
 interface CreateTenantRequest {
   property: string;
@@ -44,7 +46,7 @@ function CreateTenantContent() {
     monthlyRent: 0,
     securityDepositPaid: 0,
     currentReading: 0,
-    checkInDate: ''
+    checkInDate: formatDateToYYYYMMDD(new Date()) // Set default to current date
   });
 
   const createTenantMutation = useCreateTenant();
@@ -70,16 +72,18 @@ function CreateTenantContent() {
     e.preventDefault();
     
     if (!formData.property || !formData.room) {
-      showSuccessToast('Please select property and room');
+      const errorToast = showErrorToast('Please select property and room');
+      toast.error(errorToast.message, errorToast.config);
       return;
     }
 
     createTenantMutation.mutate(formData, {
       onSuccess: () => {
-        showSuccessToast('Tenant created successfully!');
+        const successToast = showSuccessToast('Tenant created successfully!');
+        toast.success(successToast.message, successToast.config);
         setTimeout(() => {
           router.push('/dashboard/tenants');
-        }, 1000);
+        }, 2000);
       }
     });
   };
@@ -92,8 +96,6 @@ function CreateTenantContent() {
       <AppHeader
         title="Add New Tenant"
         subtitle="Create a new tenant record"
-        showBackButton
-        backHref="/dashboard"
       />
       
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
@@ -153,14 +155,14 @@ function CreateTenantContent() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Property *
                     </label>
-                                         <input
+                       <input
                        type="text"
                        value={selectedProperty?.name || 'No property selected'}
                        disabled
                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                      />
                   </div>
-                                     <div>
+                     <div>
                      <CustomSelect
                        label="Room *"
                        value={formData.room}
@@ -241,8 +243,10 @@ function CreateTenantContent() {
                     </label>
                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                       <DatePicker
-                        value={formData.checkInDate ? new Date(formData.checkInDate) : null}
-                        onChange={(date) => handleInputChange('checkInDate', date ? date.toISOString().split('T')[0] : '')}
+                        value={formData.checkInDate ? new Date(formData.checkInDate + 'T00:00:00') : null}
+                          onChange={(date) => {
+                           handleInputChange('checkInDate', formatDateToYYYYMMDD(date));
+                         }}
                         slotProps={{
                           textField: {
                             fullWidth: true,

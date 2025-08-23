@@ -5,13 +5,11 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  SelectChangeEvent
 } from '@mui/material';
 import { Theme } from '@mui/material/styles';
 
 interface CustomSelectProps extends Omit<SelectProps, 'variant' | 'onChange' | 'value'> {
   label?: string;
-  isDark?: boolean;
   options: Array<{ value: string; label: string }>;
   value: string;
   onChange: (event: any) => void;
@@ -19,7 +17,6 @@ interface CustomSelectProps extends Omit<SelectProps, 'variant' | 'onChange' | '
 
 const CustomSelect: React.FC<CustomSelectProps> = ({
   label,
-  isDark = true, // Default to dark theme
   options,
   value,
   onChange,
@@ -30,7 +27,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     <FormControl fullWidth className={className}>
       {label && (
         <InputLabel
-          sx  ={(theme: Theme) => ({
+          sx={(theme: Theme) => ({
             position: 'static',
             transform: 'none',
             marginBottom: '6px',

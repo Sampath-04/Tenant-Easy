@@ -1,8 +1,8 @@
 import React from "react";
-import { RentHistory } from "@/lib/api";
+import { RentHistoryItem } from "@/lib/api/rentHistory";
 
 interface RentHistoryTableProps {
-  records: RentHistory[];
+  records: RentHistoryItem[];
   emptyMessage: string;
   showUnits?: boolean; // optional flag for units
 }

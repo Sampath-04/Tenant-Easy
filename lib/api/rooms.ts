@@ -2,13 +2,17 @@ import { apiClient } from './client';
 import { RoomsListResponse } from './types';
 
 /**
- * Get list of rooms for a property with pagination
+ * Get list of rooms for a property with pagination and optional room filtering
  */
-export async function getRooms(propertyId: string, page = 1, limit = 50): Promise<RoomsListResponse> {
+export async function getRooms(propertyId: string, page = 1, limit = 50, roomId?: string): Promise<RoomsListResponse> {
   const params = new URLSearchParams();
   params.append('property', propertyId);
   params.append('page', page.toString());
   params.append('limit', limit.toString());
+  
+  if (roomId && roomId !== 'all') {
+    params.append('roomId', roomId);
+  }
   
   const response = await apiClient.get<RoomsListResponse>(`/rooms?${params.toString()}`);
   return response;

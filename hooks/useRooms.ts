@@ -1,17 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getRooms, createRoom, updateRoom } from '../lib/api/rooms';
 import { toast } from 'react-toastify';
+import { showSuccessToast } from '@/lib/toast-config';
 
 /**
  * Hook to fetch rooms for a property
  */
-export function useRooms(propertyId: string, page = 1, limit = 50) {
+export function useRooms(propertyId: string, page = 1, limit = 50, roomId?: string) {
   return useQuery({
-    queryKey: ['rooms', propertyId, page, limit],
-    queryFn: () => getRooms(propertyId, page, limit),
+    queryKey: ['rooms', propertyId, page, limit, roomId],
+    queryFn: () => getRooms(propertyId, page, limit, roomId),
     enabled: !!propertyId && propertyId !== '', // Only run when propertyId is valid
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 0, 
+    gcTime: 0, 
   });
 }
 
@@ -55,7 +56,8 @@ export function useCreateRoom() {
   return useMutation({
     mutationFn: (roomData: CreateRoomData) => createRoom(roomData),
     onSuccess: (data) => {
-      toast.success('Room created successfully!');
+      const successToast = showSuccessToast('Room created successfully!');
+      toast.success(successToast.message, successToast.config);
       
       // Invalidate and refetch rooms list
       queryClient.invalidateQueries({ queryKey: ['rooms'] });
