@@ -37,6 +37,7 @@ export interface TenantInfo {
   tenantEmail: string;
   status: string;
   isActive: boolean;
+  securityDepositPaid: number;
 }
 
 // Room interface for rent history
@@ -46,6 +47,8 @@ export interface RoomInfo {
   roomType: string;
   maxCapacity: number;
   isOccupied: boolean;
+  currentMeterReading: number;
+  tenants: string[];
 }
 
 // Rent History item interface

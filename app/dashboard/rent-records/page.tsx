@@ -21,6 +21,7 @@ import {
   Schedule as ScheduleIcon,
   CurrencyRupee as CurrencyIcon,
   Person as PersonIcon,
+  PersonOff as PersonOffIcon,
   Home as HomeIcon,
   Phone as PhoneIcon,
   FilterList as FilterIcon,
@@ -29,6 +30,7 @@ import {
   ElectricBolt as ElectricBoltIcon,
   Payment as PaymentIcon,
   WhatsApp as WhatsAppIcon,
+  Cancel as CancelIcon,
 } from '@mui/icons-material';
 import { useRentRecords } from '@/hooks/useRentRecords';
 import { formatDate, formatCurrency } from '@/lib/utils/formatters';
@@ -39,6 +41,7 @@ import ElectricityReadingsSection from '@/components/ElectricityReadingsSection'
 import { getCurrentDate } from '@/lib/utils/formatters';
 import RentInfoCard from '@/components/RentInfoCard';
 import PaymentCollectionForm from '@/components/PaymentCollectionForm';
+import EvictionForm from '@/components/EvictionForm';
 
 export default function RentRecordsPage() {
   const { selectedProperty } = useProperty();
@@ -53,6 +56,8 @@ export default function RentRecordsPage() {
   const [expandedRentId, setExpandedRentId] = useState<string | null>(null);
   const [paymentFormOpen, setPaymentFormOpen] = useState(false);
   const [selectedRentForPayment, setSelectedRentForPayment] = useState<any>(null);
+  const [evictionFormOpen, setEvictionFormOpen] = useState(false);
+  const [selectedRentForEviction, setSelectedRentForEviction] = useState<any>(null);
 
   // Get rent records with filters
   const { data: rentRecordsResponse, isLoading: recordsLoading, error: recordsError } = useRentRecords({
@@ -110,6 +115,18 @@ export default function RentRecordsPage() {
   const handleWhatsAppReminder = (rent: any) => {
     // TODO: Implement WhatsApp reminder functionality
     console.log('WhatsApp reminder for:', rent);
+    // open whatsapp
+    window.open(`https://wa.me/${rent.tenant.tenantNumber}`, '_blank');
+  };
+
+  const handleCompleteEviction = (rent: any) => {
+    setSelectedRentForEviction(rent);
+    setEvictionFormOpen(true);
+  };
+
+  const handleCancelNotice = (rent: any) => {
+    // TODO: Implement cancel notice functionality
+    console.log('Cancel notice for:', rent);
   };
 
   const handlePaymentSubmit = (data: any) => {
@@ -119,7 +136,12 @@ export default function RentRecordsPage() {
       paymentProofs: data.paymentProofs,
       isPaid: true,
     }));
-  
+  };
+
+  const handleEvictionSubmit = (data: any) => {
+    console.log('Eviction submitted:', data);
+    // TODO: Implement eviction API call
+    // This should update tenant status to 'evicted' and process the refund
   };
 
   if (recordsLoading) {
@@ -285,59 +307,118 @@ export default function RentRecordsPage() {
 
                         {/* Action Buttons */}
                         <div className="flex flex-col gap-3 min-w-fit">
-                          {!record.isPaid && getCurrentDate().getTime() > new Date(record.endDate).getTime() && (
-                            <Button
-                              variant="contained"
-                              startIcon={<PaymentIcon />}
-                              onClick={() => handleCollectPayment(record)}
-                              sx={(theme: Theme) => ({
-                                backgroundColor: theme.palette.mode === 'dark' ? '#059669' : '#10b981',
-                                borderRadius: '12px',
-                                color: theme.palette.mode === 'dark' ? '#fff' : '#fff',
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                padding: '8px 16px',
-                                boxShadow: theme.palette.mode === 'dark' 
-                                  ? '0 1px 3px 0 rgba(0, 0, 0, 0.3)' 
-                                  : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-                                '&:hover': {
-                                  backgroundColor: theme.palette.mode === 'dark' ? '#047857' : '#059669',
+                          {/* Action buttons for tenants in notice period */}
+                          {record.notice ? (
+                            <>
+                              <Button
+                                variant="contained"
+                                startIcon={<PersonOffIcon />}
+                                onClick={() => handleCompleteEviction(record)}
+                                sx={(theme: Theme) => ({
+                                  backgroundColor: theme.palette.mode === 'dark' ? '#dc2626' : '#ef4444',
+                                  borderRadius: '12px',
+                                  color: '#fff',
+                                  textTransform: 'none',
+                                  fontWeight: 600,
+                                  padding: '8px 16px',
                                   boxShadow: theme.palette.mode === 'dark' 
-                                    ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)' 
-                                    : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                                },
-                                transition: 'all 0.2s ease',
-                              })}
-                              size="small"
-                            >
-                              Collect
-                            </Button>
-                          )}
-                          {!record.isPaid && (
-                            <Button
-                              variant="outlined"
-                              startIcon={<WhatsAppIcon />}
-                              onClick={() => handleWhatsAppReminder(record)}
-                              sx={(theme: Theme) => ({
-                                borderColor: theme.palette.mode === 'dark' ? '#34d399' : '#10b981',
-                                color: theme.palette.mode === 'dark' ? '#34d399' : '#10b981',
-                                borderRadius: '12px',
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                padding: '8px 16px',
-                                '&:hover': {
-                                  backgroundColor: theme.palette.mode === 'dark' 
-                                    ? 'rgba(52, 211, 153, 0.1)' 
-                                    : '#d1fae5',
-                                  borderColor: theme.palette.mode === 'dark' ? '#10b981' : '#059669',
-                                  color: theme.palette.mode === 'dark' ? '#10b981' : '#059669',
-                                },
-                                transition: 'all 0.2s ease',
-                              })}
-                              size="small"
-                            >
-                              WhatsApp Reminder
-                            </Button>
+                                    ? '0 1px 3px 0 rgba(0, 0, 0, 0.3)' 
+                                    : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+                                  '&:hover': {
+                                    backgroundColor: theme.palette.mode === 'dark' ? '#b91c1c' : '#dc2626',
+                                    boxShadow: theme.palette.mode === 'dark' 
+                                      ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)' 
+                                      : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                  },
+                                  transition: 'all 0.2s ease',
+                                })}
+                                size="small"
+                              >
+                                Complete Eviction
+                              </Button>
+                              <Button
+                                variant="outlined"
+                                startIcon={<CancelIcon />}
+                                onClick={() => handleCancelNotice(record)}
+                                sx={(theme: Theme) => ({
+                                  borderColor: theme.palette.mode === 'dark' ? '#f59e0b' : '#f59e0b',
+                                  color: theme.palette.mode === 'dark' ? '#fbbf24' : '#f59e0b',
+                                  borderRadius: '12px',
+                                  textTransform: 'none',
+                                  fontWeight: 600,
+                                  padding: '8px 16px',
+                                  '&:hover': {
+                                    backgroundColor: theme.palette.mode === 'dark' 
+                                      ? 'rgba(245, 158, 11, 0.1)' 
+                                      : '#fef3c7',
+                                    borderColor: theme.palette.mode === 'dark' ? '#fbbf24' : '#d97706',
+                                    color: theme.palette.mode === 'dark' ? '#fbbf24' : '#d97706',
+                                  },
+                                  transition: 'all 0.2s ease',
+                                })}
+                                size="small"
+                              >
+                                Cancel Notice
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              {/* Action buttons for regular tenants */}
+                              {!record.isPaid && getCurrentDate().getTime() > new Date(record.endDate).getTime() && (
+                                <Button
+                                  variant="contained"
+                                  startIcon={<PaymentIcon />}
+                                  onClick={() => handleCollectPayment(record)}
+                                  sx={(theme: Theme) => ({
+                                    backgroundColor: theme.palette.mode === 'dark' ? '#059669' : '#10b981',
+                                    borderRadius: '12px',
+                                    color: theme.palette.mode === 'dark' ? '#fff' : '#fff',
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    padding: '8px 16px',
+                                    boxShadow: theme.palette.mode === 'dark' 
+                                      ? '0 1px 3px 0 rgba(0, 0, 0, 0.3)' 
+                                      : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+                                    '&:hover': {
+                                      backgroundColor: theme.palette.mode === 'dark' ? '#047857' : '#059669',
+                                      boxShadow: theme.palette.mode === 'dark' 
+                                        ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)' 
+                                        : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                    },
+                                    transition: 'all 0.2s ease',
+                                  })}
+                                  size="small"
+                                >
+                                  Collect
+                                </Button>
+                              )}
+                              {!record.isPaid && (
+                                <Button
+                                  variant="outlined"
+                                  startIcon={<WhatsAppIcon />}
+                                  onClick={() => handleWhatsAppReminder(record)}
+                                  sx={(theme: Theme) => ({
+                                    borderColor: theme.palette.mode === 'dark' ? '#34d399' : '#10b981',
+                                    color: theme.palette.mode === 'dark' ? '#34d399' : '#10b981',
+                                    borderRadius: '12px',
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    padding: '8px 16px',
+                                    '&:hover': {
+                                      backgroundColor: theme.palette.mode === 'dark' 
+                                        ? 'rgba(52, 211, 153, 0.1)' 
+                                        : '#d1fae5',
+                                      borderColor: theme.palette.mode === 'dark' ? '#10b981' : '#059669',
+                                      color: theme.palette.mode === 'dark' ? '#10b981' : '#059669',
+                                    },
+                                    transition: 'all 0.2s ease',
+                                  })}
+                                  size="small"
+                                >
+                                  WhatsApp Reminder
+                                </Button>
+                              )}
+                            </>
                           )}
                           <Button
                             variant="outlined"
@@ -408,6 +489,14 @@ export default function RentRecordsPage() {
         onSubmitCallback={handlePaymentSubmit}
         rentRecord={selectedRentForPayment}
         setPaymentFormOpen={setPaymentFormOpen}
+      />
+
+      {/* Eviction Form */}
+      <EvictionForm
+        isOpen={evictionFormOpen}
+        onClose={() => setEvictionFormOpen(false)}
+        onSubmitCallback={handleEvictionSubmit}
+        rentRecord={selectedRentForEviction}
       />
     </div>
   );

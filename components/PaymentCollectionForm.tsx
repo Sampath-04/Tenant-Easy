@@ -185,7 +185,7 @@ export default function PaymentCollectionForm({
     setPaymentFormOpen(false);
   };
 
-    return (
+  return (
     <>
       {/* Main Payment Collection Dialog */}
       <Dialog 
@@ -212,52 +212,52 @@ export default function PaymentCollectionForm({
         </DialogTitle>
         
         <DialogContent>
-          {/* Rent Details */}
+              {/* Rent Details */}
           <Box className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <Typography variant="subtitle2" className="text-blue-800 dark:text-blue-300 mb-3">
-              Rent Details
+                  Rent Details
             </Typography>
             <Box className="grid grid-cols-2 gap-4 text-sm">
-              <div>
+                  <div>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Period:</Typography>
                 <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
-                  {formatDate(rentRecord.startDate)} - {formatDate(rentRecord.endDate)}
+                      {formatDate(rentRecord.startDate)} - {formatDate(rentRecord.endDate)}
                 </Typography>
-              </div>
-              <div>
+                  </div>
+                  <div>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Room:</Typography>
                 <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
-                  {rentRecord.room?.roomNo || '-'}
+                      {rentRecord.room?.roomNo || '-'}
                 </Typography>
-              </div>
-              <div>
+                  </div>
+                  <div>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Rent:</Typography>
                 <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
-                  {formatCurrency(rentRecord.rent)}
+                      {formatCurrency(rentRecord.rent)}
                 </Typography>
-              </div>
-              <div>
+                  </div>
+                  <div>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Electricity:</Typography>
                 <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
-                  {formatCurrency(rentRecord.electricityBill)}
+                      {formatCurrency(rentRecord.electricityBill)}
                 </Typography>
-              </div>
-              <div className="col-span-2">
+                  </div>
+                  <div className="col-span-2">
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Total Amount:</Typography>
                 <Typography variant="h6" className="font-bold text-green-600 dark:text-green-400">
-                  {formatCurrency(rentRecord.totalAmount)}
+                      {formatCurrency(rentRecord.totalAmount)}
                 </Typography>
-              </div>
+                    </div>
             </Box>
           </Box>
 
-          {/* Comments */}
+              {/* Comments */}
           <TextField
             fullWidth
             label="Comments (Optional)"
-            value={comments}
-            onChange={(e) => setComments(e.target.value)}
-            placeholder="Add any additional notes or comments"
+                  value={comments}
+                  onChange={(e) => setComments(e.target.value)}
+                  placeholder="Add any additional notes or comments"
             margin="normal"
             variant="outlined"
             multiline
@@ -304,10 +304,10 @@ export default function PaymentCollectionForm({
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     Supports: JPG, PNG, GIF, BMP, WebP
                   </p>
-                </div>
+              </div>
               )}
             </div>
-            
+
             <p className="mt-2 text-gray-600 dark:text-gray-400 text-sm">
               {selectedImages.length}/4 images selected
             </p>
@@ -374,9 +374,9 @@ export default function PaymentCollectionForm({
           }
         }}>
           <button onClick={handleClose} disabled={isCollectingStartNew || isCollectingApplyNotice} className='hidden md:block border-2 border-gray-300 text-gray-600 px-4 py-2 rounded-[30px] cursor-pointer dark:border-gray-400 dark:text-gray-200'>
-            Cancel
-          </button>
-          <button 
+                Cancel
+              </button>
+              <button
             onClick={handleCollectAndStartNew}
             disabled={isCollectingStartNew || isCollectingApplyNotice}
             className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"
@@ -391,7 +391,7 @@ export default function PaymentCollectionForm({
           >
             {isCollectingApplyNotice && <CircularProgress size={16} color="inherit" />}
             Collect - Apply Notice
-          </button>
+              </button>
         </DialogActions>
       </Dialog>
 
