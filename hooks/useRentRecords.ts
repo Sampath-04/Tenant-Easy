@@ -10,7 +10,7 @@ interface UseRentRecordsParams {
   limit?: number;
   tenant?: string;
   month?: string;
-  isPaid?: boolean;
+  paymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
   search?: string;
   enabled?: boolean;
 }
@@ -21,18 +21,18 @@ export function useRentRecords({
   limit = 10,
   tenant,
   month,
-  isPaid,
+  paymentStatus,
   search,
   enabled = true,
 }: UseRentRecordsParams) {
   return useQuery({
-    queryKey: ['rent-records', propertyId, page, limit, tenant, month, isPaid, search],
+    queryKey: ['rent-records', propertyId, page, limit, tenant, month, paymentStatus, search],
     queryFn: () => getAllRentRecordsForProperty(propertyId, {
       page,
       limit,
       tenant,
       month,
-      isPaid,
+      paymentStatus,
       search,
     }),
     enabled: enabled && !!propertyId,
@@ -55,8 +55,11 @@ export function usePendingRents(propertyId: string) {
 }
 
 interface MarkRentAsPaidData {
-  comments?: string;
+  amount: number;
+  paidDate: string;
   paymentProofs?: File[];
+  paidTo: string;
+  comments?: string;
 }
 
 export function useMarkRentAsPaid() {

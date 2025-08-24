@@ -51,7 +51,7 @@ export default function RentRecordsPage() {
     search: '',
     tenant: '',
     month: '',
-    isPaid: '',
+    paymentStatus: '',
   });
   const [expandedRentId, setExpandedRentId] = useState<string | null>(null);
   const [paymentFormOpen, setPaymentFormOpen] = useState(false);
@@ -66,7 +66,7 @@ export default function RentRecordsPage() {
     limit,
     tenant: filters.tenant || undefined,
     month: filters.month || undefined,
-    isPaid: filters.isPaid === '' ? undefined : filters.isPaid === 'true',
+    paymentStatus: filters.paymentStatus === '' ? undefined : filters.paymentStatus as "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID",
     search: filters.search || undefined,
   });
 
@@ -98,7 +98,7 @@ export default function RentRecordsPage() {
       search: '',
       tenant: '',
       month: '',
-      isPaid: '',
+      paymentStatus: '',
     });
     setPage(1);
   };
@@ -134,7 +134,7 @@ export default function RentRecordsPage() {
       ...prev,
       comments: data.comments,
       paymentProofs: data.paymentProofs,
-      isPaid: true,
+      paymentStatus: "FULLY_PAID",
     }));
   };
 
@@ -364,7 +364,7 @@ export default function RentRecordsPage() {
                           ) : (
                             <>
                               {/* Action buttons for regular tenants */}
-                              {!record.isPaid && getCurrentDate().getTime() > new Date(record.endDate).getTime() && (
+                              {record.paymentStatus !== "FULLY_PAID" && getCurrentDate().getTime() > new Date(record.endDate).getTime() && (
                                 <Button
                                   variant="contained"
                                   startIcon={<PaymentIcon />}
@@ -392,7 +392,7 @@ export default function RentRecordsPage() {
                                   Collect
                                 </Button>
                               )}
-                              {!record.isPaid && (
+                              {record.paymentStatus !== "FULLY_PAID" && (
                                 <Button
                                   variant="outlined"
                                   startIcon={<WhatsAppIcon />}

@@ -33,7 +33,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
 
   const getStatusChip = (record: any) => {
 
-    if(record.isPaid) {
+    if(record.paymentStatus === "FULLY_PAID") {
       return (
         <Chip
           label="Paid"
@@ -45,6 +45,22 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
             fontSize: '0.75rem',
             height: '20px',
           })}
+          icon={<CheckCircleIcon />}
+        />
+      );
+    }
+    if(record.paymentStatus === "PARTIALLY_PAID") {
+      return (
+        <Chip
+          label="Partially Paid"
+          color="warning"
+          size="small"
+          sx={(theme: Theme) => ({  
+            backgroundColor: theme.palette.mode === 'dark' ? '#f59e0b' : '#fbbf24',
+            color: '#fff',
+            fontSize: '0.75rem',
+            height: '20px',
+          })} 
           icon={<CheckCircleIcon />}
         />
       );
@@ -206,18 +222,26 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
                  {formatCurrency(record.rent)}
                </Typography>
                <Chip
-                 label={`${record.isPreviousCyclePaid ? 'Paid' : 'Not Paid'}`}
-                 size="small"
-                 sx={(theme: Theme) => ({
-                   backgroundColor: record.isPreviousCyclePaid ? theme.palette.mode === 'dark' ? '#059669' : '#10b981' : theme.palette.mode === 'dark' ? '#fca5a5' : '#dc2626',
-                   color: '#fff',
-                   fontSize: '0.75rem',
-                   height: '20px',
-                   '& .MuiChip-label': {
-                     padding: '0 6px',
-                   },
-                 })}
-               />
+                  label={`${record.previousCyclePaymentStatus === "FULLY_PAID" ? 'Paid' : record.previousCyclePaymentStatus === "PARTIALLY_PAID" ? 'Partially Paid' : 'Not Paid'}`}
+                  size="small"
+                  sx={(theme: Theme) => ({
+                    backgroundColor: record.previousCyclePaymentStatus === "FULLY_PAID" 
+                      ? theme.palette.mode === 'dark' ? '#059669' : '#10b981' 
+                      : record.previousCyclePaymentStatus === "PARTIALLY_PAID" 
+                      ? theme.palette.mode === 'dark' ? '#f59e0b' : '#fbbf24' 
+                      : theme.palette.mode === 'dark' ? '#fca5a5' : '#dc2626',
+                    color: '#fff',
+                    fontSize: '0.75rem',
+                    height: '20px',
+                    '& .MuiChip-label': {
+                      padding: '0 6px',
+                    },
+                    '& .MuiChip-icon': {
+                      color: 'white'
+                    },
+                  })}
+                  icon={<CheckCircleIcon />}
+                />
              </div>
            </div>
            <div>

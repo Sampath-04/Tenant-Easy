@@ -45,7 +45,7 @@ function PendingRentsContent() {
       ...prev,
       comments: data.comments,
       paymentProofs: data.paymentProofs,
-      isPaid: true,
+      paymentStatus: "FULLY_PAID",
     }));
   };
 

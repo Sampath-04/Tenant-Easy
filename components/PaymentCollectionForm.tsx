@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -16,11 +16,13 @@ import {
 import { Close as CloseIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 import { CircularProgress } from '@mui/material';
 import { RentHistoryItem } from '@/lib/api/rentHistory';
-import { formatCurrency, formatDate } from '@/lib/utils/formatters';
+import { formatCurrency, formatDate, getCurrentDate } from '@/lib/utils/formatters';
 import NoticeForm from './NoticeForm';
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useMarkRentAsPaid } from '@/hooks/useRentRecords';
+import { showErrorToast } from '@/lib/toast-config';
+import { toast } from 'react-toastify';
 
 interface PaymentCollectionFormProps {
   isOpen: boolean;
@@ -41,13 +43,29 @@ export default function PaymentCollectionForm({
   onSubmitCallback,
   setPaymentFormOpen
 }: PaymentCollectionFormProps) {
-  const [comments, setComments] = useState( rentRecord?.comments || '');
-  const [selectedImages, setSelectedImages] = useState<File[]>( rentRecord?.paymentProofs || []);
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>( rentRecord?.paymentProofs?.map(proof => URL.createObjectURL(proof)) || []);
+  const [comments, setComments] = useState('');
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [showNoticeForm, setShowNoticeForm] = useState(false);
   const [isCollectingStartNew, setIsCollectingStartNew] = useState(false);
   const [isCollectingApplyNotice, setIsCollectingApplyNotice] = useState(false);
   const [cycleEndDate, setCycleEndDate] = useState<string>(rentRecord?.endDate || '');
+  const [amount, setAmount] = useState<number>(0);
+  const [paidTo, setPaidTo] = useState<string>('');
+
+  // Initialize amount when rentRecord is available
+  useEffect(() => {
+    if (rentRecord) {
+      if (rentRecord.paymentStatus === "PARTIALLY_PAID" && rentRecord.payments?.length > 0) {
+        // Calculate total amount paid so far
+        const totalPaid = rentRecord.payments.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0);
+        // Set remaining amount
+        setAmount(Math.max(0, (rentRecord.totalAmount || 0) - totalPaid));
+      } else {
+        setAmount(rentRecord.totalAmount || 0);
+      }
+    }
+  }, [rentRecord]);
 
   const markRentAsPaidMutation = useMarkRentAsPaid();
 
@@ -86,6 +104,14 @@ export default function PaymentCollectionForm({
       setComments('');
       setSelectedImages([]);
       setImagePreviewUrls([]);
+      // Reset amount based on payment status
+      if (rentRecord?.paymentStatus === "PARTIALLY_PAID" && rentRecord?.payments?.length > 0) {
+        const totalPaid = rentRecord.payments.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0);
+        setAmount(Math.max(0, (rentRecord.totalAmount || 0) - totalPaid));
+      } else {
+        setAmount(rentRecord?.totalAmount || 0);
+      }
+      setPaidTo('');
       setShowNoticeForm(false);
       onClose();
     }
@@ -107,11 +133,19 @@ export default function PaymentCollectionForm({
   const handleCollectAndStartNew = async () => {
     try {
       setIsCollectingStartNew(true);
+      if(amount <= 0 || !paidTo.trim()) {
+        const errorToast = showErrorToast("Please enter the amount and paid to");
+        toast.error(errorToast.message, errorToast.config);
+        return;
+      }
       await markRentAsPaidMutation.mutateAsync({
         rentId: rentRecord._id,
         data: {
+          amount: amount,
+          paidDate: getCurrentDate().toISOString().split('T')[0],
+          paymentProofs: selectedImages.length > 0 ? selectedImages : undefined,
+          paidTo: paidTo.trim(),
           comments: comments.trim() || undefined,
-          paymentProofs: selectedImages.length > 0 ? selectedImages : undefined
         }
       });
       
@@ -130,6 +164,14 @@ export default function PaymentCollectionForm({
       setComments('');
       setSelectedImages([]);
       setImagePreviewUrls([]);
+      // Reset amount based on payment status
+      if (rentRecord?.paymentStatus === "PARTIALLY_PAID" && rentRecord?.payments?.length > 0) {
+        const totalPaid = rentRecord.payments.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0);
+        setAmount(Math.max(0, (rentRecord.totalAmount || 0) - totalPaid));
+      } else {
+        setAmount(rentRecord?.totalAmount || 0);
+      }
+      setPaidTo('');
       onClose();
     } catch (error) {
       console.error('Failed to mark rent as paid:', error);
@@ -140,14 +182,22 @@ export default function PaymentCollectionForm({
 
   const handleCollectAndApplyNotice = async () => {
     try {
+      if(amount <= 0 || !paidTo.trim()) {
+        const errorToast = showErrorToast('Please enter the amount and paid to');
+        toast.error(errorToast.message, errorToast.config);
+        return;
+      }
       setIsCollectingApplyNotice(true);
       // Step 1: Mark rent as paid first
-     if(!rentRecord.isPaid) {
+     if(rentRecord.paymentStatus !== "FULLY_PAID") {
         await markRentAsPaidMutation.mutateAsync({
         rentId: rentRecord._id,
         data: {
+          amount: amount,
+          paidDate: getCurrentDate().toISOString().split('T')[0],
+          paymentProofs: selectedImages.length > 0 ? selectedImages : undefined,
+          paidTo: paidTo.trim(),
           comments: comments.trim() || undefined,
-          paymentProofs: selectedImages.length > 0 ? selectedImages : undefined
         }
       });
 
@@ -165,7 +215,7 @@ export default function PaymentCollectionForm({
       // Step 2: Open notice form after successful payment collection
       setShowNoticeForm(true);
     } catch (error) {
-      console.error('Failed to mark rent as paid:', error);
+
     } finally {
       setIsCollectingApplyNotice(false);
     }
@@ -249,30 +299,93 @@ export default function PaymentCollectionForm({
                 </Typography>
                     </div>
             </Box>
+            
+            {/* Partially Paid Details */}
+            {rentRecord?.paymentStatus === "PARTIALLY_PAID" && rentRecord?.payments?.length > 0 && (
+              <Box className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                <Typography variant="subtitle2" className="text-amber-800 dark:text-amber-300 mb-2">
+                  Previous Payments
+                </Typography>
+                <div className="space-y-2">
+                  {rentRecord.payments.map((payment: any, index: number) => (
+                    <div key={index} className="flex justify-between items-center text-sm">
+                      <div>
+                        <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                          Payment {index + 1} - {payment.paidDate ? formatDate(payment.paidDate) : 'Unknown Date'}
+                        </Typography>
+                        {payment.paidTo && (
+                          <Typography variant="body2" className="text-gray-500 dark:text-gray-500 text-xs">
+                            Paid to: {payment.paidTo}
+                          </Typography>
+                        )}
+                      </div>
+                      <Typography variant="body2" className="font-medium text-gray-900 dark:text-white">
+                        {formatCurrency(payment.amount || 0)}
+                      </Typography>
+                    </div>
+                  ))}
+                  <div className="border-t border-amber-200 dark:border-amber-700 pt-2 mt-2">
+                    <div className="flex justify-between items-center">
+                      <Typography variant="body2" className="text-amber-800 dark:text-amber-300 font-medium">
+                        Total Paid:
+                      </Typography>
+                      <Typography variant="body2" className="font-bold text-amber-800 dark:text-amber-300">
+                        {formatCurrency(rentRecord.payments.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0))}
+                      </Typography>
+                    </div>
+                    <div className="flex justify-between items-center mt-1">
+                      <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                        Remaining Amount:
+                      </Typography>
+                      <Typography variant="body2" className="font-bold text-red-600 dark:text-red-400">
+                        {formatCurrency(Math.max(0, (rentRecord.totalAmount || 0) - rentRecord.payments.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0)))}
+                      </Typography>
+                    </div>
+                  </div>
+                </div>
+              </Box>
+            )}
           </Box>
 
-              {/* Comments */}
-          <TextField
-            fullWidth
-            label="Comments (Optional)"
-                  value={comments}
-                  onChange={(e) => setComments(e.target.value)}
-                  placeholder="Add any additional notes or comments"
-            margin="normal"
-            variant="outlined"
-            multiline
-            rows={1}
-            sx= {(theme: Theme) => ({
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                  borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
-                  '&:hover': {
-                    borderColor: theme.palette.mode === 'dark' ? '#B3B3B3' : 'rgba(0, 0, 0, 0.23)',
+          {/* Payment Details */}
+          <Box className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+            <Typography variant="subtitle2" className="text-green-800 dark:text-green-300 mb-3">
+              Payment Details
+            </Typography>
+            <Box className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <TextField
+                fullWidth
+                label="Amount (₹)"
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(Number(e.target.value))}
+                placeholder="Enter amount to be paid"
+                variant="outlined"
+                sx={(theme: Theme) => ({
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
+                    },
                   },
-                },
-              },
-            })}
-          />
+                })}
+              />
+              <TextField
+                fullWidth
+                label="Paid To"
+                value={paidTo}
+                onChange={(e) => setPaidTo(e.target.value)}
+                placeholder="Enter recipient name"
+                variant="outlined"
+                sx={(theme: Theme) => ({
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
+                    },
+                  },
+                })}
+              />
+            </Box>
+          </Box>
 
         {/* Image Upload */}
           <Box className="mt-4">
@@ -361,6 +474,30 @@ export default function PaymentCollectionForm({
               </Box>
             )}
           </Box>
+
+          
+          {/* Comments */}
+          <TextField
+            fullWidth
+            label="Comments (Optional)"
+            value={comments}
+            onChange={(e) => setComments(e.target.value)}
+            placeholder="Add any additional notes or comments"
+            margin="normal"
+            variant="outlined"
+            multiline
+            rows={1}
+            sx= {(theme: Theme) => ({
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
+                  '&:hover': {
+                    borderColor: theme.palette.mode === 'dark' ? '#B3B3B3' : 'rgba(0, 0, 0, 0.23)',
+                  },
+                },
+              },
+            })}
+          />
         </DialogContent>
 
         <DialogActions sx={{
@@ -376,17 +513,17 @@ export default function PaymentCollectionForm({
           <button onClick={handleClose} disabled={isCollectingStartNew || isCollectingApplyNotice} className='hidden md:block border-2 border-gray-300 text-gray-600 px-4 py-2 rounded-[30px] cursor-pointer dark:border-gray-400 dark:text-gray-200'>
                 Cancel
               </button>
-              <button
+            <button 
             onClick={handleCollectAndStartNew}
-            disabled={isCollectingStartNew || isCollectingApplyNotice}
+            disabled={isCollectingStartNew || isCollectingApplyNotice || amount <= 0 }
             className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"
           >
             {isCollectingStartNew && <CircularProgress size={16} color="inherit" />}
-            Collect - Start New
+            {rentRecord?.paymentStatus === "PARTIALLY_PAID" ? "Collect" : "Collect - Start New"}
           </button>
           <button 
             onClick={handleCollectAndApplyNotice}
-            disabled={isCollectingStartNew || isCollectingApplyNotice}
+            disabled={isCollectingStartNew || isCollectingApplyNotice || amount <= 0}
             className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"
           >
             {isCollectingApplyNotice && <CircularProgress size={16} color="inherit" />}
