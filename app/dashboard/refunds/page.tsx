@@ -37,6 +37,7 @@ import { LAYOUT_CLASSES } from '@/lib/constants/styles';
 import ProcessRefundForm from '@/components/ProcessRefundForm';
 import RefundsExportDialog from '@/components/RefundsExportDialog';
 import { Refund } from '@/lib/api/refunds';
+import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
 export default function RefundsPage() {
   const { selectedProperty } = useProperty();
@@ -150,12 +151,19 @@ export default function RefundsPage() {
     );
   }
 
+  const breadcrumbs = [
+    { label: 'Dashboard', url: '/dashboard' },
+    { label: 'Refunds', url: '/dashboard/refunds' },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <AppHeader
         title="Refunds"
         subtitle={`${selectedProperty?.name || 'Property'} - Security Deposit Refunds`}
       />
+
+      <BreadCrumbs items={breadcrumbs} /> 
       
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>

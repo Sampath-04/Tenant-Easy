@@ -19,6 +19,7 @@ import RentHistoryTable from '@/app/components/RentHistoryTable';
 import NoticeForm from '@/components/NoticeForm';
 import { Button } from '@mui/material';
 import { NotificationsActive as NoticeIcon } from '@mui/icons-material';
+import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
 function TenantViewContent() {
   const params = useParams();
@@ -144,24 +145,32 @@ function TenantViewContent() {
     );
   }
 
+  const breadcrumbs = [
+    { label: 'Dashboard', url: '/dashboard' },
+    { label: 'Tenants', url: '/dashboard/tenants' },
+    { label: localTenant.tenantName || 'Tenant', url: `/dashboard/tenants/${localTenant._id}` },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <AppHeader
         title="Tenant Details"
         subtitle={`Viewing details for ${localTenant.tenantName}`}
       />
+      
+      <BreadCrumbs items={breadcrumbs} />
 
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
         {/* Tenant Overview Card */}
         <div className={`${LAYOUT_CLASSES.CARD_CONTAINER} mb-8`}>
-          <div className="p-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+          <div className="p-4 md:p-6">
+            <div className="flex flex-row items-center justify-between mb-6">
+              <div className="flex items-center md:space-x-4 gap-2 md:gap-0">
+                <div className="w-14 h-14 md:w-20 md:h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                   {localTenant.tenantName.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  <h1 className="text-xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                     {localTenant.tenantName}
                   </h1>
                   <div className="flex items-center space-x-4">
@@ -175,20 +184,19 @@ function TenantViewContent() {
                 </div>
               </div>
 
-              <div className="mt-4 md:mt-0 text-right">
-                <div className="text-2xl text-green-600 dark:text-green-400 font-bold">
+              <div className="mt-0 text-right">
+                <div className="text-lg md:text-2xl text-green-600 dark:text-green-400 font-bold">
                   {formatCurrency(localTenant.monthlyRent)}
                 </div>
-                <div className="text-gray-600 dark:text-gray-400">
+                <div className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
                   Monthly Rent
                 </div>
               </div>
             </div>
 
-            <hr className="my-6 border-gray-200 dark:border-gray-700" />
+            <hr className="my-4 md:my-6 border-gray-200 dark:border-gray-700" />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 md:gap-6">
                 <div className="flex items-center space-x-3">
                   <PhoneIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   <div>
@@ -240,9 +248,7 @@ function TenantViewContent() {
                     </div>
                   </div>
                 )}
-              </div>
 
-              <div className="space-y-4">
                 <div className="flex items-center space-x-3">
                   <CalendarTodayIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   <div>
@@ -280,12 +286,10 @@ function TenantViewContent() {
                     </div>
                   </div>
                 </div>
-
-              </div>
             </div>
 
             {localTenant.notice && (
-              <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <div className="mt-6 p-2 md:p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                 <div className="flex items-center space-x-3">
                   <WarningIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                   <div>
@@ -333,7 +337,7 @@ function TenantViewContent() {
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
           <div className="p-0">
             <div className="border-b border-gray-200 dark:border-gray-700">
-              <div className="flex px-6">
+              <div className="flex items-center justify-center md:justify-start px-6">
                 <button
                   onClick={() => setActiveTab('rent')}
                   className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors duration-200 cursor-pointer ${activeTab === 'rent'

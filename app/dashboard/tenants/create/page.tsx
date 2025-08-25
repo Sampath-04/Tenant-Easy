@@ -20,6 +20,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import { RoomDetail } from '@/lib/api/types';
 import { formatDateToYYYYMMDD } from '@/lib/utils/formatters';
 import { toast } from 'react-toastify';
+import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
 interface CreateTenantRequest {
   property: string;
@@ -91,12 +92,19 @@ function CreateTenantContent() {
   const rooms = roomsData?.data || [];
   const availableRooms = rooms.filter((room: RoomDetail) => !room.isOccupied && room.isActive);
 
+  const breadcrumbs = [
+    { label: 'Dashboard', url: '/dashboard' },
+    { label: 'Tenants', url: '/dashboard/tenants' },
+    { label: 'Create Tenant', url: '/dashboard/tenants/create' },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <AppHeader
         title="Add New Tenant"
         subtitle="Create a new tenant record"
       />
+      <BreadCrumbs items={breadcrumbs} /> 
       
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>

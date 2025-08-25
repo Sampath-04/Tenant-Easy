@@ -30,6 +30,7 @@ import ElectricityReadingsSection from '@/components/ElectricityReadingsSection'
 import RentInfoCard from '@/components/RentInfoCard';
 import PaymentCollectionForm from '@/components/PaymentCollectionForm';
 import { getCurrentDate } from '@/lib/utils/formatters';
+import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
 function PendingRentsContent() {
   const { selectedProperty } = useProperty();
@@ -180,6 +181,11 @@ Thank you!`;
     );
   }
 
+  const breadcrumbs = [
+    { label: 'Dashboard', url: '/dashboard' },
+    { label: 'Pending Rents', url: '/dashboard/pending-rents' },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <AppHeader
@@ -187,6 +193,8 @@ Thank you!`;
         subtitle={`${selectedProperty.name} - Pending Rent Collection`}
       />
       
+      <BreadCrumbs items={breadcrumbs} />
+
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
           <div className="p-6">

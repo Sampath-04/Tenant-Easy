@@ -28,6 +28,7 @@ import {
 } from '@mui/icons-material';
 import RoomCreationForm from '@/app/components/RoomCreationForm';
 import { showSuccessToast } from '@/lib/toast-config';
+import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
 function RoomsContent() {
   const { selectedProperty } = useProperty();
@@ -156,6 +157,11 @@ function RoomsContent() {
 
   const rooms = roomsData?.data || [];
 
+  const breadcrumbs = [
+    { label: 'Dashboard', url: '/dashboard' },
+    { label: 'Rooms', url: '/dashboard/rooms' },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <AppHeader
@@ -163,6 +169,8 @@ function RoomsContent() {
         subtitle={`${selectedProperty?.name || ''} - Room Management`}    
       />
       
+      <BreadCrumbs items={breadcrumbs} />
+
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
           <div className="md:p-6 p-3">

@@ -58,6 +58,7 @@ import { getCurrentDate } from '@/lib/utils/formatters';
 import RentInfoCard from '@/components/RentInfoCard';
 import PaymentCollectionForm from '@/components/PaymentCollectionForm';
 import EvictionForm from '@/components/EvictionForm';
+import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
 
 export default function RentRecordsPage() {
@@ -341,12 +342,18 @@ export default function RentRecordsPage() {
     );
   }
 
+  const breadcrumbs = [
+    { label: 'Dashboard', url: '/dashboard' },
+    { label: 'Rent Records', url: '/dashboard/rent-records' },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <AppHeader
         title="All Rent Records"
         subtitle={`${selectedProperty?.name || 'Property'} - Complete Rent History`}
       />
+      <BreadCrumbs items={breadcrumbs} />
       
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>

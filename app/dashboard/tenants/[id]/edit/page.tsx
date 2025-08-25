@@ -15,6 +15,7 @@ import NumberInput from '@/components/ui/NumberInput';
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import PersonIcon from '@mui/icons-material/Person';
 import SaveIcon from '@mui/icons-material/Save';
+import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
 interface TenantFormData {
   tenantName: string;
@@ -115,16 +116,24 @@ function TenantEditContent() {
     );
   }
 
+  const breadcrumbs = [
+    { label: 'Dashboard', url: '/dashboard' },
+    { label: 'Tenants', url: '/dashboard/tenants' },
+    { label: tenant?.tenantName || 'Tenant', url: `/dashboard/tenants/${tenantId}/edit` },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <AppHeader
         title="Edit Tenant"
         subtitle={`Editing details for ${tenant?.tenantName || 'Tenant'}`}
       />
+
+      <BreadCrumbs items={breadcrumbs} />
       
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
-          <div className="p-6">
+          <div className="p-4 md:p-6">
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Tenant Information
