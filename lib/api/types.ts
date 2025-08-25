@@ -141,6 +141,7 @@ export interface Tenant {
     count: number;
   };
   currentCycle?: CycleInfo;
+  previousCyclePaymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
   previousCycle?: CycleInfo;
   isActive: boolean;
   createdAt?: string;

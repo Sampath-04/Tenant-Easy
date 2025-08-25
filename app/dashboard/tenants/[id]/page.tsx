@@ -263,7 +263,7 @@ function TenantViewContent() {
                         Check-out Date
                       </div>
                       <div className="font-medium text-red-600 dark:text-red-400">
-                        {formatDate(localTenant.checkOutDate.toISOString())}
+                        {formatDate((new Date(localTenant.checkOutDate).toISOString()))}
                       </div>
                     </div>
                   </div>
@@ -307,6 +307,7 @@ function TenantViewContent() {
                   variant="contained"
                   startIcon={<NoticeIcon />}
                   onClick={handleApplyNotice}
+                  disabled={localTenant.previousCyclePaymentStatus === 'NOT_PAID' || localTenant.previousCyclePaymentStatus === 'PARTIALLY_PAID'}
                   sx={{
                     backgroundColor: '#FFC04D',
                     boxShadow: 'none',

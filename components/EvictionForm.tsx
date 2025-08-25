@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -14,9 +14,10 @@ import {
   Theme,
   Alert,
 } from '@mui/material';
-import { Close as CloseIcon, PersonOff as PersonOffIcon } from '@mui/icons-material';
+import { Close as CloseIcon, PersonOff as PersonOffIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 import { CircularProgress } from '@mui/material';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
+import { useDropzone } from 'react-dropzone';
 
 interface EvictionFormProps {
   isOpen: boolean;
@@ -26,6 +27,8 @@ interface EvictionFormProps {
     currentElectricityReading: number;
     refundableAmount: number;
     comments?: string;
+    tenantQrCode?: File;
+    rentRecord: any;
   }) => void;
   rentRecord: any;
 }
@@ -40,7 +43,9 @@ export default function EvictionForm({
   const [refundableAmount, setRefundableAmount] = useState<number>(0);
   const [comments, setComments] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [tenantQrCode, setTenantQrCode] = useState<File | null>(null);
+  const [qrCodePreviewUrl, setQrCodePreviewUrl] = useState<string | null>(null);
+  const perUnitCost = 10;
   // Calculate refundable amount when current reading changes
   useEffect(() => {
     if (!rentRecord) return;
@@ -53,8 +58,7 @@ export default function EvictionForm({
     // Use currentMeterReading from room info as last reading
     const lastReading = rentRecord.room?.currentMeterReading || 0;
     const unitsConsumed = currentElectricityReading - lastReading;
-    const ratePerUnit = 10; // Adjust this based on your electricity rate
-    const totalCurrentElectricityCost = Math.max(0, unitsConsumed * ratePerUnit);
+    const totalCurrentElectricityCost = Math.max(0, unitsConsumed * perUnitCost);
 
     // Calculate per-tenant electricity cost
     const numberOfTenants = rentRecord.room?.tenants?.length || 1;
@@ -66,6 +70,36 @@ export default function EvictionForm({
     
     setRefundableAmount(refundable);
   }, [currentElectricityReading, rentRecord]);
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) {
+      const file = acceptedFiles[0]; // Only take the first file
+      setTenantQrCode(file);
+      
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setQrCodePreviewUrl(previewUrl);
+    }
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp']
+    },
+    maxFiles: 1,
+    multiple: false
+  });
+
+  const removeQrCode = () => {
+    // Revoke the object URL to free memory
+    if (qrCodePreviewUrl) {
+      URL.revokeObjectURL(qrCodePreviewUrl);
+    }
+    
+    setTenantQrCode(null);
+    setQrCodePreviewUrl(null);
+  };
 
   const handleSubmit = async () => {
     if (!rentRecord?.tenant?._id) return;
@@ -80,12 +114,21 @@ export default function EvictionForm({
           currentElectricityReading,
           refundableAmount,
           comments: comments.trim() || undefined,
+          tenantQrCode: tenantQrCode || undefined,
+          rentRecord: rentRecord,
         });
+      }
+
+      // Clean up object URL
+      if (qrCodePreviewUrl) {
+        URL.revokeObjectURL(qrCodePreviewUrl);
       }
 
       // Reset form
       setCurrentElectricityReading(0);
       setComments('');
+      setTenantQrCode(null);
+      setQrCodePreviewUrl(null);
       onClose();
     } catch (error) {
       console.error('Failed to submit eviction:', error);
@@ -96,8 +139,15 @@ export default function EvictionForm({
 
   const handleClose = () => {
     if (!isSubmitting) {
+      // Clean up object URL
+      if (qrCodePreviewUrl) {
+        URL.revokeObjectURL(qrCodePreviewUrl);
+      }
+      
       setCurrentElectricityReading(0);
       setComments('');
+      setTenantQrCode(null);
+      setQrCodePreviewUrl(null);
       onClose();
     }
   };
@@ -207,14 +257,22 @@ export default function EvictionForm({
 
         {/* Current Electricity Reading */}
         <Box className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
-          <p className="text-gray-800 dark:text-gray-300 mb-3 text-md font-bold">
+          <Typography variant="subtitle2" className="text-gray-800 dark:text-gray-300 mb-4 font-bold">
             Final Electricity Reading
-          </p>
-          <Box className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-gray-600 dark:text-gray-400 mb-4 text-md">
-                Last Reading: {lastReading} units
-              </p>
+          </Typography>
+          
+          <Box className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column - Input Section */}
+            <Box className="flex flex-col space-y-4">
+              <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+                  Last Reading:
+                </span>
+                <span className="text-gray-900 dark:text-white font-semibold">
+                  {lastReading} units
+                </span>
+              </div>
+              
               <TextField
                 fullWidth
                 label="Current Reading (units)"
@@ -223,6 +281,9 @@ export default function EvictionForm({
                 onChange={(e) => setCurrentElectricityReading(Number(e.target.value))}
                 placeholder="Enter current meter reading"
                 variant="outlined"
+                error={currentElectricityReading > 0 && currentElectricityReading < lastReading}
+                helperText={currentElectricityReading > 0 && currentElectricityReading < lastReading ? 
+                  `Current reading cannot be less than the last reading (${lastReading} units)` : ''}
                 sx={(theme: Theme) => ({
                   '& .MuiOutlinedInput-root': {
                     '& fieldset': {
@@ -231,21 +292,37 @@ export default function EvictionForm({
                   },
                 })}
               />
-            </div>
-              <div className="flex flex-col justify-center">
-               <p className="text-gray-600 dark:text-gray-400 mb-1 text-md">
-                 Units Consumed:
-               </p>
-               <p className="font-bold text-amber-600 dark:text-amber-400">
-                 {Math.max(0, currentElectricityReading - lastReading)} units
-               </p>
-               <p className="text-gray-600 dark:text-gray-400 mt-2 text-md">
-                 Total Cost: {formatCurrency(Math.max(0, (currentElectricityReading - lastReading) * 10))}
-               </p>
-               <p className="text-gray-600 dark:text-gray-400 text-md">
-                 Per Tenant: {formatCurrency(Math.max(0, (currentElectricityReading - lastReading) * 10 / numberOfTenants))}
-               </p>
-             </div>
+            </Box>
+
+            {/* Right Column - Calculations Section */}
+            <Box className="flex flex-col space-y-3">
+              <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+                  Units Consumed:
+                </span>
+                <span className="text-amber-600 dark:text-amber-400 font-bold text-lg">
+                  {Math.max(0, currentElectricityReading - lastReading)} units
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+                  Total Cost:
+                </span>
+                <span className="text-gray-900 dark:text-white font-semibold">
+                  {formatCurrency(Math.max(0, (currentElectricityReading - lastReading) * perUnitCost))}
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+                  Per Tenant:
+                </span>
+                <span className="text-gray-900 dark:text-white font-semibold">
+                  {formatCurrency(Math.max(0, (currentElectricityReading - lastReading) * perUnitCost / numberOfTenants))}
+                </span>
+              </div>
+            </Box>
           </Box>
         </Box>
 
@@ -282,7 +359,7 @@ export default function EvictionForm({
                  </div>
                  <div className="flex justify-between">
                    <span className="text-gray-600 dark:text-gray-400">Final Reading Cost (Per Tenant):</span>
-                   <span className="font-medium">-{formatCurrency(Math.max(0, (currentElectricityReading - lastReading) * 8 / numberOfTenants))}</span>
+                   <span className="font-medium">-{formatCurrency(Math.max(0, (currentElectricityReading - lastReading) * perUnitCost / numberOfTenants))}</span>
                  </div>
                  <hr className="my-2 border-gray-300 dark:border-gray-600" />
                  <div className="flex justify-between font-bold">
@@ -301,6 +378,88 @@ export default function EvictionForm({
              )}
            </Box>
          </Box>
+
+        {/* Tenant QR Code Upload */}
+        <Box className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
+          <Typography variant="subtitle2" className="text-gray-800 dark:text-gray-300 mb-3">
+            Upload Tenant QR Code (Optional)
+          </Typography>
+          
+          {/* Dropzone */}
+          <div
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+              isDragActive
+                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
+                : tenantQrCode
+                ? 'border-gray-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600 cursor-not-allowed'
+                : 'border-gray-300 hover:border-gray-400 dark:border-gray-400 dark:hover:border-gray-500'
+            }`}
+          >
+            <input {...getInputProps()} />
+            <CloudUploadIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            {isDragActive ? (
+              <p className="text-blue-600 dark:text-blue-400">Drop the QR code image here...</p>
+            ) : tenantQrCode ? (
+              <p className="text-gray-500 dark:text-gray-400">QR code image selected</p>
+            ) : (
+              <div>
+                <p className="text-gray-600 dark:text-gray-400 mb-2">
+                  Drag & drop QR code image here, or click to select
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Supports: JPG, PNG, GIF, BMP, WebP
+                </p>
+              </div>
+            )}
+          </div>
+
+          <p className="mt-2 text-gray-600 dark:text-gray-400 text-sm">
+            {tenantQrCode ? '1/1 image selected' : '0/1 image selected'}
+          </p>
+
+          {/* QR Code Preview */}
+          {qrCodePreviewUrl && (
+            <Box className="mt-4">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                QR Code Preview:
+              </p>
+              <div className="relative inline-block">
+                <div className="aspect-square rounded-lg overflow-hidden border border-gray-200 w-32 h-32">
+                  <img
+                    src={qrCodePreviewUrl}
+                    alt="QR Code Preview"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <IconButton
+                  onClick={removeQrCode}
+                  size="small"
+                  sx={{
+                    position: 'absolute',
+                    top: -8,
+                    right: -8,
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(4px)',
+                    border: '1px solid rgba(0, 0, 0, 0.1)',
+                    borderRadius: '50%',
+                    width: 24,
+                    height: 24,
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 1)',
+                      transform: 'scale(1.1)',
+                    },
+                    transition: 'all 0.2s ease-in-out',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                  }}
+                  title="Remove QR code"
+                >
+                  <CloseIcon sx={{ fontSize: 14, color: '#ef4444' }} />
+                </IconButton>
+              </div>
+            </Box>
+          )}
+        </Box>
 
         {/* Comments */}
         <TextField
@@ -343,7 +502,7 @@ export default function EvictionForm({
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={isSubmitting || currentElectricityReading <= 0}
+          disabled={isSubmitting || currentElectricityReading <= 0 || currentElectricityReading < lastReading}
           variant="contained"
           startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : <PersonOffIcon />}
           sx={{

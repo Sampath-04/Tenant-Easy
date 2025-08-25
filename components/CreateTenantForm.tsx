@@ -117,6 +117,10 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
         if (onSuccess) {
           onSuccess();
         }
+      },
+      onError: (error) => {
+        const errorToast = showErrorToast('Failed to create tenant');
+        toast.error(errorToast.message, errorToast.config);
       }
     });
   };
@@ -152,9 +156,9 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
           pb: 2,
         }}
       >
-        <Typography variant="h6" className="font-semibold">
+        <p className="font-semibold text-lg">
           Add New Tenant
-        </Typography>
+        </p>
         <IconButton onClick={handleClose} disabled={createTenantMutation.isPending}>
           <CloseIcon />
         </IconButton>
@@ -277,7 +281,7 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
           <button
             type="submit"
             disabled={createTenantMutation.isPending}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-[30px] text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-[30px] text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer"
           >
             {createTenantMutation.isPending ? (
               <>

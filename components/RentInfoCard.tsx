@@ -10,6 +10,7 @@ import {
   Home as HomeIcon,
   Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
+  PersonOff as PersonOffIcon,
 } from '@mui/icons-material';
 import { formatDate, formatCurrency } from '@/lib/utils/formatters';
 
@@ -32,6 +33,47 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
   const extraDays = calculateExtraDays();
 
   const getStatusChip = (record: any) => {
+    // Completed notice - show evicted status
+    if (record.notice && record.notice.status === 'completed') {
+      return (
+        <Chip
+          label="Evicted"
+          color="error"
+          size="small"
+          sx={(theme: Theme) => ({
+            backgroundColor: theme.palette.mode === 'dark' ? '#dc2626' : '#ef4444',
+            color: '#fff',
+            fontSize: '0.75rem',
+            height: '20px',
+            '& .MuiChip-label': {
+              padding: '0 6px',
+            },
+          })}
+          icon={<PersonOffIcon />}
+        />
+      );
+    }
+
+    // Active notice period - show notice status
+    if (record.notice && record.notice.status !== 'completed') {
+      return (
+        <Chip
+          label="Notice Period"
+          color="warning"
+          size="small"
+          sx={(theme: Theme) => ({
+            backgroundColor: theme.palette.mode === 'dark' ? '#f59e0b' : '#fbbf24',
+            color: '#fff',
+            fontSize: '0.75rem',
+            height: '20px',
+            '& .MuiChip-label': {
+              padding: '0 6px',
+            },
+          })}
+          icon={<WarningIcon />}
+        />
+      );
+    }
 
     if(record.paymentStatus === "FULLY_PAID") {
       return (

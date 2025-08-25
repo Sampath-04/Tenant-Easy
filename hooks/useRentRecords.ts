@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAllRentRecordsForProperty, markRentAsPaid, getPendingRents, createNotice, getRentRecordsForExport } from '@/lib/api/rentHistory';
 import { useProperty } from '@/contexts/PropertyContext';
 import { toast } from 'react-toastify';
-import { showSuccessToast } from '@/lib/toast-config';
+import { showSuccessToast, showErrorToast } from '@/lib/toast-config';
 
 interface UseRentRecordsParams {
   propertyId: string;
@@ -91,8 +91,18 @@ export function useMarkRentAsPaid() {
       }
     },
     
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Failed to mark rent as paid:', error);
+      
+      // Show error toast with user-friendly message
+      let errorMessage = 'Failed to collect payment. Please try again.';
+      
+      if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      const errorToast = showErrorToast(errorMessage);
+      toast.error(errorToast.message, errorToast.config);
     }
   });
 }
@@ -129,8 +139,25 @@ export function useCreateNotice() {
       }
     },
     
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Failed to create notice:', error);
+      
+      // Show error toast with user-friendly message
+      let errorMessage = 'Failed to create notice. Please try again.';
+      
+      if (error?.message) {
+        // Handle specific error messages
+        if (error.message.includes('No rent history found for current cycle')) {
+          errorMessage = 'No rent history found for the current cycle. Please ensure rent records exist before applying notice.';
+        } else if (error.message.includes('already has an active notice')) {
+          errorMessage = 'This tenant already has an active notice period.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      const errorToast = showErrorToast(errorMessage);
+      toast.error(errorToast.message, errorToast.config);
     }
   });
 }

@@ -36,6 +36,7 @@ import {
 import { useRentRecords, useRentRecordsForExport } from '@/hooks/useRentRecords';
 import { useRooms } from '@/hooks/useRooms';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useCompleteNotice } from '@/hooks/useNotice';
 import { formatDate, formatCurrency } from '@/lib/utils/formatters';
 import { useProperty } from '@/contexts/PropertyContext';
 import {
@@ -114,6 +115,9 @@ export default function RentRecordsPage() {
     exportQueryEnabled
   );
 
+  // Complete notice mutation
+  const completeNoticeMutation = useCompleteNotice();
+
   // Handle export data when available
   useEffect(() => {
     if (exportData && exportData.success && exportData.data && isExporting) {
@@ -152,6 +156,7 @@ export default function RentRecordsPage() {
             'Previous Cycle Payment Status': record.previousCyclePaymentStatus,
             'Previous Cycle Month': record.previousCycleMonth || '',
             'Has Notice': record.notice ? 'Yes' : 'No',
+            'Notice Status': record.notice ? record.notice.status : '',
             'Notice End Date': record.notice ? formatDate(record.notice.noticeEndsOn) : '',
             'Payment Proof Links': paymentProofsText,
             'Created Date': formatDate(record.createdAt),
@@ -291,10 +296,31 @@ export default function RentRecordsPage() {
     }));
   };
 
-  const handleEvictionSubmit = (data: any) => {
-    console.log('Eviction submitted:', data);
-    // TODO: Implement eviction API call
-    // This should update tenant status to 'evicted' and process the refund
+  const handleEvictionSubmit = async (data: any) => {
+  
+    if (!data.rentRecord?.notice?._id) {
+      console.error('No notice ID found for eviction');
+      return;
+    }
+ 
+    const payload = {
+      noticeId: data.rentRecord.notice._id,
+      electricityUnit: data.currentElectricityReading,
+      tenantQrCode: data.tenantQrCode,
+      comments: data.comments,
+    };
+
+    try {
+      // Call the completeNotice API
+      await completeNoticeMutation.mutateAsync(payload);
+   
+      // Close the eviction form
+      setEvictionFormOpen(false);
+      setSelectedRentForEviction(null);
+    } catch (error) {
+      console.error('Failed to complete eviction:', error);
+      // Error handling is done in the mutation
+    }
   };
 
   if (recordsLoading) {
@@ -507,7 +533,7 @@ export default function RentRecordsPage() {
                         {/* Action Buttons */}
                         <div className="flex flex-col gap-3 min-w-fit">
                           {/* Action buttons for tenants in notice period */}
-                          {record.notice ? (
+                          {record.notice && record.notice.status !== 'completed' ? (
                             <>
                               <Button
                                 variant="contained"
@@ -560,7 +586,7 @@ export default function RentRecordsPage() {
                                 Cancel Notice
                               </Button>
                             </>
-                          ) : (
+                          ) : !record.notice ? (
                             <>
                               {/* Action buttons for regular tenants */}
                               {record.paymentStatus !== "FULLY_PAID" && getCurrentDate().getTime() > new Date(record.endDate).getTime() && (
@@ -618,7 +644,7 @@ export default function RentRecordsPage() {
                                 </Button>
                               )}
                             </>
-                          )}
+                          ) : null}
                           <Button
                             variant="outlined"
                             startIcon={<ElectricBoltIcon />}
@@ -691,7 +717,7 @@ export default function RentRecordsPage() {
       />
 
       {/* Eviction Form */}
-              <EvictionForm
+        <EvictionForm
           isOpen={evictionFormOpen}
           onClose={() => setEvictionFormOpen(false)}
           onSubmitCallback={handleEvictionSubmit}

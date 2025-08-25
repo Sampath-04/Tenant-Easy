@@ -340,9 +340,9 @@ export default function PaymentCollectionForm({
                       <Typography variant="body2" className="font-bold text-red-600 dark:text-red-400">
                         {formatCurrency(Math.max(0, (rentRecord.totalAmount || 0) - rentRecord.payments.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0)))}
                       </Typography>
-                    </div>
                   </div>
                 </div>
+              </div>
               </Box>
             )}
           </Box>
@@ -417,9 +417,9 @@ export default function PaymentCollectionForm({
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     Supports: JPG, PNG, GIF, BMP, WebP
                   </p>
-              </div>
+                </div>
               )}
-            </div>
+              </div>
 
             <p className="mt-2 text-gray-600 dark:text-gray-400 text-sm">
               {selectedImages.length}/4 images selected
@@ -439,8 +439,8 @@ export default function PaymentCollectionForm({
                           src={url}
                           alt={`Preview ${index + 1}`}
                           className="w-full h-full object-cover"
-                        />
-                      </div>
+                />
+              </div>
                       <IconButton
                         onClick={() => removeImage(index)}
                         size="small"
@@ -475,14 +475,14 @@ export default function PaymentCollectionForm({
             )}
           </Box>
 
-          
-          {/* Comments */}
+
+              {/* Comments */}
           <TextField
             fullWidth
             label="Comments (Optional)"
-            value={comments}
-            onChange={(e) => setComments(e.target.value)}
-            placeholder="Add any additional notes or comments"
+                  value={comments}
+                  onChange={(e) => setComments(e.target.value)}
+                  placeholder="Add any additional notes or comments"
             margin="normal"
             variant="outlined"
             multiline
@@ -513,7 +513,7 @@ export default function PaymentCollectionForm({
           <button onClick={handleClose} disabled={isCollectingStartNew || isCollectingApplyNotice} className='hidden md:block border-2 border-gray-300 text-gray-600 px-4 py-2 rounded-[30px] cursor-pointer dark:border-gray-400 dark:text-gray-200'>
                 Cancel
               </button>
-            <button 
+              <button
             onClick={handleCollectAndStartNew}
             disabled={isCollectingStartNew || isCollectingApplyNotice || amount <= 0 }
             className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"
