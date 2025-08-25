@@ -10,6 +10,7 @@ import {
   Home as HomeIcon,
   Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
+  PersonOff as PersonOffIcon,
 } from '@mui/icons-material';
 import { formatDate, formatCurrency } from '@/lib/utils/formatters';
 
@@ -32,8 +33,49 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
   const extraDays = calculateExtraDays();
 
   const getStatusChip = (record: any) => {
+    // Completed notice - show evicted status
+    if (record.notice && record.notice.status === 'completed') {
+      return (
+        <Chip
+          label="Evicted"
+          color="error"
+          size="small"
+          sx={(theme: Theme) => ({
+            backgroundColor: theme.palette.mode === 'dark' ? '#dc2626' : '#ef4444',
+            color: '#fff',
+            fontSize: '0.75rem',
+            height: '20px',
+            '& .MuiChip-label': {
+              padding: '0 6px',
+            },
+          })}
+          icon={<PersonOffIcon />}
+        />
+      );
+    }
 
-    if(record.isPaid) {
+    // Active notice period - show notice status
+    if (record.notice && record.notice.status !== 'completed') {
+      return (
+        <Chip
+          label="Notice Period"
+          color="warning"
+          size="small"
+          sx={(theme: Theme) => ({
+            backgroundColor: theme.palette.mode === 'dark' ? '#f59e0b' : '#fbbf24',
+            color: '#fff',
+            fontSize: '0.75rem',
+            height: '20px',
+            '& .MuiChip-label': {
+              padding: '0 6px',
+            },
+          })}
+          icon={<WarningIcon />}
+        />
+      );
+    }
+
+    if(record.paymentStatus === "FULLY_PAID") {
       return (
         <Chip
           label="Paid"
@@ -45,6 +87,22 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
             fontSize: '0.75rem',
             height: '20px',
           })}
+          icon={<CheckCircleIcon />}
+        />
+      );
+    }
+    if(record.paymentStatus === "PARTIALLY_PAID") {
+      return (
+        <Chip
+          label="Partially Paid"
+          color="warning"
+          size="small"
+          sx={(theme: Theme) => ({  
+            backgroundColor: theme.palette.mode === 'dark' ? '#f59e0b' : '#fbbf24',
+            color: '#fff',
+            fontSize: '0.75rem',
+            height: '20px',
+          })} 
           icon={<CheckCircleIcon />}
         />
       );
@@ -206,18 +264,26 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
                  {formatCurrency(record.rent)}
                </Typography>
                <Chip
-                 label={`${record.isPreviousCyclePaid ? 'Paid' : 'Not Paid'}`}
-                 size="small"
-                 sx={(theme: Theme) => ({
-                   backgroundColor: record.isPreviousCyclePaid ? theme.palette.mode === 'dark' ? '#059669' : '#10b981' : theme.palette.mode === 'dark' ? '#fca5a5' : '#dc2626',
-                   color: '#fff',
-                   fontSize: '0.75rem',
-                   height: '20px',
-                   '& .MuiChip-label': {
-                     padding: '0 6px',
-                   },
-                 })}
-               />
+                  label={`${record.previousCyclePaymentStatus === "FULLY_PAID" ? 'Paid' : record.previousCyclePaymentStatus === "PARTIALLY_PAID" ? 'Partially Paid' : 'Not Paid'}`}
+                  size="small"
+                  sx={(theme: Theme) => ({
+                    backgroundColor: record.previousCyclePaymentStatus === "FULLY_PAID" 
+                      ? theme.palette.mode === 'dark' ? '#059669' : '#10b981' 
+                      : record.previousCyclePaymentStatus === "PARTIALLY_PAID" 
+                      ? theme.palette.mode === 'dark' ? '#f59e0b' : '#fbbf24' 
+                      : theme.palette.mode === 'dark' ? '#fca5a5' : '#dc2626',
+                    color: '#fff',
+                    fontSize: '0.75rem',
+                    height: '20px',
+                    '& .MuiChip-label': {
+                      padding: '0 6px',
+                    },
+                    '& .MuiChip-icon': {
+                      color: 'white'
+                    },
+                  })}
+                  icon={<CheckCircleIcon />}
+                />
              </div>
            </div>
            <div>

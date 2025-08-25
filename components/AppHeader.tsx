@@ -213,9 +213,6 @@ export function AppHeader({
         </div>
       </div>
     </header>
-    <div className="max-w-7xl mx-auto pt-6 pb-0">
-      <BreadCrumbs />
-    </div>
     </div>
   );
 }

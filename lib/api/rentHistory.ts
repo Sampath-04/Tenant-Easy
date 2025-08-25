@@ -51,6 +51,16 @@ export interface RoomInfo {
   tenants: string[];
 }
 
+export interface Payment {
+  _id: string;
+  amount: number;
+  paidDate: string;
+  paymentProofs: File[];
+  paidTo: string;
+  comments: string;
+  recordedBy: string;
+}
+
 // Rent History item interface
 export interface RentHistoryItem {
   _id: string;
@@ -63,17 +73,17 @@ export interface RentHistoryItem {
   electricityBill: number;
   electricityUnits: number;
   totalAmount: number;
-  isPaid: boolean;
+  paymentStatus: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
+  payments: Payment[];
   dueDate: string;
-  isPreviousCyclePaid: boolean;
+  previousCyclePaymentStatus: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
+  previousCycleMonth: string;
   createdAt: string;
   updatedAt: string;
   isOverdue: boolean;
   daysOverdue: number;
   electricityReadings: ElectricityReadingDetail[];
   notice: Notice | null;
-  paymentProofs?: File[];
-  comments?: string;
 }
 interface pendingRentsSummary {
     totalAmount: number;
@@ -153,8 +163,9 @@ export async function getAllRentRecordsForProperty(
     limit?: number;
     tenant?: string;
     month?: string;
-    isPaid?: boolean;
+    paymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
     search?: string;
+    roomNo?: string;
   } = {}
 ): Promise<RentHistoryResponse> {
   const queryParams = new URLSearchParams();
@@ -163,8 +174,9 @@ export async function getAllRentRecordsForProperty(
   if (params.limit) queryParams.append('limit', params.limit.toString());
   if (params.tenant) queryParams.append('tenant', params.tenant);
   if (params.month) queryParams.append('month', params.month);
-  if (params.isPaid !== undefined) queryParams.append('isPaid', params.isPaid.toString());
+  if (params.paymentStatus) queryParams.append('paymentStatus', params.paymentStatus);
   if (params.search) queryParams.append('search', params.search);
+  if (params.roomNo) queryParams.append('roomNo', params.roomNo);
   
   return apiClient.get<RentHistoryResponse>(`/rent-history/property/${propertyId}?${queryParams.toString()}`);
 }
@@ -175,18 +187,24 @@ export async function getAllRentRecordsForProperty(
 export async function markRentAsPaid(
   rentId: string, 
   data: {
-    comments?: string;
+    amount: number;
+    paidDate: string;
     paymentProofs?: File[];
+    paidTo: string;
+    comments?: string;
   }
 ): Promise<{ success: boolean; message: string }> {
   const formData = new FormData();
+  
+  formData.append('amount', data.amount.toString());
+  formData.append('paidDate', data.paidDate);
+  formData.append('paidTo', data.paidTo);
   
   if (data.comments) {
     formData.append('comments', data.comments);
   }
   
   if (data.paymentProofs && data.paymentProofs.length > 0) {
-    
     data.paymentProofs.forEach((paymentProof) => {
       formData.append('paymentProofs', paymentProof);
     });
@@ -202,4 +220,19 @@ export async function createNotice(data: {
   rent: number;
 }): Promise<{ success: boolean; message: string }> {
   return apiClient.post<{ success: boolean; message: string }>('/notices', data);
+}
+
+/**
+ * Get rent records for export by date range
+ */
+export async function getRentRecordsForExport(
+  propertyId: string,
+  startDate: string,
+  endDate: string
+): Promise<RentHistoryResponse> {
+  const queryParams = new URLSearchParams();
+  queryParams.append('endDateFrom', startDate);
+  queryParams.append('endDateTo', endDate);
+  
+  return apiClient.get<RentHistoryResponse>(`/rent-history/property/${propertyId}?${queryParams.toString()}`);
 }

@@ -108,4 +108,11 @@ export async function deleteTenant(id: string): Promise<void> {
   return apiClient.delete(`/tenants/${id}`);
 }
 
+/**
+ * Mark a tenant as deleted
+ */
+export async function markTenantAsDeleted(id: string): Promise<{ success: boolean; message: string }> {
+  return apiClient.patch(`/tenants/${id}/mark-deleted`, {});
+}
+
 

@@ -106,7 +106,7 @@ export interface Property {
 // Tenant related types
 interface CycleInfo {
   month: string;
-  isPaid: boolean;
+  paymentStatus: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
   totalAmount: number;
   dueDate: string;
   startDate?: string;
@@ -141,8 +141,8 @@ export interface Tenant {
     count: number;
   };
   currentCycle?: CycleInfo;
+  previousCyclePaymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
   previousCycle?: CycleInfo;
-  isPreviousCyclePaid?: boolean;
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -288,5 +288,5 @@ export interface GetRentHistoryRequest {
   propertyId?: string;
   roomId?: string;
   month?: string;
-  isPaid?: boolean;
+  paymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
 }

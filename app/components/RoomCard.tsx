@@ -25,7 +25,8 @@ import {
   Select,
   MenuItem,
   OutlinedInput,
-  Checkbox
+  Checkbox,
+  Alert
 } from '@mui/material';
 import {
   People as PeopleIcon,
@@ -34,9 +35,14 @@ import {
   History as HistoryIcon,
   CheckCircle as CheckCircleIcon,
   Edit as EditIcon,
-  Save as SaveIcon
+  Save as SaveIcon,
+  Add as AddIcon,
+  Delete as DeleteIcon
 } from '@mui/icons-material';
 import { AMENITY_OPTIONS, getAmenityIcon, ROOM_TYPE_OPTIONS } from '@/lib/constants/roomConstants';
+import CreateTenantForm from '@/components/CreateTenantForm';
+import { useMarkTenantAsDeleted } from '@/hooks/useTenants';
+import { showSuccessToast } from '@/lib/toast-config';
 
 interface RoomCardProps {
   room: any;
@@ -69,11 +75,14 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-
-
 export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [tabValue, setTabValue] = useState(0);
+  const [createTenantFormOpen, setCreateTenantFormOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [tenantToDelete, setTenantToDelete] = useState<any>(null);
+  
+  const markTenantAsDeletedMutation = useMarkTenantAsDeleted();
   const [editForm, setEditForm] = useState({
     roomNo: room.roomNo,
     roomType: room.roomType,
@@ -102,7 +111,27 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
     setTabValue(newValue);
   };
 
+  const handleDeleteTenant = (tenant: any) => {
+    setTenantToDelete(tenant);
+    setDeleteDialogOpen(true);
+  };
 
+  const handleConfirmDelete = () => {
+    if (tenantToDelete) {
+      markTenantAsDeletedMutation.mutate(tenantToDelete._id, {
+        onSuccess: () => {
+          const successToast = showSuccessToast('Tenant deleted successfully!');
+          setDeleteDialogOpen(false);
+          setTenantToDelete(null);
+        }
+      });
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setTenantToDelete(null);
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
@@ -134,6 +163,27 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
                 <div className={`font-medium shadow-sm rounded-full px-2 py-1 text-sm ${room.isOccupied ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'}`}>
                   {room.isOccupied ? 'Occupied' : 'Available'}
                 </div>
+                {!room.isOccupied && (
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => setCreateTenantFormOpen(true)}
+                    size="small"
+                    sx={{
+                      backgroundColor: '#059669',
+                      '&:hover': {
+                        backgroundColor: '#059669',
+                      },
+                      borderRadius: '12px',
+                      textTransform: 'none',
+                      fontSize: '0.75rem',
+                      padding: '4px 12px',
+                      minWidth: 'auto',
+                    }}
+                  >
+                    Add Tenant
+                  </Button>
+                )}
                 <IconButton
                   size="small"
                   onClick={handleEditRoom}
@@ -284,6 +334,14 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
                             </>
                           }
                         />
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteTenant(tenant)}
+                          className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                          title="Delete Tenant"
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
                       </ListItem>
                     ))}
                   </List>
@@ -455,6 +513,106 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
       </DialogActions>
     </Dialog >
 
-    </>
-  );
-}
+         {/* Create Tenant Form */}
+     <CreateTenantForm
+       open={createTenantFormOpen}
+       onClose={() => setCreateTenantFormOpen(false)}
+       onSuccess={() => {
+         // The room card will automatically update when the tenant is created
+         // due to the query invalidation in the useCreateTenant hook
+       }}
+       defaultRoomId={room._id}
+     />
+
+     {/* Delete Tenant Confirmation Dialog */}
+     <Dialog
+       open={deleteDialogOpen}
+       onClose={handleCancelDelete}
+       maxWidth="sm"
+       fullWidth
+       PaperProps={{
+         sx: {
+           borderRadius: '16px',
+           boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+         }
+       }}
+     >
+       <DialogTitle
+         sx={{
+           display: 'flex',
+           alignItems: 'center',
+           justifyContent: 'space-between',
+           borderBottom: '1px solid #e5e7eb',
+           pb: 2,
+         }}
+       >
+         <Typography variant="h6" className="font-semibold text-red-600">
+           Delete Tenant
+         </Typography>
+         <IconButton onClick={handleCancelDelete} disabled={markTenantAsDeletedMutation.isPending}>
+           <CloseIcon />
+         </IconButton>
+       </DialogTitle>
+
+       <DialogContent sx={{ pt: 3 }}>
+         <Alert severity="warning" sx={{ mb: 2 }}>
+           This action cannot be undone. The tenant will be permanently removed from the room.
+         </Alert>
+         
+         {tenantToDelete && (
+           <Box>
+             <Typography variant="body1" className="mb-2">
+               Are you sure you want to delete <strong>{tenantToDelete.tenantName}</strong> from Room {room.roomNo}?
+             </Typography>
+             
+             <Box className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 mt-3">
+               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                 <strong>Tenant Details:</strong>
+               </Typography>
+               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                 • Name: {tenantToDelete.tenantName}
+               </Typography>
+               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                 • Phone: {tenantToDelete.tenantNumber}
+               </Typography>
+               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                 • Monthly Rent: ₹{tenantToDelete.monthlyRent}
+               </Typography>
+               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                 • Check-in Date: {new Date(tenantToDelete.checkInDate).toLocaleDateString()}
+               </Typography>
+             </Box>
+           </Box>
+         )}
+       </DialogContent>
+
+       <DialogActions sx={{ px: 3, pb: 3, gap: 2 }}>
+         <Button
+           onClick={handleCancelDelete}
+           disabled={markTenantAsDeletedMutation.isPending}
+           className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-[30px] text-sm font-medium transition-colors disabled:opacity-50"
+         >
+           Cancel
+         </Button>
+         <Button
+           onClick={handleConfirmDelete}
+           disabled={markTenantAsDeletedMutation.isPending}
+           className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-[30px] text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+         >
+           {markTenantAsDeletedMutation.isPending ? (
+             <>
+               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+               Deleting...
+             </>
+           ) : (
+             <>
+               <DeleteIcon fontSize="small" />
+               Delete Tenant
+             </>
+           )}
+         </Button>
+       </DialogActions>
+     </Dialog>
+     </>
+   );
+ }

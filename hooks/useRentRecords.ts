@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAllRentRecordsForProperty, markRentAsPaid, getPendingRents, createNotice } from '@/lib/api/rentHistory';
+import { getAllRentRecordsForProperty, markRentAsPaid, getPendingRents, createNotice, getRentRecordsForExport } from '@/lib/api/rentHistory';
 import { useProperty } from '@/contexts/PropertyContext';
 import { toast } from 'react-toastify';
-import { showSuccessToast } from '@/lib/toast-config';
+import { showSuccessToast, showErrorToast } from '@/lib/toast-config';
 
 interface UseRentRecordsParams {
   propertyId: string;
@@ -10,8 +10,9 @@ interface UseRentRecordsParams {
   limit?: number;
   tenant?: string;
   month?: string;
-  isPaid?: boolean;
+  paymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
   search?: string;
+  roomNo?: string;
   enabled?: boolean;
 }
 
@@ -21,23 +22,25 @@ export function useRentRecords({
   limit = 10,
   tenant,
   month,
-  isPaid,
+  paymentStatus,
   search,
+  roomNo,
   enabled = true,
 }: UseRentRecordsParams) {
   return useQuery({
-    queryKey: ['rent-records', propertyId, page, limit, tenant, month, isPaid, search],
+    queryKey: ['rent-records', propertyId, page, limit, tenant, month, paymentStatus, search, roomNo],
     queryFn: () => getAllRentRecordsForProperty(propertyId, {
       page,
       limit,
       tenant,
       month,
-      isPaid,
+      paymentStatus,
       search,
+      roomNo,
     }),
     enabled: enabled && !!propertyId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 0, // 5 minutes
+    gcTime: 0, // 10 minutes
   });
 }
 
@@ -55,8 +58,11 @@ export function usePendingRents(propertyId: string) {
 }
 
 interface MarkRentAsPaidData {
-  comments?: string;
+  amount: number;
+  paidDate: string;
   paymentProofs?: File[];
+  paidTo: string;
+  comments?: string;
 }
 
 export function useMarkRentAsPaid() {
@@ -85,8 +91,18 @@ export function useMarkRentAsPaid() {
       }
     },
     
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Failed to mark rent as paid:', error);
+      
+      // Show error toast with user-friendly message
+      let errorMessage = 'Failed to collect payment. Please try again.';
+      
+      if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      const errorToast = showErrorToast(errorMessage);
+      toast.error(errorToast.message, errorToast.config);
     }
   });
 }
@@ -123,9 +139,44 @@ export function useCreateNotice() {
       }
     },
     
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Failed to create notice:', error);
+      
+      // Show error toast with user-friendly message
+      let errorMessage = 'Failed to create notice. Please try again.';
+      
+      if (error?.message) {
+        // Handle specific error messages
+        if (error.message.includes('No rent history found for current cycle')) {
+          errorMessage = 'No rent history found for the current cycle. Please ensure rent records exist before applying notice.';
+        } else if (error.message.includes('already has an active notice')) {
+          errorMessage = 'This tenant already has an active notice period.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      const errorToast = showErrorToast(errorMessage);
+      toast.error(errorToast.message, errorToast.config);
     }
+  });
+}
+
+/**
+ * Hook to fetch rent records for export
+ */
+export function useRentRecordsForExport(
+  propertyId: string,
+  startDate: string | null,
+  endDate: string | null,
+  enabled: boolean = false
+) {
+  return useQuery({
+    queryKey: ['rent-records-export', propertyId, startDate, endDate],
+    queryFn: () => getRentRecordsForExport(propertyId, startDate!, endDate!),
+    enabled: enabled && !!propertyId && !!startDate && !!endDate,
+    staleTime: 0,
+    gcTime: 0
   });
 }
 

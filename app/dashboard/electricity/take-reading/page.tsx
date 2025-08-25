@@ -26,6 +26,7 @@ import { toast } from 'react-toastify';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { showErrorToast, showSuccessToast } from '@/lib/toast-config';
 import { getCurrentDate } from '@/lib/utils/formatters';
+import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
 interface RoomReadingState {
   [roomId: string]: {
@@ -46,7 +47,9 @@ function ElectricityReadingContent() {
     selectedProperty?.id || '',
     1,
     50,
-    selectedRoomId
+    {
+      roomId: selectedRoomId
+    }
   );
 
   const { data: allRoomsResponse, isLoading: allRoomsLoading, error: allRoomsError } = useRooms(
@@ -203,10 +206,15 @@ function ElectricityReadingContent() {
 
   const rooms = roomsResponse?.data || [];
 
+  const breadcrumbs = [
+    { label: 'Dashboard', url: '/dashboard' },
+    { label: 'Electricity Readings', url: '/dashboard/electricity/take-reading' },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <AppHeader title="Electricity Readings" subtitle="Record meter readings for all rooms" />
-      
+      <BreadCrumbs items={breadcrumbs} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
     
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 md:mb-8"> 

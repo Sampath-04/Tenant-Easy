@@ -31,6 +31,7 @@ import {
 import { ExpandMore } from '@mui/icons-material';
 import DateRangePicker from '../../../components/ui/DateRange';
 import { LAYOUT_CLASSES } from '../../../lib/constants/styles';
+import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
 function TenantsContent() {
   const { selectedProperty } = useProperty();
@@ -177,6 +178,11 @@ function TenantsContent() {
     );
   }
 
+  const breadcrumbs = [
+    { label: 'Dashboard', url: '/dashboard' },
+    { label: 'Tenants', url: '/dashboard/tenants' },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header */}
@@ -184,6 +190,8 @@ function TenantsContent() {
         title="Tenants"
         subtitle={`Manage tenants for ${selectedProperty.name}`}
       />
+
+      <BreadCrumbs items={breadcrumbs} />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -251,83 +259,101 @@ function TenantsContent() {
             </div>
           </div>
 
-          {/* Advanced Filters */}
-          <div className=" rounded-2xl p-4 border border-gray-300 dark:border-gray-700">
-            <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center text-lg">
-              Advanced Filters
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Rent Range */}
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Monthly Rent Range
-                </label>
-                <Box display="flex" gap={2}>
-                  <NumberInput
-                    placeholder="Min Amount"
-                    value={filters.rentRange?.min || ""}
-                    onChange={(value) =>
-                      handleFilterChange("rentRange", {
-                        ...filters.rentRange,
-                        min: value,
-                      })
-                    }
-                    minWidth="120px"
-                  />
-                  <NumberInput
-                    placeholder="Max Amount"
-                    value={filters.rentRange?.max || ""}
-                    onChange={(value) =>
-                      handleFilterChange("rentRange", {
-                        ...filters.rentRange,
-                        max: value,
-                      })
-                    }
-                    minWidth="120px"
-                  />
-                </Box>
-              </div>
+          {/* Advanced Filters Accordion */}
+          <Accordion 
+            className="rounded-2xl border border-gray-300 dark:border-gray-700 overflow-hidden"
+            sx={{
+              '&:before': {
+                display: 'none',
+              },
+              boxShadow: 'none',
+              backgroundColor: 'transparent',
+            }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMore />}
+              className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              sx={{
+                '& .MuiAccordionSummary-content': {
+                  margin: '12px 0',
+                },
+              }}
+            >
+              <p  className="font-semibold text-gray-700 dark:text-gray-300 flex items-center text-md">
+                Advanced Filters
+              </p>
+            </AccordionSummary>
+            <AccordionDetails className="p-6 bg-white dark:bg-gray-900">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Monthly Rent Range
+                  </label>
+                  <Box display="flex" gap={2}>
+                    <NumberInput
+                      placeholder="Min Amount"
+                      value={filters.rentRange?.min || ""}
+                      onChange={(value) =>
+                        handleFilterChange("rentRange", {
+                          ...filters.rentRange,
+                          min: value,
+                        })
+                      }
+                      minWidth="120px"
+                    />
+                    <NumberInput
+                      placeholder="Max Amount"
+                      value={filters.rentRange?.max || ""}
+                      onChange={(value) =>
+                        handleFilterChange("rentRange", {
+                          ...filters.rentRange,
+                          max: value,
+                        })
+                      }
+                      minWidth="120px"
+                    />
+                  </Box>
+                </div>
 
-              {/* Check-in Date Range */}
-              <div className="space-y-2">
-                <DateRangePicker
-                  label="Check-in Date Range"
-                  value={filters.checkInDateRange || { from: '', to: '' } as any}
-                  onChange={(newRange) =>
-                    handleFilterChange("checkInDateRange", newRange)
-                  }
-                />
-              </div>
-
-              {/* Sort Options */}
-              <div className='flex flex-row gap-4'>
-                <div className="space-y-2 w-[180px]">
-                  <CustomSelect
-                    label="Sort By"
-                    value={filters.sortBy || 'createdAt'}
-                    onChange={(e: any) => handleFilterChange('sortBy', e.target.value)}
-                    options={[
-                      { value: 'tenantName', label: 'Name' },
-                      { value: 'checkInDate', label: 'Check-in Date' },
-                      { value: 'monthlyRent', label: 'Monthly Rent' },
-                      { value: 'createdAt', label: 'Created Date' }
-                    ]}
+                <div className="space-y-2">
+                  <DateRangePicker
+                    label="Check-in Date Range"
+                    value={filters.checkInDateRange || { from: '', to: '' } as any}
+                    onChange={(newRange) =>
+                      handleFilterChange("checkInDateRange", newRange)
+                    }
                   />
                 </div>
-                <div className="space-y-2 w-[140px]">
-                  <CustomSelect
-                    label="Order"
-                    value={filters.sortOrder || 'desc'}
-                    onChange={(e: any) => handleFilterChange('sortOrder', e.target.value)}
-                    options={[
-                      { value: 'asc', label: 'Ascending' },
-                      { value: 'desc', label: 'Descending' }
-                    ]}
-                  />
+
+                <div className='flex flex-row gap-4'>
+                  <div className="space-y-2 w-[180px]">
+                    <CustomSelect
+                      label="Sort By"
+                      value={filters.sortBy || 'createdAt'}
+                      onChange={(e: any) => handleFilterChange('sortBy', e.target.value)}
+                      options={[
+                        { value: 'tenantName', label: 'Name' },
+                        { value: 'checkInDate', label: 'Check-in Date' },
+                        { value: 'monthlyRent', label: 'Monthly Rent' },
+                        { value: 'createdAt', label: 'Created Date' }
+                      ]}
+                    />
+                  </div>
+                  <div className="space-y-2 w-[140px]">
+                    <CustomSelect
+                      label="Order"
+                      value={filters.sortOrder || 'desc'}
+                      onChange={(e: any) => handleFilterChange('sortOrder', e.target.value)}
+                      options={[
+                        { value: 'asc', label: 'Ascending' },
+                        { value: 'desc', label: 'Descending' }
+                      ]}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </AccordionDetails>
+          </Accordion>
         </div>
 
         {/* Tenants Table */}
@@ -502,11 +528,11 @@ function TenantsContent() {
                           <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
                             {tenant.tenantName.charAt(0).toUpperCase()}
                           </div>
-                          <div>
+                          <div className='flex flex-row items-center gap-2'>
                             <Typography variant="subtitle1" className="font-semibold text-gray-900 dark:text-white">
                               {tenant.tenantName}
                             </Typography>
-                            <div className="flex items-center gap-4 mt-1">
+                            <div className="flex items-center gap-4">
                               <Typography variant="body2" className="text-green-700 dark:text-green-400 font-medium">
                                 {formatCurrency(tenant.monthlyRent)}
                               </Typography>
@@ -533,7 +559,7 @@ function TenantsContent() {
                             </Typography>
                           </div>
                           <div>
-                            <Typography variant="caption" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            <Typography variant="caption" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider ">
                               Room
                             </Typography>
                             <Typography variant="body2" className="text-gray-900 dark:text-white font-medium">

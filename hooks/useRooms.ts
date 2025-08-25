@@ -1,15 +1,24 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getRooms, createRoom, updateRoom } from '../lib/api/rooms';
+import { getRooms, createRoom, updateRoom, getRoomList } from '../lib/api/rooms';
 import { toast } from 'react-toastify';
 import { showSuccessToast } from '@/lib/toast-config';
 
 /**
  * Hook to fetch rooms for a property
  */
-export function useRooms(propertyId: string, page = 1, limit = 50, roomId?: string) {
+export function useRooms(
+  propertyId: string, 
+  page = 1, 
+  limit = 50, 
+  filters?: {
+    roomId?: string;
+    roomType?: string;
+    availability?: string;
+  }
+) {
   return useQuery({
-    queryKey: ['rooms', propertyId, page, limit, roomId],
-    queryFn: () => getRooms(propertyId, page, limit, roomId),
+    queryKey: ['rooms', propertyId, page, limit, filters],
+    queryFn: () => getRooms(propertyId, page, limit, filters),
     enabled: !!propertyId && propertyId !== '', // Only run when propertyId is valid
     staleTime: 0, 
     gcTime: 0, 
@@ -36,6 +45,19 @@ export function useActiveRooms(propertyId: string) {
   });
 }
 
+/**
+ * Hook to fetch all rooms list for a property (for dropdowns)
+ */
+export function useRoomList(propertyId: string) {
+  return useQuery({
+    queryKey: ['room-list', propertyId],
+    queryFn: () => getRoomList(propertyId),
+    enabled: !!propertyId && propertyId !== '', // Only run when propertyId is valid
+    staleTime: 0, // Always refetch when invalidated
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
+  });
+}
+
 interface CreateRoomData {
   property: string;
   roomNo: string;
@@ -59,8 +81,29 @@ export function useCreateRoom() {
       const successToast = showSuccessToast('Room created successfully!');
       toast.success(successToast.message, successToast.config);
       
-      // Invalidate and refetch rooms list
-      queryClient.invalidateQueries({ queryKey: ['rooms'] });
+      // Invalidate all rooms queries for this property
+      queryClient.invalidateQueries({ 
+        queryKey: ['rooms', data?.property || ''],
+        exact: false 
+      });
+      
+      // Also invalidate all rooms queries (for any property)
+      queryClient.invalidateQueries({ 
+        queryKey: ['rooms'],
+        exact: false 
+      });
+      
+      // Invalidate active rooms queries
+      queryClient.invalidateQueries({ 
+        queryKey: ['active-rooms'],
+        exact: false 
+      });
+      
+      // Invalidate room list queries
+      queryClient.invalidateQueries({ 
+        queryKey: ['room-list'],
+        exact: false 
+      });
       
       // Invalidate property details if we have the property ID
       if (data?.property) {
@@ -91,8 +134,29 @@ export function useUpdateRoom() {
     mutationFn: ({ roomId, roomData }: { roomId: string; roomData: UpdateRoomData }) => 
       updateRoom(roomId, roomData),
     onSuccess: (data, variables) => {
-      // Invalidate and refetch rooms list
-      queryClient.invalidateQueries({ queryKey: ['rooms'] });
+      // Invalidate all rooms queries for this property
+      queryClient.invalidateQueries({ 
+        queryKey: ['rooms', data?.property || ''],
+        exact: false 
+      });
+      
+      // Also invalidate all rooms queries (for any property)
+      queryClient.invalidateQueries({ 
+        queryKey: ['rooms'],
+        exact: false 
+      });
+      
+      // Invalidate active rooms queries
+      queryClient.invalidateQueries({ 
+        queryKey: ['active-rooms'],
+        exact: false 
+      });
+      
+      // Invalidate room list queries
+      queryClient.invalidateQueries({ 
+        queryKey: ['room-list'],
+        exact: false 
+      });
       
       // Invalidate specific room data
       queryClient.invalidateQueries({ queryKey: ['room', variables.roomId] });
