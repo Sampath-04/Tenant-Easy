@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAllRentRecordsForProperty, markRentAsPaid, getPendingRents, createNotice } from '@/lib/api/rentHistory';
+import { getAllRentRecordsForProperty, markRentAsPaid, getPendingRents, createNotice, getRentRecordsForExport } from '@/lib/api/rentHistory';
 import { useProperty } from '@/contexts/PropertyContext';
 import { toast } from 'react-toastify';
 import { showSuccessToast } from '@/lib/toast-config';
@@ -12,6 +12,7 @@ interface UseRentRecordsParams {
   month?: string;
   paymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
   search?: string;
+  roomNo?: string;
   enabled?: boolean;
 }
 
@@ -23,10 +24,11 @@ export function useRentRecords({
   month,
   paymentStatus,
   search,
+  roomNo,
   enabled = true,
 }: UseRentRecordsParams) {
   return useQuery({
-    queryKey: ['rent-records', propertyId, page, limit, tenant, month, paymentStatus, search],
+    queryKey: ['rent-records', propertyId, page, limit, tenant, month, paymentStatus, search, roomNo],
     queryFn: () => getAllRentRecordsForProperty(propertyId, {
       page,
       limit,
@@ -34,10 +36,11 @@ export function useRentRecords({
       month,
       paymentStatus,
       search,
+      roomNo,
     }),
     enabled: enabled && !!propertyId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 0, // 5 minutes
+    gcTime: 0, // 10 minutes
   });
 }
 
@@ -129,6 +132,24 @@ export function useCreateNotice() {
     onError: (error) => {
       console.error('Failed to create notice:', error);
     }
+  });
+}
+
+/**
+ * Hook to fetch rent records for export
+ */
+export function useRentRecordsForExport(
+  propertyId: string,
+  startDate: string | null,
+  endDate: string | null,
+  enabled: boolean = false
+) {
+  return useQuery({
+    queryKey: ['rent-records-export', propertyId, startDate, endDate],
+    queryFn: () => getRentRecordsForExport(propertyId, startDate!, endDate!),
+    enabled: enabled && !!propertyId && !!startDate && !!endDate,
+    staleTime: 0,
+    gcTime: 0
   });
 }
 

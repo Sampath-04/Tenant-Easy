@@ -165,6 +165,7 @@ export async function getAllRentRecordsForProperty(
     month?: string;
     paymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
     search?: string;
+    roomNo?: string;
   } = {}
 ): Promise<RentHistoryResponse> {
   const queryParams = new URLSearchParams();
@@ -175,6 +176,7 @@ export async function getAllRentRecordsForProperty(
   if (params.month) queryParams.append('month', params.month);
   if (params.paymentStatus) queryParams.append('paymentStatus', params.paymentStatus);
   if (params.search) queryParams.append('search', params.search);
+  if (params.roomNo) queryParams.append('roomNo', params.roomNo);
   
   return apiClient.get<RentHistoryResponse>(`/rent-history/property/${propertyId}?${queryParams.toString()}`);
 }
@@ -218,4 +220,19 @@ export async function createNotice(data: {
   rent: number;
 }): Promise<{ success: boolean; message: string }> {
   return apiClient.post<{ success: boolean; message: string }>('/notices', data);
+}
+
+/**
+ * Get rent records for export by date range
+ */
+export async function getRentRecordsForExport(
+  propertyId: string,
+  startDate: string,
+  endDate: string
+): Promise<RentHistoryResponse> {
+  const queryParams = new URLSearchParams();
+  queryParams.append('endDateFrom', startDate);
+  queryParams.append('endDateTo', endDate);
+  
+  return apiClient.get<RentHistoryResponse>(`/rent-history/property/${propertyId}?${queryParams.toString()}`);
 }
