@@ -4,7 +4,8 @@ import {
   getTenantById, 
   createTenant, 
   updateTenant, 
-  deleteTenant
+  deleteTenant,
+  markTenantAsDeleted
 } from '../lib/api/tenants';
 import { getRoomsForFilter } from '../lib/api/rooms';
 import { 
@@ -63,6 +64,9 @@ export function useCreateTenant() {
       // Invalidate and refetch tenant lists
       queryClient.invalidateQueries({ queryKey: tenantKeys.lists() });
       
+      // Invalidate room queries to update room data (occupancy, tenant count, etc.)
+      queryClient.invalidateQueries({ queryKey: ['rooms'] });
+      
       // Add the new tenant to existing cache if possible
       queryClient.setQueryData(tenantKeys.detail(data._id), data);
     },
@@ -112,6 +116,32 @@ export function useDeleteTenant() {
     },
     onError: (error: ApiError) => {
       console.error('Failed to delete tenant:', error);
+      showErrorToast(error.getUserMessage());
+    },
+  });
+}
+
+/**
+ * Hook to mark a tenant as deleted
+ */
+export function useMarkTenantAsDeleted() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: markTenantAsDeleted,
+    onSuccess: (data, tenantId) => {
+      // Remove from cache
+      queryClient.removeQueries({ queryKey: tenantKeys.detail(tenantId) });
+      
+      // Invalidate tenant lists
+      queryClient.invalidateQueries({ queryKey: tenantKeys.lists() });
+      
+      // Invalidate room queries since tenant count will change
+      queryClient.invalidateQueries({ queryKey: ['rooms'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['room-list'], exact: false });
+    },
+    onError: (error: ApiError) => {
+      console.error('Failed to mark tenant as deleted:', error);
       showErrorToast(error.getUserMessage());
     },
   });

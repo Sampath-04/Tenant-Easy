@@ -92,9 +92,6 @@ function TenantViewContent() {
       
       // Update local tenant state
       setLocalTenant(updatedTenant);
-      
-      console.log('Notice applied successfully:', noticeData);
-      console.log('Updated tenant:', updatedTenant);
     }
   };
 

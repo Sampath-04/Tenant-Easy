@@ -17,14 +17,11 @@ function PropertiesContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  console.log("profiles", profiles);
-
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
         setLoading(true);
         const response = await getAllProfiles();
-        console.log('Profiles Response:', response);
         setProfiles(response);
       } catch (err) {
         console.error('Error fetching profiles:', err);

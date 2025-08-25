@@ -4,14 +4,31 @@ import { RoomsListResponse } from './types';
 /**
  * Get list of rooms for a property with pagination and optional room filtering
  */
-export async function getRooms(propertyId: string, page = 1, limit = 50, roomId?: string): Promise<RoomsListResponse> {
+export async function getRooms(
+  propertyId: string, 
+  page = 1, 
+  limit = 50, 
+  filters?: {
+    roomId?: string;
+    roomType?: string;
+    availability?: string;
+  }
+): Promise<RoomsListResponse> {
   const params = new URLSearchParams();
   params.append('property', propertyId);
   params.append('page', page.toString());
   params.append('limit', limit.toString());
   
-  if (roomId && roomId !== 'all') {
-    params.append('roomId', roomId);
+  if (filters?.roomId && filters.roomId !== 'all') {
+    params.append('roomId', filters.roomId);
+  }
+  
+  if (filters?.roomType && filters.roomType !== 'all') {
+    params.append('roomType', filters.roomType);
+  }
+  
+  if (filters?.availability && filters.availability !== 'all') {
+    params.append('availability', filters.availability);
   }
   
   const response = await apiClient.get<RoomsListResponse>(`/rooms?${params.toString()}`);
@@ -24,6 +41,13 @@ export async function getRooms(propertyId: string, page = 1, limit = 50, roomId?
 export async function getRoomsForFilter(propertyId?: string): Promise<{ _id: string; roomNumber: string; floor?: number }[]> {
   const url = propertyId ? `/rooms?property=${propertyId}` : '/rooms';
   return apiClient.get<{ _id: string; roomNumber: string; floor?: number }[]>(url);
+}
+
+/**
+ * Get all rooms list for a property (for dropdowns)
+ */
+export async function getRoomList(propertyId: string): Promise<{ success: boolean; data: { _id: string; roomNo: string }[] }> {
+  return apiClient.get<{ success: boolean; data: { _id: string; roomNo: string }[] }>(`/rooms/list/${propertyId}`);
 }
 
 /**

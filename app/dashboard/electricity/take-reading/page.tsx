@@ -46,7 +46,9 @@ function ElectricityReadingContent() {
     selectedProperty?.id || '',
     1,
     50,
-    selectedRoomId
+    {
+      roomId: selectedRoomId
+    }
   );
 
   const { data: allRoomsResponse, isLoading: allRoomsLoading, error: allRoomsError } = useRooms(

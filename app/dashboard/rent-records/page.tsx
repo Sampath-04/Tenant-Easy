@@ -58,6 +58,7 @@ import RentInfoCard from '@/components/RentInfoCard';
 import PaymentCollectionForm from '@/components/PaymentCollectionForm';
 import EvictionForm from '@/components/EvictionForm';
 
+
 export default function RentRecordsPage() {
   const { selectedProperty } = useProperty();
   const [page, setPage] = useState(1);
@@ -82,6 +83,7 @@ export default function RentRecordsPage() {
   const [exportStartDateStr, setExportStartDateStr] = useState<string | null>(null);
   const [exportEndDateStr, setExportEndDateStr] = useState<string | null>(null);
 
+
   // Debounce search value to prevent excessive API calls
   const debouncedSearch = useDebounce(filters.search, 500);
 
@@ -97,7 +99,6 @@ export default function RentRecordsPage() {
     roomNo: filters.roomNo || undefined,
   });
 
-  console.log(rentRecordsResponse);
   // Get rooms for dropdown
   const { data: roomsResponse } = useRooms(selectedProperty?.id || '');
   const rooms = roomsResponse?.data || [];
@@ -451,6 +452,7 @@ export default function RentRecordsPage() {
                     <FilterIcon className="w-4 h-4" />
                     <span>{filteredRents.length} of {rentRecordsResponse?.count || 0} records</span>
                   </div>
+
                   <Button
                     variant="outlined"
                     startIcon={<DownloadIcon />}
@@ -786,6 +788,8 @@ export default function RentRecordsPage() {
             </Button>
           </DialogActions>
         </Dialog>
+
+
       </div>
     );
   }

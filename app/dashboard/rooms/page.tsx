@@ -5,15 +5,26 @@ import { AuthGuard } from '@/contexts/AuthContext';
 import { useProperty } from '@/contexts/PropertyContext';
 import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
-import { useRooms, useUpdateRoom } from '@/hooks/useRooms';
+import { useRooms, useUpdateRoom, useRoomList } from '@/hooks/useRooms';
 import { RoomCard } from '@/app/components/RoomCard';
 import { 
   Button,
   Dialog,
+  Pagination,
+  Box,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import {
   Add as AddIcon,
   MeetingRoom as RoomIcon,
+  FilterList as FilterIcon,
+  Clear as ClearIcon,
 } from '@mui/icons-material';
 import RoomCreationForm from '@/app/components/RoomCreationForm';
 import { showSuccessToast } from '@/lib/toast-config';
@@ -21,12 +32,26 @@ import { showSuccessToast } from '@/lib/toast-config';
 function RoomsContent() {
   const { selectedProperty } = useProperty();
   const [addRoomDialogOpen, setAddRoomDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(8); // Show 8 rooms per page (4 per row * 2 rows)
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    roomType: 'all',
+    availability: 'all',
+    roomId: 'all',
+  });
 
   const { 
     data: roomsData, 
     isLoading, 
     error 
-  } = useRooms(selectedProperty?.id || '', 1, 50);
+  } = useRooms(selectedProperty?.id || '', currentPage, pageSize, filters);
+
+  // Fetch all rooms for the dropdown
+  const { 
+    data: allRoomsData, 
+    isLoading: isLoadingAllRooms 
+  } = useRoomList(selectedProperty?.id || '');
 
   const updateRoomMutation = useUpdateRoom();
 
@@ -43,6 +68,28 @@ function RoomsContent() {
 
   const handleAddRoom = () => {
     setAddRoomDialogOpen(true);
+  };
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleFilterChange = (field: string, value: string) => {
+    setFilters(prev => ({ ...prev, [field]: value }));
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      roomType: 'all',
+      availability: 'all',
+      roomId: 'all',
+    });
+    setCurrentPage(1);
+  };
+
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
   };
 
   if (isLoading) {
@@ -125,15 +172,119 @@ function RoomsContent() {
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Room Management</h1>
                 <p className="text-gray-600 dark:text-gray-400 mt-1">
                   Manage rooms, tenants, and electricity readings
+                  {roomsData?.total && (
+                    <span className="ml-2 text-blue-600 dark:text-blue-400 font-medium">
+                      ({roomsData.total} total rooms)
+                    </span>
+                  )}
                 </p>
               </div>
-             {rooms.length > 0 && <button
-                onClick={handleAddRoom}
-                className="cursor-pointer hidden md:block bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 rounded-[30px] text-white px-4 py-2"
-              >
-                Add Room
-              </button>}
+              <div className="flex items-center gap-2">
+                {rooms.length > 0 && (
+                  <Tooltip title="Toggle Filters">
+                    <IconButton
+                      onClick={toggleFilters}
+                      className={`${showFilters ? 'bg-blue-100 dark:bg-blue-900' : 'bg-gray-100 dark:bg-gray-800'} hover:bg-blue-200 dark:hover:bg-blue-800`}
+                    >
+                      <FilterIcon className={showFilters ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'} />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                {rooms.length > 0 && (
+                  <button
+                    onClick={handleAddRoom}
+                    className="cursor-pointer hidden md:block bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 rounded-[30px] text-white px-4 py-2"
+                  >
+                    Add Room
+                  </button>
+                )}
+              </div>
             </div>
+
+            {/* Filters Section */}
+            {showFilters && (
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-6 border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Filters</h3>
+                  <Tooltip title="Clear All Filters">
+                    <IconButton
+                      onClick={handleClearFilters}
+                      size="small"
+                      className="text-gray-500 hover:text-red-500"
+                    >
+                      <ClearIcon />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Room Type Filter */}
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Room Type</InputLabel>
+                    <Select
+                      value={filters.roomType}
+                      onChange={(e) => handleFilterChange('roomType', e.target.value)}
+                      label="Room Type"
+                    >
+                      <MenuItem value="all">All Types</MenuItem>
+                      <MenuItem value="single">Single Room</MenuItem>
+                      <MenuItem value="sharing">Sharing Room</MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  {/* Availability Filter */}
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Availability</InputLabel>
+                    <Select
+                      value={filters.availability}
+                      onChange={(e) => handleFilterChange('availability', e.target.value)}
+                      label="Availability"
+                    >
+                      <MenuItem value="all">All Rooms</MenuItem>
+                      <MenuItem value="available">Available</MenuItem>
+                      <MenuItem value="occupied">Occupied</MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  {/* Room Selection Filter */}
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Specific Room</InputLabel>
+                    <Select
+                      value={filters.roomId}
+                      onChange={(e) => handleFilterChange('roomId', e.target.value)}
+                      label="Specific Room"
+                      disabled={isLoadingAllRooms}
+                    >
+                      <MenuItem value="all">All Rooms</MenuItem>
+                      {allRoomsData?.data?.map((room) => (
+                        <MenuItem key={room._id} value={room._id}>
+                          Room {room.roomNo}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  {/* Active Filters Display */}
+                  <div className="flex flex-wrap gap-1 items-center">
+                    {filters.roomType !== 'all' && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        {filters.roomType === 'single' ? 'Single Room' : 'Sharing Room'}
+                      </span>
+                    )}
+                    {filters.availability !== 'all' && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                        {filters.availability === 'available' ? 'Available' : 'Occupied'}
+                      </span>
+                    )}
+                                          {filters.roomId !== 'all' && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                          {allRoomsData?.data?.find(r => r._id === filters.roomId)?.roomNo ? `Room ${allRoomsData.data.find(r => r._id === filters.roomId)?.roomNo}` : 'Specific Room'}
+                        </span>
+                      )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Rooms Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -146,6 +297,43 @@ function RoomsContent() {
                 </div>
               ))}
             </div>
+
+            {/* Pagination */}
+            {roomsData?.pagination && roomsData.pagination.totalPages > 1 && (
+              <Box className="flex flex-col items-center mt-8 gap-4">
+                {/* Page Info */}
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Showing {roomsData.count} of {roomsData.total} rooms
+                  {roomsData.pagination.totalPages > 1 && (
+                    <span> • Page {currentPage} of {roomsData.pagination.totalPages}</span>
+                  )}
+                </div>
+                
+                {/* Pagination Controls */}
+                <Pagination
+                  count={roomsData.pagination.totalPages}
+                  page={currentPage}
+                  onChange={handlePageChange}
+                  color="primary"
+                  size="large"
+                  showFirstButton
+                  showLastButton
+                  sx={{
+                    '& .MuiPaginationItem-root': {
+                      borderRadius: '12px',
+                      fontWeight: 500,
+                    },
+                    '& .Mui-selected': {
+                      backgroundColor: '#2563eb',
+                      color: 'white',
+                      '&:hover': {
+                        backgroundColor: '#1d4ed8',
+                      },
+                    },
+                  }}
+                />
+              </Box>
+            )}
 
             {/* Empty State */}
             {rooms.length === 0 && (
