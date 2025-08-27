@@ -521,14 +521,15 @@ export default function PaymentCollectionForm({
             {isCollectingStartNew && <CircularProgress size={16} color="inherit" />}
             {rentRecord?.paymentStatus === "PARTIALLY_PAID" ? "Collect" : "Collect - Start New"}
           </button>
-          <button 
+          {/*  show only if the amount user paid + amount is >= rentRecord?.totalAmount */}
+          {rentRecord?.totalAmount <= amount + (rentRecord?.payments?.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0) || 0) && <button 
             onClick={handleCollectAndApplyNotice}
             disabled={isCollectingStartNew || isCollectingApplyNotice || amount <= 0}
             className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"
           >
             {isCollectingApplyNotice && <CircularProgress size={16} color="inherit" />}
             Collect - Apply Notice
-              </button>
+              </button>}
         </DialogActions>
       </Dialog>
 

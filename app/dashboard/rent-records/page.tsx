@@ -36,7 +36,7 @@ import {
 import { useRentRecords, useRentRecordsForExport } from '@/hooks/useRentRecords';
 import { useRooms } from '@/hooks/useRooms';
 import { useDebounce } from '@/hooks/useDebounce';
-import { useCompleteNotice } from '@/hooks/useNotice';
+import { useCompleteNotice, useCancelNotice } from '@/hooks/useNotice';
 import { formatDate, formatCurrency } from '@/lib/utils/formatters';
 import { useProperty } from '@/contexts/PropertyContext';
 import {
@@ -53,11 +53,13 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import * as XLSX from 'xlsx';
 import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
+import RentHistoryDetails from '@/components/RentHistoryDetails';
 import ElectricityReadingsSection from '@/components/ElectricityReadingsSection';
 import { getCurrentDate } from '@/lib/utils/formatters';
 import RentInfoCard from '@/components/RentInfoCard';
 import PaymentCollectionForm from '@/components/PaymentCollectionForm';
 import EvictionForm from '@/components/EvictionForm';
+import NoticeForm from '@/components/NoticeForm';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
 
@@ -77,6 +79,8 @@ export default function RentRecordsPage() {
   const [selectedRentForPayment, setSelectedRentForPayment] = useState<any>(null);
   const [evictionFormOpen, setEvictionFormOpen] = useState(false);
   const [selectedRentForEviction, setSelectedRentForEviction] = useState<any>(null);
+  const [noticeFormOpen, setNoticeFormOpen] = useState(false);
+  const [selectedRentForNotice, setSelectedRentForNotice] = useState<any>(null);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [exportStartDate, setExportStartDate] = useState<Date | null>(null);
   const [exportEndDate, setExportEndDate] = useState<Date | null>(null);
@@ -84,6 +88,7 @@ export default function RentRecordsPage() {
   const [exportQueryEnabled, setExportQueryEnabled] = useState(false);
   const [exportStartDateStr, setExportStartDateStr] = useState<string | null>(null);
   const [exportEndDateStr, setExportEndDateStr] = useState<string | null>(null);
+  const [cancellingNoticeId, setCancellingNoticeId] = useState<string | null>(null);
 
 
   // Debounce search value to prevent excessive API calls
@@ -118,6 +123,9 @@ export default function RentRecordsPage() {
 
   // Complete notice mutation
   const completeNoticeMutation = useCompleteNotice();
+  
+  // Cancel notice mutation
+  const cancelNoticeMutation = useCancelNotice();
 
   // Handle export data when available
   useEffect(() => {
@@ -249,9 +257,30 @@ export default function RentRecordsPage() {
     setEvictionFormOpen(true);
   };
 
-  const handleCancelNotice = (rent: any) => {
-    // TODO: Implement cancel notice functionality
-    console.log('Cancel notice for:', rent);
+  const handleUpdateNotice = (rent: any) => {
+    setSelectedRentForNotice(rent);
+    setNoticeFormOpen(true);
+  };
+
+  const handleCancelNotice = async (rent: any) => {
+    if (!rent.notice?._id) {
+      console.error('No notice ID found for cancellation');
+      return;
+    }
+
+    try {
+      // Set the cancelling notice ID to show loading for this specific record
+      setCancellingNoticeId(rent.notice._id);
+      
+      // Call the cancelNotice API
+      await cancelNoticeMutation.mutateAsync(rent.notice._id);
+    } catch (error) {
+      console.error('Failed to cancel notice:', error);
+      // Error handling is done in the mutation
+    } finally {
+      // Clear the cancelling notice ID
+      setCancellingNoticeId(null);
+    }
   };
 
   const handleExport = async () => {
@@ -540,63 +569,119 @@ export default function RentRecordsPage() {
                         {/* Action Buttons */}
                         <div className="flex flex-col gap-3 min-w-fit">
                           {/* Action buttons for tenants in notice period */}
-                          {record.notice && record.notice.status !== 'completed' ? (
-                            <>
-                              <Button
-                                variant="contained"
-                                startIcon={<PersonOffIcon />}
-                                onClick={() => handleCompleteEviction(record)}
-                                sx={(theme: Theme) => ({
-                                  backgroundColor: theme.palette.mode === 'dark' ? '#dc2626' : '#ef4444',
-                                  borderRadius: '12px',
-                                  color: '#fff',
-                                  textTransform: 'none',
-                                  fontWeight: 600,
-                                  padding: '8px 16px',
-                                  boxShadow: theme.palette.mode === 'dark' 
-                                    ? '0 1px 3px 0 rgba(0, 0, 0, 0.3)' 
-                                    : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-                                  '&:hover': {
-                                    backgroundColor: theme.palette.mode === 'dark' ? '#b91c1c' : '#dc2626',
-                                    boxShadow: theme.palette.mode === 'dark' 
-                                      ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)' 
-                                      : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                                  },
-                                  transition: 'all 0.2s ease',
-                                })}
-                                size="small"
-                              >
-                                Complete Eviction
-                              </Button>
-                              <Button
-                                variant="outlined"
-                                startIcon={<CancelIcon />}
-                                onClick={() => handleCancelNotice(record)}
-                                sx={(theme: Theme) => ({
-                                  borderColor: theme.palette.mode === 'dark' ? '#f59e0b' : '#f59e0b',
-                                  color: theme.palette.mode === 'dark' ? '#fbbf24' : '#f59e0b',
-                                  borderRadius: '12px',
-                                  textTransform: 'none',
-                                  fontWeight: 600,
-                                  padding: '8px 16px',
-                                  '&:hover': {
-                                    backgroundColor: theme.palette.mode === 'dark' 
-                                      ? 'rgba(245, 158, 11, 0.1)' 
-                                      : '#fef3c7',
-                                    borderColor: theme.palette.mode === 'dark' ? '#fbbf24' : '#d97706',
-                                    color: theme.palette.mode === 'dark' ? '#fbbf24' : '#d97706',
-                                  },
-                                  transition: 'all 0.2s ease',
-                                })}
-                                size="small"
-                              >
-                                Cancel Notice
-                              </Button>
+                           {record.notice && record.notice.status === 'active' ? (
+                             <>
+                               {/* Show Update Notice if there's remaining amount, otherwise show Complete Eviction */}
+                                {record.notice.remainingAmount > 0 ? (
+                                  <Button
+                                    variant="contained"
+                                    startIcon={<PaymentIcon />}
+                                    onClick={() => handleUpdateNotice(record)}
+                                    sx={(theme: Theme) => ({
+                                      backgroundColor: theme.palette.mode === 'dark' ? '#f59e0b' : '#f59e0b',
+                                      borderRadius: '12px',
+                                      color: '#fff',
+                                      textTransform: 'none',
+                                      fontWeight: 600,
+                                      padding: '8px 16px',
+                                      boxShadow: theme.palette.mode === 'dark' 
+                                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.3)' 
+                                        : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+                                      '&:hover': {
+                                        backgroundColor: theme.palette.mode === 'dark' ? '#d97706' : '#d97706',
+                                        boxShadow: theme.palette.mode === 'dark' 
+                                          ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)' 
+                                          : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                      },
+                                      transition: 'all 0.2s ease',
+                                    })}
+                                    size="small"
+                                  >
+                                    Update Notice (₹{record.notice.remainingAmount})
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="contained"
+                                    startIcon={<PersonOffIcon />}
+                                    onClick={() => handleCompleteEviction(record)}
+                                    sx={(theme: Theme) => ({
+                                      backgroundColor: theme.palette.mode === 'dark' ? '#dc2626' : '#ef4444',
+                                      borderRadius: '12px',
+                                      color: '#fff',
+                                      textTransform: 'none',
+                                      fontWeight: 600,
+                                      padding: '8px 16px',
+                                      boxShadow: theme.palette.mode === 'dark' 
+                                        ? '0 1px 3px 0 rgba(0, 0, 0, 0.3)' 
+                                        : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+                                      '&:hover': {
+                                        backgroundColor: theme.palette.mode === 'dark' ? '#b91c1c' : '#dc2626',
+                                        boxShadow: theme.palette.mode === 'dark' 
+                                          ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)' 
+                                          : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                      },
+                                      transition: 'all 0.2s ease',
+                                    })}
+                                    size="small"
+                                  >
+                                    Complete Eviction
+                                  </Button>
+                                  )}
+                                <Button
+                                  variant="outlined"
+                                  startIcon={cancellingNoticeId === record.notice?._id ? <CircularProgress size={16} /> : <CancelIcon />}
+                                  onClick={() => handleCancelNotice(record)}
+                                  disabled={cancellingNoticeId === record.notice?._id}
+                                  sx={(theme: Theme) => ({
+                                    borderColor: theme.palette.mode === 'dark' ? '#f59e0b' : '#f59e0b',
+                                    color: theme.palette.mode === 'dark' ? '#fbbf24' : '#f59e0b',
+                                    borderRadius: '12px',
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    padding: '8px 16px',
+                                    '&:hover': {
+                                      backgroundColor: theme.palette.mode === 'dark' 
+                                        ? 'rgba(245, 158, 11, 0.1)' 
+                                        : '#fef3c7',
+                                      borderColor: theme.palette.mode === 'dark' ? '#fbbf24' : '#d97706',
+                                      color: theme.palette.mode === 'dark' ? '#fbbf24' : '#d97706',
+                                    },
+                                    transition: 'all 0.2s ease',
+                                  })}
+                                  size="small"
+                                                                >
+                                    {cancellingNoticeId === record.notice?._id ? 'Cancelling...' : 'Cancel Notice'}
+                                </Button>
+                                <Button
+                                  variant="outlined"
+                                  startIcon={<ElectricBoltIcon />}
+                                  endIcon={expandedRentId === record._id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                                  onClick={() => toggleReadings(record._id)}
+                                  sx={(theme: Theme) => ({
+                                    borderColor: theme.palette.mode === 'dark' ? '#8b5cf6' : '#8b5cf6',
+                                    color: theme.palette.mode === 'dark' ? '#a78bfa' : '#8b5cf6',
+                                    borderRadius: '12px',
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    padding: '8px 16px',
+                                    '&:hover': {
+                                      backgroundColor: theme.palette.mode === 'dark' 
+                                        ? 'rgba(139, 92, 246, 0.1)' 
+                                        : '#f3f4f6',
+                                      borderColor: theme.palette.mode === 'dark' ? '#a78bfa' : '#7c3aed',
+                                      color: theme.palette.mode === 'dark' ? '#a78bfa' : '#7c3aed',
+                                    },
+                                    transition: 'all 0.2s ease',
+                                  })}
+                                  size="small"
+                                >
+                                  {expandedRentId === record._id ? 'Hide Details' : 'Show Details'}
+                                </Button>
                             </>
-                          ) : !record.notice ? (
+                          ) : record.paymentStatus == "NOT_PAID" || record.paymentStatus == "PARTIALLY_PAID" ? (
                             <>
                               {/* Action buttons for regular tenants */}
-                              {record.paymentStatus !== "FULLY_PAID" && getCurrentDate().getTime() > new Date(record.endDate).getTime() && (
+                              { getCurrentDate().getTime() > new Date(record.endDate).getTime() && (
                                 <Button
                                   variant="contained"
                                   startIcon={<PaymentIcon />}
@@ -624,70 +709,92 @@ export default function RentRecordsPage() {
                                   Collect
                                 </Button>
                               )}
-                              {record.paymentStatus !== "FULLY_PAID" && (
-                                <Button
-                                  variant="outlined"
-                                  startIcon={<WhatsAppIcon />}
-                                  onClick={() => handleWhatsAppReminder(record)}
-                                  sx={(theme: Theme) => ({
-                                    borderColor: theme.palette.mode === 'dark' ? '#34d399' : '#10b981',
-                                    color: theme.palette.mode === 'dark' ? '#34d399' : '#10b981',
-                                    borderRadius: '12px',
-                                    textTransform: 'none',
-                                    fontWeight: 600,
-                                    padding: '8px 16px',
-                                    '&:hover': {
-                                      backgroundColor: theme.palette.mode === 'dark' 
-                                        ? 'rgba(52, 211, 153, 0.1)' 
-                                        : '#d1fae5',
-                                      borderColor: theme.palette.mode === 'dark' ? '#10b981' : '#059669',
-                                      color: theme.palette.mode === 'dark' ? '#10b981' : '#059669',
-                                    },
-                                    transition: 'all 0.2s ease',
-                                  })}
-                                  size="small"
-                                >
-                                  WhatsApp Reminder
-                                </Button>
-                              )}
+                              <Button
+                                variant="outlined"
+                                startIcon={<WhatsAppIcon />}
+                                onClick={() => handleWhatsAppReminder(record)}
+                                sx={(theme: Theme) => ({
+                                  borderColor: theme.palette.mode === 'dark' ? '#34d399' : '#10b981',
+                                  color: theme.palette.mode === 'dark' ? '#34d399' : '#10b981',
+                                  borderRadius: '12px',
+                                  textTransform: 'none',
+                                  fontWeight: 600,
+                                  padding: '8px 16px',
+                                  '&:hover': {
+                                    backgroundColor: theme.palette.mode === 'dark' 
+                                      ? 'rgba(52, 211, 153, 0.1)' 
+                                      : '#d1fae5',
+                                    borderColor: theme.palette.mode === 'dark' ? '#10b981' : '#059669',
+                                    color: theme.palette.mode === 'dark' ? '#10b981' : '#059669',
+                                  },
+                                  transition: 'all 0.2s ease',
+                                })}
+                                size="small"
+                              >
+                                WhatsApp Reminder
+                              </Button>
+                              <Button
+                              variant="outlined"
+                              startIcon={<ElectricBoltIcon />}
+                              endIcon={expandedRentId === record._id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                              onClick={() => toggleReadings(record._id)}
+                              sx={(theme: Theme) => ({
+                                borderColor: theme.palette.mode === 'dark' ? '#8b5cf6' : '#8b5cf6',
+                                color: theme.palette.mode === 'dark' ? '#a78bfa' : '#8b5cf6',
+                                borderRadius: '12px',
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                padding: '8px 16px',
+                                '&:hover': {
+                                  backgroundColor: theme.palette.mode === 'dark' 
+                                    ? 'rgba(139, 92, 246, 0.1)' 
+                                    : '#f3f4f6',
+                                  borderColor: theme.palette.mode === 'dark' ? '#a78bfa' : '#7c3aed',
+                                  color: theme.palette.mode === 'dark' ? '#a78bfa' : '#7c3aed',
+                                },
+                                transition: 'all 0.2s ease',
+                              })}
+                              size="small"
+                            >
+                              {expandedRentId === record._id ? 'Hide Details' : 'Show Details'}
+                              </Button>
                             </>
-                          ) : null}
-                          <Button
-                            variant="outlined"
-                            startIcon={<ElectricBoltIcon />}
-                            endIcon={expandedRentId === record._id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                            onClick={() => toggleReadings(record._id)}
-                            sx={(theme: Theme) => ({
-                              borderColor: theme.palette.mode === 'dark' ? '#8b5cf6' : '#8b5cf6',
-                              color: theme.palette.mode === 'dark' ? '#a78bfa' : '#8b5cf6',
-                              borderRadius: '12px',
-                              textTransform: 'none',
-                              fontWeight: 600,
-                              padding: '8px 16px',
-                              '&:hover': {
-                                backgroundColor: theme.palette.mode === 'dark' 
-                                  ? 'rgba(139, 92, 246, 0.1)' 
-                                  : '#f3f4f6',
-                                borderColor: theme.palette.mode === 'dark' ? '#a78bfa' : '#7c3aed',
-                                color: theme.palette.mode === 'dark' ? '#a78bfa' : '#7c3aed',
-                              },
-                              transition: 'all 0.2s ease',
-                            })}
-                            size="small"
-                          >
-                            {expandedRentId === record._id ? 'Hide Readings' : 'Show Readings'}
-                          </Button>
+                          ) : 
+                            <Button
+                              variant="outlined"
+                              startIcon={<ElectricBoltIcon />}
+                              endIcon={expandedRentId === record._id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                              onClick={() => toggleReadings(record._id)}
+                              sx={(theme: Theme) => ({
+                                borderColor: theme.palette.mode === 'dark' ? '#8b5cf6' : '#8b5cf6',
+                                color: theme.palette.mode === 'dark' ? '#a78bfa' : '#8b5cf6',
+                                borderRadius: '12px',
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                padding: '8px 16px',
+                                '&:hover': {
+                                  backgroundColor: theme.palette.mode === 'dark' 
+                                    ? 'rgba(139, 92, 246, 0.1)' 
+                                    : '#f3f4f6',
+                                  borderColor: theme.palette.mode === 'dark' ? '#a78bfa' : '#7c3aed',
+                                  color: theme.palette.mode === 'dark' ? '#a78bfa' : '#7c3aed',
+                                },
+                                transition: 'all 0.2s ease',
+                              })}
+                              size="small"
+                            >
+                              {expandedRentId === record._id ? 'Hide Details' : 'Show Details'}
+                            </Button>
+                          }
                         </div>
                        </div>
                       </CardContent>
-                      
-                      {/* Expandable Electricity Readings Section */}
-                      <ElectricityReadingsSection
-                        electricityReadings={record.electricityReadings || []}
-                        noticeReadings={record.notice?.electricityReadings || []}
-                        totalElectricityBill={record.electricityBill}
-                        isExpanded={expandedRentId === record._id}
-                      />
+                      {/* Rent History Details Section with Payment History and Electricity Readings */}
+                       <RentHistoryDetails
+                         record={record}
+                         isExpanded={expandedRentId === record._id}
+                         onToggle={() => toggleReadings(record._id)}
+                       />
                     </Card>
                   ))
                 )}
@@ -723,13 +830,32 @@ export default function RentRecordsPage() {
         setPaymentFormOpen={setPaymentFormOpen}
       />
 
-      {/* Eviction Form */}
-        <EvictionForm
-          isOpen={evictionFormOpen}
-          onClose={() => setEvictionFormOpen(false)}
-          onSubmitCallback={handleEvictionSubmit}
-          rentRecord={selectedRentForEviction}
-        />
+             {/* Eviction Form */}
+         <EvictionForm
+           isOpen={evictionFormOpen}
+           onClose={() => setEvictionFormOpen(false)}
+           onSubmitCallback={handleEvictionSubmit}
+           rentRecord={selectedRentForEviction}
+         />
+
+       {/* Notice Form for updating existing notices */}
+       <NoticeForm
+         isOpen={noticeFormOpen}
+         onClose={() => {
+           setNoticeFormOpen(false);
+           setSelectedRentForNotice(null);
+         }}
+         onSubmitCallback={() => {
+           setNoticeFormOpen(false);
+           setSelectedRentForNotice(null);
+         }}
+         tenantName={selectedRentForNotice?.tenant?.tenantName || ''}
+         roomData={selectedRentForNotice?.room || {}}
+         cycleEndDate={selectedRentForNotice?.endDate || ''}
+         monthlyRent={selectedRentForNotice?.rent || 0}
+         tenantId={selectedRentForNotice?.tenant?._id || ''}
+         existingNotice={selectedRentForNotice?.notice || null}
+       />
 
         {/* Export Dialog */}
         <Dialog

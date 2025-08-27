@@ -20,3 +20,8 @@ export const completeNotice = async (data: CompleteNoticeData): Promise<{ succes
   const response = await apiClient.post(`/notices/${data.noticeId}/complete`, formData);
   return response as { success: boolean; message: string };
 };
+
+export const cancelNotice = async (noticeId: string): Promise<{ success: boolean; message: string; data: any }> => {
+  const response = await apiClient.post(`/notices/${noticeId}/cancel`, {});
+  return response as { success: boolean; message: string; data: any };
+};

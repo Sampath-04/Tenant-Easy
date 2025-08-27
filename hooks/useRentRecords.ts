@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAllRentRecordsForProperty, markRentAsPaid, getPendingRents, createNotice, getRentRecordsForExport } from '@/lib/api/rentHistory';
+import { getAllRentRecordsForProperty, markRentAsPaid, getPendingRents, createNotice, updateNotice, getRentRecordsForExport } from '@/lib/api/rentHistory';
 import { useProperty } from '@/contexts/PropertyContext';
 import { toast } from 'react-toastify';
 import { showSuccessToast, showErrorToast } from '@/lib/toast-config';
@@ -111,7 +111,12 @@ interface CreateNoticeData {
   tenantId: string;
   noticeDate: string;
   noticeEndsOn: string;
-  rent: number;
+  extraDays: number;
+  extraDaysCost: number;
+  amount?: number;
+  paidTo?: string;
+  comments?: string;
+  paymentProof?: File;
 }
 
 export function useCreateNotice() {
@@ -154,6 +159,60 @@ export function useCreateNotice() {
         } else {
           errorMessage = error.message;
         }
+      }
+      
+      const errorToast = showErrorToast(errorMessage);
+      toast.error(errorToast.message, errorToast.config);
+    }
+  });
+}
+
+interface UpdateNoticeData {
+  tenantId: string;
+  noticeDate: string;
+  noticeEndsOn: string;
+  extraDays: number;
+  extraDaysCost: number;
+  amount?: number;
+  paidTo?: string;
+  comments?: string;
+  paymentProof?: File;
+}
+
+export function useUpdateNotice() {
+  const queryClient = useQueryClient();
+  const { selectedProperty } = useProperty();
+
+  return useMutation({
+    mutationFn: ({ noticeId, data }: { noticeId: string; data: UpdateNoticeData }) =>
+      updateNotice(noticeId, data),
+    
+    onSuccess: () => {
+      // Show success toast
+      const successToast = showSuccessToast('Notice updated successfully!');
+      toast.success(successToast.message, successToast.config);
+      
+      // Invalidate and refetch pending rents
+      if (selectedProperty) {
+        queryClient.invalidateQueries({
+          queryKey: ['pending-rents', selectedProperty.id]
+        });
+        
+        // Also invalidate rent records if they exist
+        queryClient.invalidateQueries({
+          queryKey: ['rent-records', selectedProperty.id]
+        });
+      }
+    },
+    
+    onError: (error: any) => {
+      console.error('Failed to update notice:', error);
+      
+      // Show error toast with user-friendly message
+      let errorMessage = 'Failed to update notice. Please try again.';
+      
+      if (error?.message) {
+        errorMessage = error.message;
       }
       
       const errorToast = showErrorToast(errorMessage);

@@ -129,15 +129,24 @@ export const apiClient = {
 
   async put<T>(endpoint: string, body: any): Promise<T> {
     try {
+      // Handle FormData differently from JSON
+      const isFormData = body instanceof FormData;
+      
+      const headers: Record<string, string> = {
+        'Accept': 'application/json',
+      };
+      
+      // Don't set Content-Type for FormData (browser will set it with boundary)
+      if (!isFormData) {
+        headers['Content-Type'] = 'application/json';
+      }
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        headers,
         mode: 'cors',
         credentials: 'include',
-        body: JSON.stringify(body),
+        body: isFormData ? body : JSON.stringify(body),
       });
 
       const data = await response.json();

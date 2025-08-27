@@ -159,6 +159,7 @@ export default function EvictionForm({
   const noticeElectricity = rentRecord.notice?.electricityBill || 0;
   const totalElectricity = currentCycleElectricity + noticeElectricity;
   const lastReading = rentRecord.room?.currentMeterReading || 0;
+  
   const numberOfTenants = rentRecord.room?.tenants?.length || 1;
 
   return (

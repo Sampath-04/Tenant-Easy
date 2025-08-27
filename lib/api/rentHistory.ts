@@ -26,6 +26,12 @@ export interface Notice {
   electricityUnits: number;
   totalAmount: number;
   status: string;
+  extraDays: number;
+  paymentStatus: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
+  payments: Payment[];
+  totalPaidAmount: number;
+  remainingAmount: number;
+  lastPaymentDate: string;
   electricityReadings: ElectricityReadingDetail[];
 }
 
@@ -55,10 +61,14 @@ export interface Payment {
   _id: string;
   amount: number;
   paidDate: string;
-  paymentProofs: File[];
+  paymentProofs: string[];
   paidTo: string;
   comments: string;
-  recordedBy: string;
+  recordedBy: {
+    _id: string;
+    name: string;
+    role: string;
+  };
 }
 
 // Rent History item interface
@@ -217,9 +227,79 @@ export async function createNotice(data: {
   tenantId: string;
   noticeDate: string;
   noticeEndsOn: string;
-  rent: number;
+  extraDays: number;
+  extraDaysCost: number;
+  amount?: number;
+  paidTo?: string;
+  comments?: string;
+  paymentProof?: File;
 }): Promise<{ success: boolean; message: string }> {
-  return apiClient.post<{ success: boolean; message: string }>('/notices', data);
+  const formData = new FormData();
+  
+  formData.append('tenantId', data.tenantId);
+  formData.append('noticeDate', data.noticeDate);
+  formData.append('noticeEndsOn', data.noticeEndsOn);
+  formData.append('extraDays', data.extraDays.toString());
+  formData.append('extraDaysCost', data.extraDaysCost.toString());
+  
+  if (data.amount) {
+    formData.append('amount', data.amount.toString());
+  }
+  
+  if (data.paidTo) {
+    formData.append('paidTo', data.paidTo);
+  }
+  
+  if (data.comments) {
+    formData.append('comments', data.comments);
+  }
+  
+  if (data.paymentProof) {
+    formData.append('paymentProof', data.paymentProof);
+  }
+  
+  return apiClient.post<{ success: boolean; message: string }>('/notices', formData);
+}
+
+export async function updateNotice(
+  noticeId: string,
+  data: {
+    tenantId: string;
+    noticeDate: string;
+    noticeEndsOn: string;
+    extraDays: number;
+    extraDaysCost: number;
+    amount?: number;
+    paidTo?: string;
+    comments?: string;
+    paymentProof?: File;
+  }
+): Promise<{ success: boolean; message: string }> {
+  const formData = new FormData();
+
+  formData.append('tenantId', data.tenantId);
+  formData.append('noticeDate', data.noticeDate);
+  formData.append('noticeEndsOn', data.noticeEndsOn);
+  formData.append('extraDays', data.extraDays.toString());
+  formData.append('extraDaysCost', data.extraDaysCost.toString());
+  
+  if (data.amount) {
+    formData.append('amount', data.amount.toString());
+  }
+  
+  if (data.paidTo) {
+    formData.append('paidTo', data.paidTo);
+  }
+  
+  if (data.comments) {
+    formData.append('comments', data.comments);
+  }
+  
+  if (data.paymentProof) {
+    formData.append('paymentProof', data.paymentProof);
+  }
+  
+  return apiClient.put<{ success: boolean; message: string }>(`/notices/${noticeId}`, formData);
 }
 
 /**

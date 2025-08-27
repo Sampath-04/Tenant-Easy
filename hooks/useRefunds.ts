@@ -4,7 +4,6 @@ import { toast } from 'react-toastify';
 import { showSuccessToast, showErrorToast } from '@/lib/toast-config';
 
 export function useRefunds(propertyId: string) {
-  console.log('🔍 useRefunds - PropertyId:', propertyId);
   return useQuery({
     queryKey: ['refunds', propertyId],
     queryFn: () => getRefundsForProperty(propertyId),

@@ -123,8 +123,6 @@ function TenantViewContent() {
   }
 
   if (error || !localTenant) {
-    console.log('error', error);
-    console.log('localTenant', localTenant);
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

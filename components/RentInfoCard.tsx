@@ -20,6 +20,7 @@ interface RentInfoCardProps {
 }
 
 export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardProps) {
+
   // Calculate extra days for notice period
   const calculateExtraDays = () => {
     if (!record.notice) return 0;
@@ -55,7 +56,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
     }
 
     // Active notice period - show notice status
-    if (record.notice && record.notice.status !== 'completed') {
+    if (record.notice && record.notice.status === 'active') {
       return (
         <Chip
           label="Notice Period"
@@ -224,14 +225,14 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
               Current Cycle Electricity
             </Typography>
             <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
-              {record.notice 
+              {record.notice && record.notice.status === 'active' 
                 ? `${formatCurrency(record.electricityBill)} + ${formatCurrency(record.notice.electricityBill || 0)} (notice)`
                 : formatCurrency(record.electricityBill)
               }
             </Typography>
           </div>
           {/* Show Total Amount only if not in notice period */}
-          {!record.notice && (
+          {!record.notice || record.notice.status !== 'active' && (
              <div>
                <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                  Total Amount
@@ -291,7 +292,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
                Next Cycle Rent
              </Typography>
              <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
-               {record.notice ? '₹0' : formatCurrency(record.rent)}
+               {record.notice && record.notice.status === 'active' ? '₹0' : formatCurrency(record.rent)}
              </Typography>
            </div>
            
@@ -302,9 +303,21 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
                  <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                    Cost for Extra Days
                  </Typography>
+                 <div className="flex items-center gap-2">
                  <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
-                   {formatCurrency(record.notice.rent || 0)}
+                   {formatCurrency(record.notice.rent || 0)} 
                  </Typography>
+                 <Chip 
+                   label={record.notice.paymentStatus?.replace('_', ' ').charAt(0).toUpperCase() + record.notice.paymentStatus?.replace('_', ' ').slice(1).toLowerCase() || 'NOT_PAID'} 
+                   size="small"
+                   color={
+                     record.notice.paymentStatus === 'FULLY_PAID' ? 'success' :
+                     record.notice.paymentStatus === 'PARTIALLY_PAID' ? 'warning' : 'error'
+                   }
+                   variant="outlined"
+                 />
+                 </div>
+                
                </div>
              </>
            )}
@@ -314,7 +327,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
       {/* Due Date and notice period status */}
       <div className="flex items-center gap-6">
         {/* Show Due Date only if not in notice period */}
-        {!record.notice && (
+        {record.paymentStatus === "NOT_PAID" || record.paymentStatus === "PARTIALLY_PAID" && (
           <div className="flex items-center gap-2">
             <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
               Due Date:
@@ -326,7 +339,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
         )}
         
         {/* Notice Period Status */}
-        {record.notice && (
+        {record.notice && record.notice.status === 'active' && (
           <div className="flex items-center gap-2">
             <Chip
               label={`Notice Period - Ends ${formatDate(record.notice.noticeEndsOn)}`}
