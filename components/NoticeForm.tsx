@@ -143,6 +143,7 @@ export default function NoticeForm({
      if (!noticeEndDate) {
        setNoticeEndDate(defaultNoticeEndDate);
      }
+     console.log("defaultNoticeEndDate", defaultNoticeEndDate);
      
      // Calculate extra days based on selected notice end date
      const calculateExtraDays = () => {
@@ -157,6 +158,7 @@ export default function NoticeForm({
      setExtraDays(calculatedExtraDays);
      setCost(calculatedExtraDays > 0 ? Math.round((monthlyRent / 30) * calculatedExtraDays) : 0);
   }, [cycleEndDate, monthlyRent, isOpen, noticeEndDate]);
+
 
   const handleSubmit = async () => {
     if (!noticeEndDate) {
@@ -302,25 +304,25 @@ export default function NoticeForm({
             </div>
           </Box>
         </Box>
-
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-           <DatePicker
-             label="Notice End Date"
-             value={noticeEndDate}
-             onChange={(newDate) => {
-               setNoticeEndDate(newDate);
-             }}
-                            slotProps={{
-                 textField: {
-                   fullWidth: true,
-                   margin: "normal",
-                   variant: "outlined",
-                   helperText: "30 days from notice application date by default"
-                 }
-               }}
-               minDate={new Date()}
-           />
-         </LocalizationProvider>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DatePicker
+              label="Notice End Date"
+              value={noticeEndDate}
+              onChange={(newDate) => {
+                setNoticeEndDate(newDate);
+              }}
+              format="dd/MM/yyyy"
+              slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    margin: "normal",
+                    variant: "outlined",
+                    helperText: "30 days from notice application date by default"
+                  }
+                }}
+                minDate={new Date()}
+            />
+          </LocalizationProvider>
 
           <TextField
            fullWidth

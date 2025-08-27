@@ -292,7 +292,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
                Next Cycle Rent
              </Typography>
              <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
-               {record.notice && record.notice.status === 'active' ? '₹0' : formatCurrency(record.rent)}
+               {record.notice && record.notice.status === 'active' ? '₹0' : formatCurrency(record.totalAmount)}
              </Typography>
            </div>
            

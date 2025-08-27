@@ -830,7 +830,7 @@ export default function RentRecordsPage() {
         setPaymentFormOpen={setPaymentFormOpen}
       />
 
-             {/* Eviction Form */}
+        {/* Eviction Form */}
          <EvictionForm
            isOpen={evictionFormOpen}
            onClose={() => setEvictionFormOpen(false)}
@@ -947,8 +947,6 @@ export default function RentRecordsPage() {
             </Button>
           </DialogActions>
         </Dialog>
-
-
       </div>
     );
   }
