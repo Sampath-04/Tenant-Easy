@@ -76,6 +76,34 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
       );
     }
 
+     // Overdue chip with detailed styling
+     if (record.isOverdue && !record.notice) {
+      return (
+        <Chip
+          icon={<WarningIcon />}
+          label={`${record.daysOverdue} days overdue`}
+          sx={(theme: Theme) => ({
+            padding: '14px',
+            backgroundColor: theme.palette.mode === 'dark' 
+              ? 'rgba(220, 38, 38, 0.15)' 
+              : '#fef2f2',
+            color: theme.palette.mode === 'dark' 
+              ? '#fca5a5' 
+              : '#dc2626',
+            border: theme.palette.mode === 'dark' 
+              ? '1px solid rgba(220, 38, 38, 0.3)' 
+              : '1px solid #fecaca',
+            '& .MuiChip-icon': {
+              color: theme.palette.mode === 'dark' 
+                ? '#fca5a5' 
+                : '#dc2626',
+            },
+          })}
+          size="small"
+        />
+      );
+    }
+
     if(record.paymentStatus === "FULLY_PAID") {
       return (
         <Chip
@@ -145,34 +173,6 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
               padding: '0 6px',
             },
           })}
-        />
-      );
-    }
-
-    // Overdue chip with detailed styling
-    if (record.isOverdue && !record.notice) {
-      return (
-        <Chip
-          icon={<WarningIcon />}
-          label={`${record.daysOverdue} days overdue`}
-          sx={(theme: Theme) => ({
-            padding: '14px',
-            backgroundColor: theme.palette.mode === 'dark' 
-              ? 'rgba(220, 38, 38, 0.15)' 
-              : '#fef2f2',
-            color: theme.palette.mode === 'dark' 
-              ? '#fca5a5' 
-              : '#dc2626',
-            border: theme.palette.mode === 'dark' 
-              ? '1px solid rgba(220, 38, 38, 0.3)' 
-              : '1px solid #fecaca',
-            '& .MuiChip-icon': {
-              color: theme.palette.mode === 'dark' 
-                ? '#fca5a5' 
-                : '#dc2626',
-            },
-          })}
-          size="small"
         />
       );
     }

@@ -95,17 +95,8 @@ export interface RentHistoryItem {
   electricityReadings: ElectricityReadingDetail[];
   notice: Notice | null;
 }
-interface pendingRentsSummary {
-    totalAmount: number;
-    totalRent: number;
-    totalElectricity: number;
-    overdueCount: number;
-    readyToCollectCount: number;
-    overdueAmount: number;
-    readyToCollectAmount: number;
-}
 
-interface rentRecordsSummary {
+export interface rentRecordsSummary {
   totalAmount: number;
   totalRent: number;
   totalElectricity: number;
@@ -128,7 +119,6 @@ export interface PendingRentsHistoryResponse {
     hasPrev: boolean;
   };
   data: RentHistoryItem[];
-  summary: pendingRentsSummary;
 }
 
 export interface RentHistoryResponse{
@@ -142,7 +132,6 @@ export interface RentHistoryResponse{
     hasPrev: boolean;
   };
   data: RentHistoryItem[];
-  summary: rentRecordsSummary;
 }
 
 /**
@@ -172,10 +161,11 @@ export async function getAllRentRecordsForProperty(
     page?: number;
     limit?: number;
     tenant?: string;
-    month?: string;
     paymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
     search?: string;
     roomNo?: string;
+    endDateFrom?: string;
+    endDateTo?: string;
   } = {}
 ): Promise<RentHistoryResponse> {
   const queryParams = new URLSearchParams();
@@ -183,12 +173,36 @@ export async function getAllRentRecordsForProperty(
   if (params.page) queryParams.append('page', params.page.toString());
   if (params.limit) queryParams.append('limit', params.limit.toString());
   if (params.tenant) queryParams.append('tenant', params.tenant);
-  if (params.month) queryParams.append('month', params.month);
   if (params.paymentStatus) queryParams.append('paymentStatus', params.paymentStatus);
   if (params.search) queryParams.append('search', params.search);
   if (params.roomNo) queryParams.append('roomNo', params.roomNo);
+  if (params.endDateFrom) queryParams.append('endDateFrom', params.endDateFrom);
+  if (params.endDateTo) queryParams.append('endDateTo', params.endDateTo);
   
   return apiClient.get<RentHistoryResponse>(`/rent-history/property/${propertyId}?${queryParams.toString()}`);
+}
+
+/**
+ * Get property rent summary with date range filters
+ */
+export async function getPropertyRentSummary(
+  propertyId: string,
+  params: {
+    endDateFrom?: string;
+    endDateTo?: string;
+    paymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
+    search?: string;
+    roomNo?: string;
+  } = {}
+): Promise<{ success: boolean; data: any }> {
+  const queryParams = new URLSearchParams();
+  
+  if (params.endDateFrom) queryParams.append('endDateFrom', params.endDateFrom);
+  if (params.endDateTo) queryParams.append('endDateTo', params.endDateTo);
+  if (params.paymentStatus) queryParams.append('paymentStatus', params.paymentStatus);
+  if (params.search) queryParams.append('search', params.search);
+  if (params.roomNo) queryParams.append('roomNo', params.roomNo);
+  return apiClient.get<{ success: boolean; data: any }>(`/rent-history/property/${propertyId}/summary?${queryParams.toString()}`);
 }
 
 /**

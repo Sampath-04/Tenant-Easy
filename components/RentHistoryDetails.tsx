@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Typography,
   Tabs,
   Tab,
   Accordion,
   AccordionSummary,
   AccordionDetails,
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ReceiptIcon from '@mui/icons-material/Receipt';
-import ElectricMeterIcon from '@mui/icons-material/ElectricMeter';
 import { RentHistoryItem } from '../lib/api/rentHistory';
 import PaymentHistory from './PaymentHistory';
 import ElectricityReadingsSection from './ElectricityReadingsSection';

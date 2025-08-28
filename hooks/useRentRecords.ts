@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAllRentRecordsForProperty, markRentAsPaid, getPendingRents, createNotice, updateNotice, getRentRecordsForExport } from '@/lib/api/rentHistory';
+import { getAllRentRecordsForProperty, markRentAsPaid, getPendingRents, createNotice, updateNotice, getRentRecordsForExport, getPropertyRentSummary } from '@/lib/api/rentHistory';
 import { useProperty } from '@/contexts/PropertyContext';
 import { toast } from 'react-toastify';
 import { showSuccessToast, showErrorToast } from '@/lib/toast-config';
@@ -9,10 +9,11 @@ interface UseRentRecordsParams {
   page?: number;
   limit?: number;
   tenant?: string;
-  month?: string;
   paymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
   search?: string;
   roomNo?: string;
+  endDateFrom?: string;
+  endDateTo?: string;
   enabled?: boolean;
 }
 
@@ -21,22 +22,24 @@ export function useRentRecords({
   page = 1,
   limit = 10,
   tenant,
-  month,
   paymentStatus,
   search,
   roomNo,
+  endDateFrom,
+  endDateTo,
   enabled = true,
 }: UseRentRecordsParams) {
   return useQuery({
-    queryKey: ['rent-records', propertyId, page, limit, tenant, month, paymentStatus, search, roomNo],
+    queryKey: ['rent-records', propertyId, page, limit, tenant, paymentStatus, search, roomNo, endDateFrom, endDateTo],
     queryFn: () => getAllRentRecordsForProperty(propertyId, {
       page,
       limit,
       tenant,
-      month,
       paymentStatus,
       search,
       roomNo,
+      endDateFrom,
+      endDateTo,
     }),
     enabled: enabled && !!propertyId,
     staleTime: 0, // 5 minutes
@@ -52,6 +55,26 @@ export function usePendingRents(propertyId: string) {
     queryKey: ['pending-rents', propertyId],
     queryFn: () => getPendingRents(propertyId),
     enabled: !!propertyId && propertyId !== '', // Only run when propertyId is valid
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+}
+
+/**
+ * Hook to fetch property rent summary with date range filters
+ */
+export function usePropertyRentSummary(
+  propertyId: string,
+  endDateFrom?: string,
+  endDateTo?: string,
+  paymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID",
+  search?: string,
+  roomNo?: string
+) {
+  return useQuery({
+    queryKey: ['property-rent-summary', propertyId, endDateFrom, endDateTo, paymentStatus, search, roomNo],
+    queryFn: () => getPropertyRentSummary(propertyId, { endDateFrom, endDateTo, paymentStatus, search, roomNo }),
+    enabled: !!propertyId && propertyId !== '',
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });

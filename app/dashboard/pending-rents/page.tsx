@@ -7,11 +7,11 @@ import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
 import { usePendingRents } from '@/hooks/useRentRecords';
 import SearchInput from '@/components/ui/SearchInput';
-import { 
-  Card, 
-  CardContent, 
-  Typography, 
-  Button, 
+import {
+  Card,
+  CardContent,
+  Typography,
+  Button,
   Theme,
 } from '@mui/material';
 import {
@@ -31,6 +31,7 @@ import RentInfoCard from '@/components/RentInfoCard';
 import PaymentCollectionForm from '@/components/PaymentCollectionForm';
 import { getCurrentDate } from '@/lib/utils/formatters';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
+import RentRecordsList from '@/app/components/RentRecordsList';
 
 function PendingRentsContent() {
   const { selectedProperty } = useProperty();
@@ -53,8 +54,8 @@ function PendingRentsContent() {
   // Filter rents based on search term
   const filteredRents = useMemo(() => {
     if (!pendingRentsData?.data) return [];
-    
-    return pendingRentsData.data.filter(rent => 
+
+    return pendingRentsData.data.filter(rent =>
       rent.tenant.tenantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       rent.tenant.tenantNumber.includes(searchTerm) ||
       rent.room.roomNo.toLowerCase().includes(searchTerm.toLowerCase())
@@ -192,18 +193,18 @@ Thank you!`;
         title="Pending Rents"
         subtitle={`${selectedProperty.name} - Pending Rent Collection`}
       />
-      
+
       <BreadCrumbs items={breadcrumbs} />
 
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
           <div className="p-6">
             {/* Summary Cards */}
-            {pendingRentsData?.summary && (
+            {/* {pendingRentsData?.summary && (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
                   borderRadius: '12px',
-                  boxShadow:"rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
+                  boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
                 }}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -222,7 +223,7 @@ Thank you!`;
 
                 <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
                   borderRadius: '12px',
-                  boxShadow:"rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
+                  boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
                 }}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -241,7 +242,7 @@ Thank you!`;
 
                 <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
                   borderRadius: '12px',
-                  boxShadow:"rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
+                  boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
                 }}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -260,7 +261,7 @@ Thank you!`;
 
                 <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
                   borderRadius: '12px',
-                  boxShadow:"rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
+                  boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
                 }}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -277,7 +278,7 @@ Thank you!`;
                   </CardContent>
                 </Card>
               </div>
-            )}
+            )} */}
 
             {/* Search and Filter */}
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
@@ -297,127 +298,9 @@ Thank you!`;
             </div>
 
             {/* Pending Rents List */}
-            <div className="space-y-6">
-              {filteredRents.length === 0 ? (
-                <Card className="bg-white dark:bg-gray-800">
-                  <CardContent className="p-8 text-center">
-                    <div className="text-gray-400 text-6xl mb-4">💰</div>
-                    <Typography variant="h6" className="text-gray-600 dark:text-gray-400 mb-2">
-                      No Pending Rents Found
-                    </Typography>
-                    <Typography variant="body2" className="text-gray-500 dark:text-gray-500">
-                      {searchTerm ? 'No rents match your search criteria.' : 'All rents have been collected!'}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              ) : (
-                filteredRents.map((rent) => (
-                  <Card 
-                    key={rent._id} 
-                    sx={{
-                      borderRadius: '16px',
-                      boxShadow: 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;', 
-                    }}
-                    className="bg-white dark:bg-gray-800"
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        
-                        {/* tenant info, rent status, cycle info container */}
-                        <RentInfoCard record={rent} getCurrentDate={getCurrentDate} />
-
-                        {/* Action Buttons */}
-                        <div className="flex flex-col gap-3 min-w-fit">
-                          <Button
-                            variant="contained"
-                            startIcon={<PaymentIcon />}
-                            onClick={() => handleCollectPayment(rent)}
-                            sx={(theme: Theme) => ({
-                              backgroundColor: theme.palette.mode === 'dark' ? '#059669' : '#10b981',
-                              borderRadius: '12px',
-                              color: theme.palette.mode === 'dark' ? '#fff' : '#fff',
-                              textTransform: 'none',
-                              fontWeight: 600,
-                              padding: '8px 16px',
-                              boxShadow: theme.palette.mode === 'dark' 
-                                ? '0 1px 3px 0 rgba(0, 0, 0, 0.3)' 
-                                : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-                              '&:hover': {
-                                backgroundColor: theme.palette.mode === 'dark' ? '#047857' : '#059669',
-                                boxShadow: theme.palette.mode === 'dark' 
-                                  ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)' 
-                                  : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                              },
-                              transition: 'all 0.2s ease',
-                            })}
-                            size="small"
-                          >
-                            Collect
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            startIcon={<WhatsAppIcon />}
-                            onClick={() => handleWhatsAppReminder(rent)}
-                            sx={(theme: Theme) => ({
-                              borderColor: theme.palette.mode === 'dark' ? '#34d399' : '#10b981',
-                              color: theme.palette.mode === 'dark' ? '#34d399' : '#10b981',
-                              borderRadius: '12px',
-                              textTransform: 'none',
-                              fontWeight: 600,
-                              padding: '8px 16px',
-                              '&:hover': {
-                                backgroundColor: theme.palette.mode === 'dark' 
-                                  ? 'rgba(52, 211, 153, 0.1)' 
-                                  : '#d1fae5',
-                                borderColor: theme.palette.mode === 'dark' ? '#10b981' : '#059669',
-                                color: theme.palette.mode === 'dark' ? '#10b981' : '#059669',
-                              },
-                              transition: 'all 0.2s ease',
-                            })}
-                            size="small"
-                          >
-                            WhatsApp Reminder
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            startIcon={<ElectricBoltIcon />}
-                            endIcon={expandedRentId === rent._id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                            onClick={() => toggleReadings(rent._id)}
-                            sx={(theme: Theme) => ({
-                              borderColor: theme.palette.mode === 'dark' ? '#8b5cf6' : '#8b5cf6',
-                              color: theme.palette.mode === 'dark' ? '#a78bfa' : '#8b5cf6',
-                              borderRadius: '12px',
-                              textTransform: 'none',
-                              fontWeight: 600,
-                              padding: '8px 16px',
-                              '&:hover': {
-                                backgroundColor: theme.palette.mode === 'dark' 
-                                  ? 'rgba(139, 92, 246, 0.1)' 
-                                  : '#f3f4f6',
-                                borderColor: theme.palette.mode === 'dark' ? '#a78bfa' : '#7c3aed',
-                                color: theme.palette.mode === 'dark' ? '#a78bfa' : '#7c3aed',
-                              },
-                              transition: 'all 0.2s ease',
-                            })}
-                            size="small"
-                          >
-                            {expandedRentId === rent._id ? 'Hide Readings' : 'Show Readings'}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                    
-                    {/* Expandable Electricity Readings Section */}
-                    <ElectricityReadingsSection
-                      electricityReadings={rent.electricityReadings || []}
-                      noticeReadings={rent.notice?.electricityReadings || []}
-                      totalElectricityBill={rent.electricityBill}
-                      isExpanded={expandedRentId === rent._id}
-                    />
-                  </Card>
-                ))
-              )}
-            </div>
+            <RentRecordsList
+              filteredRents={filteredRents}
+            />
           </div>
         </div>
       </main>
