@@ -14,6 +14,7 @@ export interface ElectricityReadingDetail {
   notes?: string;
   totalTenantsPresent?: number;
   consumptionCostPerTenant?: number;
+  isAutoRecorded?: boolean;
 }
 
 // Notice interface for rent history

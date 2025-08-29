@@ -55,6 +55,8 @@ export interface ElectricityReading {
   consumption: number;
   perTenantCost: number;
   id: string;
+  notes: string;
+  isAutoRecorded: boolean;
 }
 
 export interface RoomDetail {

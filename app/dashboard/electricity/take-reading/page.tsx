@@ -25,7 +25,7 @@ import {
 import { toast } from 'react-toastify';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { showErrorToast, showSuccessToast } from '@/lib/toast-config';
-import { getCurrentDate } from '@/lib/utils/formatters';
+import { formatDate, getCurrentDate } from '@/lib/utils/formatters';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
 interface RoomReadingState {
@@ -58,7 +58,6 @@ function ElectricityReadingContent() {
     1000
   );
   
-
   const recordReadingMutation = useRecordElectricityReading();
 
   const handleReadingChange = (roomId: string, value: number) => {
@@ -148,8 +147,8 @@ function ElectricityReadingContent() {
         const currentDate = getCurrentDate();
         const today = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
         const recording = room.electricityReadings?.find((reading: any) => reading.readingDate.split('T')[0] === today);
-   
-        if (recording) {
+        if (recording && !recording.isAutoRecorded) {
+          
           roomReadingsObj[room._id] = {
             meterReading: recording.meterReading,
             isRecorded: true,
@@ -294,7 +293,7 @@ function ElectricityReadingContent() {
                 Room Electricity Readings
                 </p>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">
-                    Date: {new Date().toLocaleDateString()}
+                    Date: {formatDate(getCurrentDate().toISOString())}
                 </p>
             </div>
             {/*  room filter */}
