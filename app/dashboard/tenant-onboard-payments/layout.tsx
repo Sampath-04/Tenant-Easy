@@ -10,6 +10,23 @@ const tabRoutes = [
     { label: 'Completed', path: '/dashboard/tenant-onboard-payments/completed' },
 ];
 
+
+const appHeaderData = [
+    {
+        title: 'Upcoming Tenants',
+        subtitle: 'Future Check-ins',
+    },
+    
+    {
+        title: 'Pending Onboard Payments',
+        subtitle: 'Pending Onboard Payments',
+    },
+    {
+        title: 'Completed Tenants',
+        subtitle: 'Completed Onboard Payments',
+    },
+]
+
 export default function TenantOnboardPaymentsLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { selectedProperty } = useProperty();
@@ -27,8 +44,8 @@ export default function TenantOnboardPaymentsLayout({ children }: { children: Re
     return (
         <div> 
         <AppHeader
-        title="Upcoming Tenants"
-        subtitle={`${selectedProperty?.name || 'Property'} - Future Check-ins`}
+        title={appHeaderData[safeTabIndex].title}
+        subtitle={`${selectedProperty?.name || 'Property'} - ${appHeaderData[safeTabIndex].subtitle}`}
         />
         <TabbedLayout
             title="Tenant Onboard Payments"

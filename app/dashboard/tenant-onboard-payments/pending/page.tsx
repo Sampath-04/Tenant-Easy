@@ -34,7 +34,8 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { formatDate, formatCurrency } from '@/lib/utils/formatters';
 import { useProperty } from '@/contexts/PropertyContext';
 import TenantOnboardSummaryCards from '@/components/TenantOnboardSummaryCards';
-import CollectPendingPaymentsForm from '@/components/CollectPendingPaymentsForm';
+import CollectOnboardPendingPaymentsForm from '@/components/CollectPendingPaymentsForm';
+import { Schedule as ScheduleIcon } from '@mui/icons-material';
 import {
   Dialog,
   DialogTitle,
@@ -204,10 +205,7 @@ export default function TenantOnboardPaymentsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <AppHeader
-        title="Pending Onboard Payments"
-        subtitle={`${selectedProperty?.name || 'Property'} - Pending Onboard Payments`}
-      />
+      
       <BreadCrumbs items={breadcrumbs} />
       
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
@@ -385,22 +383,23 @@ export default function TenantOnboardPaymentsPage() {
                   filteredTenants.map((tenant) => (
                     <Card key={tenant._id} className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
                       <CardContent className="p-6">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
-                                {tenant.tenantName}
-                              </Typography>
-                              <Chip 
-                                label={tenant.status} 
-                                size="small" 
-                                color={tenant.status === 'onboarded' ? 'success' : 'warning'}
-                              />
-                            </div>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                              <div>
-                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                        <div className="flex flex-col justify-between items-start gap-3">
+                            <div className="flex w-full items-center gap-8 mb-2">
+                              <div className="flex items-center gap-3">
+                                <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
+                                  {tenant.tenantName}
+                                </Typography>
+                                <Chip 
+                                  label="Pending" 
+                                  size="small" 
+                                  sx={{
+                                    color: '#fff',
+                                    backgroundColor: '#ffa726',
+                                  }}
+                                  icon={<ScheduleIcon color="inherit" />}
+                                />
+                              </div>
+                              <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                                   Phone: {tenant.tenantNumber}
                                 </Typography>
                                 {tenant.tenantEmail && (
@@ -408,83 +407,83 @@ export default function TenantOnboardPaymentsPage() {
                                     Email: {tenant.tenantEmail}
                                   </Typography>
                                 )}
-                              </div>
-                              
-                              <div>
                                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                                   Room: {tenant.room.roomNo} ({tenant.room.roomType})
                                 </Typography>
                                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                                   Check-in: {formatDate(tenant.checkInDate)}
                                 </Typography>
-                              </div>
-                              
-                              <div>
-                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                                  Monthly Rent: {formatCurrency(tenant.monthlyRent)}
-                                </Typography>
-                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                                  Security Deposit: {formatCurrency(tenant.securityDepositTotal)}
-                                </Typography>
-                              </div>
-                              
-                              <div>
-                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                                  Rent Paid: {formatCurrency(tenant.totalOnboardingRentPaid)}
-                                </Typography>
-                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                                  Security Paid: {formatCurrency(tenant.securityDepositPaid)}
-                                </Typography>
-                                
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="flex flex-col items-end gap-2">
-                            <div className="text-right">
-                              <Typography variant="h6" className="font-bold text-red-600 dark:text-red-400">
-                                {formatCurrency(tenant.totalPendingAmount)}
-                              </Typography>
-                              <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                                Total Pending
-                              </Typography>
                             </div>
                             
-                            <div className="flex gap-2">
-                              {tenant.securityDepositPending && (
-                                <Chip 
-                                  label={`Security: ${formatCurrency(tenant.pendingSecurityAmount)}`}
-                                  size="small"
-                                  color="warning"
-                                  variant="outlined"
-                                />
-                              )}
-                              {tenant.onboardingRentPending && (
-                                <Chip 
-                                  label={`Rent: ${formatCurrency(tenant.pendingOnboardingRentAmount)}`}
-                                  size="small"
-                                  color="error"
-                                  variant="outlined"
-                                />
-                              )}
+                            <div className="flex w-full gap-8 items-center">
+                               <div className="grid gap-2">
+                                  <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                    Monthly Rent: {formatCurrency(tenant.monthlyRent)}
+                                  </Typography>
+                                  <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                    Security Deposit: {formatCurrency(tenant.securityDepositTotal)}
+                                  </Typography>
+                               </div>
+                               <div className="grid gap-2">
+                                  <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                    Rent Paid: {formatCurrency(tenant.totalOnboardingRentPaid)}
+                                  </Typography>   
+                                  <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                    Security Paid: {formatCurrency(tenant.securityDepositPaid)}
+                                  </Typography>
+                               </div>
+                                <div className="grid gap-2">
+                                  <div className="flex gap-2">
+                                    <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                      Rent Pending:
+                                    </Typography>
+                                    {tenant.onboardingRentPending ? (
+                                      <Chip 
+                                        label={`Rent: ${formatCurrency(tenant.pendingOnboardingRentAmount)}`}
+                                        size="small"
+                                        color="error"
+                                        variant="outlined"
+                                      />
+                                    ) : <span className="text-gray-600 dark:text-gray-400">0</span>}
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                      Security Pending:
+                                    </Typography>
+                                    {tenant.securityDepositPending && (
+                                      <Chip 
+                                        label={`Security: ${formatCurrency(tenant.pendingSecurityAmount)}`}
+                                        size="small"
+                                        color="warning"
+                                        variant="outlined"
+                                      />
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex flex-col ml-auto items-end justify-end gap-2">
+                                  <div className="flex items-end gap-2">
+                                    <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                      Total Pending: <span className="font-bold text-lg text-red-600 dark:text-red-400">{formatCurrency(tenant.totalPendingAmount)}</span>
+                                    </Typography>
+                                  </div> 
+                                  <Button
+                                    variant="contained"
+                                    size="small"
+                                    onClick={() => handleCollectPayments(tenant)}
+                                    sx={{
+                                      backgroundColor: '#008000',
+                                      '&:hover': {
+                                        backgroundColor: '#008000',
+                                      },
+                                      textTransform: 'none',
+                                      color: '#fff',
+                                      mt: 1,
+                                    }}
+                                  >
+                                    Collect Payments
+                                  </Button>
+                                </div>
                             </div>
-                            
-                            <Button
-                              variant="contained"
-                              size="small"
-                              onClick={() => handleCollectPayments(tenant)}
-                              sx={{
-                                backgroundColor: '#10b981',
-                                '&:hover': {
-                                  backgroundColor: '#059669',
-                                },
-                                textTransform: 'none',
-                                mt: 1,
-                              }}
-                            >
-                              Collect Payments
-                            </Button>
-                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -577,7 +576,7 @@ export default function TenantOnboardPaymentsPage() {
       </Dialog>
 
       {/* Collect Pending Payments Form */}
-      <CollectPendingPaymentsForm
+      <CollectOnboardPendingPaymentsForm
         open={collectPaymentsDialogOpen}
         onClose={() => {
           setCollectPaymentsDialogOpen(false);

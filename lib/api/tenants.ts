@@ -85,9 +85,19 @@ export async function createTenant(tenantData: {
   tenantNumber: string;
   tenantEmail?: string;
   monthlyRent: number;
-  securityDepositPaid?: number;
+  securityDepositTotal: number;
+  securityDepositPaid: number;
   currentReading?: number;
-  checkInDate: string;
+  checkinDate: string;
+  tenantIdProof?: File;
+  emergencyContact?: {
+    name: string;
+    phone: string;
+    relation: string;
+  };
+  rentPaid: number;
+  paymentMethod: string;
+  paymentProofs?: File[];
 }): Promise<Tenant> {
   const response = await apiClient.post<{ success: boolean; data: Tenant }>('/tenants', tenantData);
   return response.data;

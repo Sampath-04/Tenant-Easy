@@ -17,7 +17,7 @@ import { CircularProgress } from '@mui/material';
 import { useDropzone } from 'react-dropzone';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
 
-interface CollectPendingPaymentsFormProps {
+interface CollectOnboardPendingPaymentsFormProps {
   open: boolean;
   onClose: () => void;
   tenant: any;
@@ -32,13 +32,13 @@ interface CollectPaymentsData {
   paymentProofs: File[];
 }
 
-export default function CollectPendingPaymentsForm({
+export default function CollectOnboardPendingPaymentsForm({
   open,
   onClose,
   tenant,
   onSubmit,
   isSubmitting
-}: CollectPendingPaymentsFormProps) {
+}: CollectOnboardPendingPaymentsFormProps) {
   const [formData, setFormData] = useState<CollectPaymentsData>({
     securityDepositAmount: undefined,
     rentAmount: undefined,
@@ -427,7 +427,7 @@ export default function CollectPendingPaymentsForm({
         <button
           onClick={handleSubmit}
           disabled={isSubmitting || !hasAmount}
-          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"
+          className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"
         >
           {isSubmitting && <CircularProgress size={16} color="inherit" />}
           {isSubmitting ? 'Collecting...' : 'Collect Payments'}

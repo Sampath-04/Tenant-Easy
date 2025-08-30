@@ -513,7 +513,7 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
       </DialogActions>
     </Dialog >
 
-         {/* Create Tenant Form */}
+      {/* Create Tenant Form */}
      <CreateTenantForm
        open={createTenantFormOpen}
        onClose={() => setCreateTenantFormOpen(false)}

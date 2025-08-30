@@ -376,7 +376,7 @@ function RoomsContent() {
             }
         }}
       >
-        <RoomCreationForm onClose={() => setAddRoomDialogOpen(false)} />
+      <RoomCreationForm onClose={() => setAddRoomDialogOpen(false)} />
       </Dialog>
 
       {/* mobile view float plus icon in the bottom right */}

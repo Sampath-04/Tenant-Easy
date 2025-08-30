@@ -61,7 +61,7 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <Typography variant="h4" className="font-bold text-green-600 dark:text-green-400">
+                <Typography variant="h4" className="font-bold text-gray-900 dark:text-white">
                   {formatCurrency(summary.totalAmountCollected || 0)}
                 </Typography>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
@@ -80,7 +80,7 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <Typography variant="h4" className="font-bold text-green-600 dark:text-green-400">
+                <Typography variant="h4" className="font-bold text-gray-900 dark:text-white">
                   {formatCurrency(summary.totalSecurityDepositCollected || 0)}
                 </Typography>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
@@ -99,7 +99,7 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <Typography variant="h4" className="font-bold text-green-600 dark:text-green-400">
+                <Typography variant="h4" className="font-bold text-gray-900 dark:text-white">
                   {formatCurrency(summary.totalOnboardingRentCollected || 0)}
                 </Typography>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">

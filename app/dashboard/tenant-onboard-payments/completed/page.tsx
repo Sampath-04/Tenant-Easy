@@ -185,10 +185,7 @@ export default function TenantOnboardCompletedPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <AppHeader
-        title="Completed Onboard Payments"
-        subtitle={`${selectedProperty?.name || 'Property'} - Completed Onboard Payments`}
-      />
+
       <BreadCrumbs items={breadcrumbs} />
       
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
@@ -366,11 +363,8 @@ export default function TenantOnboardCompletedPage() {
                   filteredTenants.map((tenant) => (
                     <Card key={tenant._id} className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
                       <CardContent className="p-6">
-                        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-                          {/* Left Section - Tenant Info */}
-                          <div className="flex-1">
-                            {/* Top Row - Tenant Name, Status, and Date */}
-                            <div className="flex items-center justify-between mb-4">
+                        <div className="flex flex-col justify-between items-start gap-3">
+                            <div className="flex w-full items-center gap-8 mb-2">
                               <div className="flex items-center gap-3">
                                 <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
                                   {tenant.tenantName}
@@ -380,131 +374,73 @@ export default function TenantOnboardCompletedPage() {
                                   size="small" 
                                   color="success"
                                   icon={<CheckCircleIcon />}
-                                  sx={{
-                                    borderRadius: '16px',
-                                    fontWeight: 600,
-                                    backgroundColor: '#10b981',
-                                    color: '#fff',
-                                  }}
                                 />
                               </div>
-                              <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
-                                Check-in: {formatDate(tenant.checkInDate)}
-                              </Typography>
-                            </div>
-
-                            {/* Contact and Room Info */}
-                            <div className="flex items-center gap-6 mb-4">
-                              <div className="flex items-center gap-2">
-                                <PersonIcon sx={{ fontSize: 16, color: '#6b7280' }} />
-                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                                  {tenant.tenantNumber}
+                              <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                  Phone: {tenant.tenantNumber}
                                 </Typography>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <CurrencyIcon sx={{ fontSize: 16, color: '#6b7280' }} />
+                                {tenant.tenantEmail && (
+                                  <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                    Email: {tenant.tenantEmail}
+                                  </Typography>
+                                )}
                                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                                  Room {tenant.room.roomNo}
+                                  Room: {tenant.room.roomNo} ({tenant.room.roomType})
                                 </Typography>
-                              </div>
+                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                  Check-in: {formatDate(tenant.checkInDate)}
+                                </Typography>
                             </div>
-
-                            {/* Payment Details Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              {/* Left Column */}
-                              <div className="space-y-3">
-                                <div>
-                                  <Typography variant="body2" className="text-gray-500 dark:text-gray-400 mb-1">
-                                    Monthly Rent
+                            
+                            <div className="flex w-full gap-8 items-center">
+                               <div className="grid gap-2">
+                                  <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                    Monthly Rent: {formatCurrency(tenant.monthlyRent)}
                                   </Typography>
-                                  <Typography variant="body1" className="font-semibold text-gray-900 dark:text-white">
-                                    {formatCurrency(tenant.monthlyRent)}
+                                  <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                    Security Deposit: {formatCurrency(tenant.securityDepositTotal)}
                                   </Typography>
-                                </div>
-                                <div>
-                                  <Typography variant="body2" className="text-gray-500 dark:text-gray-400 mb-1">
-                                    Security Deposit
+                               </div>
+                               <div className="grid gap-2">
+                                  <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                    Rent Paid: {formatCurrency(tenant.totalOnboardingRentPaid)}
+                                  </Typography>   
+                                  <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                    Security Paid: {formatCurrency(tenant.securityDepositPaid)}
                                   </Typography>
-                                  <Typography variant="body1" className="font-semibold text-gray-900 dark:text-white">
-                                    {formatCurrency(tenant.securityDepositTotal)}
-                                  </Typography>
-                                </div>
-                              </div>
-
-                              {/* Right Column */}
-                              <div className="space-y-3">
-                                <div>
-                                  <Typography variant="body2" className="text-gray-500 dark:text-gray-400 mb-1">
-                                    Rent Paid
-                                  </Typography>
-                                  <div className="flex items-center gap-2">
-                                    <Typography variant="body1" className="font-semibold text-green-600 dark:text-green-400">
-                                      {formatCurrency(tenant.totalOnboardingRentPaid)}
+                               </div>
+                                <div className="grid gap-2">
+                                  <div className="flex gap-2">
+                                    <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                      Rent Status:
                                     </Typography>
                                     <Chip 
                                       label="Paid" 
                                       size="small" 
                                       color="success"
-                                      sx={{
-                                        borderRadius: '12px',
-                                        fontWeight: 600,
-                                        backgroundColor: '#10b981',
-                                        color: '#fff',
-                                      }}
+                                      variant="outlined"
                                     />
                                   </div>
-                                </div>
-                                <div>
-                                  <Typography variant="body2" className="text-gray-500 dark:text-gray-400 mb-1">
-                                    Security Paid
-                                  </Typography>
-                                  <div className="flex items-center gap-2">
-                                    <Typography variant="body1" className="font-semibold text-green-600 dark:text-green-400">
-                                      {formatCurrency(tenant.securityDepositPaid)}
+                                  <div className="flex gap-2">
+                                    <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                      Security Status:
                                     </Typography>
                                     <Chip 
                                       label="Paid" 
                                       size="small" 
                                       color="success"
-                                      sx={{
-                                        borderRadius: '12px',
-                                        fontWeight: 600,
-                                        backgroundColor: '#10b981',
-                                        color: '#fff',
-                                      }}
+                                      variant="outlined"
                                     />
                                   </div>
                                 </div>
-                              </div>
+                                <div className="flex flex-col ml-auto mt-auto items-end justify-end gap-2">
+                                  <div className="flex items-end gap-2">
+                                    <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                      Total Paid: <span className="font-bold text-md text-[#008000] dark:text-[#90fd90]">{formatCurrency(tenant.totalOnboardingRentPaid + tenant.securityDepositPaid)}</span>
+                                    </Typography>
+                                  </div> 
+                                </div>
                             </div>
-                          </div>
-
-                          {/* Right Section - Total Collected */}
-                          <div className="flex flex-col items-end gap-4 min-w-fit">
-                            {/* Total Collected */}
-                            <div className="text-right">
-                              <Typography variant="h5" className="font-bold text-green-600 dark:text-green-400 mb-1">
-                                {formatCurrency(tenant.monthlyRent + tenant.securityDepositTotal || 0)}
-                              </Typography>
-                              <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
-                                Total Collected
-                              </Typography>
-                            </div>
-
-                            {/* Success Message */}
-                            <Chip 
-                              label="All Payments Completed" 
-                              size="small" 
-                              color="success"
-                              icon={<CheckCircleIcon />}
-                              sx={{
-                                borderRadius: '12px',
-                                fontWeight: 600,
-                                backgroundColor: '#10b981',
-                                color: '#fff',
-                              }}
-                            />
-                          </div>
                         </div>
                       </CardContent>
                     </Card>

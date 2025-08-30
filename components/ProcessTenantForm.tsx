@@ -453,7 +453,7 @@ export default function ProcessTenantForm({
         <button
           onClick={handleSubmit}
           disabled={isSubmitting || !formData.currentReading || formData.currentReading <= 0}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"
+          className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"
         >
           {isSubmitting && <CircularProgress size={16} color="inherit" />}
           {isSubmitting ? 'Processing...' : 'Process Tenant'}

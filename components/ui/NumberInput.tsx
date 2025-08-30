@@ -1,11 +1,13 @@
 import React from 'react';
 import { TextField, TextFieldProps, Theme } from '@mui/material';
+import { SystemStyleObject } from '@mui/system';
 
 interface NumberInputProps extends Omit<TextFieldProps, 'variant' | 'type' | 'onChange'> {
   placeholder?: string;
   value?: number | string;
   onChange?: (value: number | undefined) => void;
   minWidth?: string;
+  customeStyles?: SystemStyleObject | ((theme: Theme) => SystemStyleObject);
 }
 
 const NumberInput: React.FC<NumberInputProps> = ({
@@ -14,6 +16,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
   onChange,
   minWidth = "100px",
   className = '',
+  customeStyles,
   ...props
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,6 +77,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
               ? "rgba(255,255,255,0.6)"
               : "rgba(0,0,0,0.5)",
         },
+        ...(typeof customeStyles === 'function' ? customeStyles(theme) : customeStyles)
       })}
       {...props}
     />
