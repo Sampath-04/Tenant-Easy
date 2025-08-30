@@ -115,6 +115,17 @@ interface CycleInfo {
   endDate: string;
 }
 
+export interface Payments{
+  _id: string;
+  amount: number;
+  paymentType: "SECURITY_DEPOSIT" | "ONBOARDING_RENT";
+  method: "UPI" | "CASH" | "BANK_TRANSFER" | "CHEQUE" | "OTHER";
+  paidAt: string;
+  isSuccessful: boolean;
+  isPending: boolean;
+  id: string;
+}
+
 export interface Tenant {
   _id: string;
   room: Room;
@@ -124,7 +135,9 @@ export interface Tenant {
   tenantEmail?: string;
   currentReading?: number;
   monthlyRent: number;
+  securityDepositTotal?: number;
   securityDepositPaid?: number;
+  onboardingPayments: Payments[];
   status: 'onboarded' | 'notice_serving' | 'evicted';
   evictedDate?: Date;
   checkInDate: string;

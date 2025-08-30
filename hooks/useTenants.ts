@@ -11,6 +11,7 @@ import {
   getUpcomingTenants,
   processTenant,
   collectPendingPayments,
+  updateOnboardingPaymentAmount,
   type OnboardedTenantsResponse 
 } from '../lib/api/tenants';
 import { 
@@ -253,6 +254,30 @@ export function useCollectPendingPayments() {
     },
     onError: (error: ApiError) => {
       console.error('Failed to collect pending payments:', error);
+      const errorToast = showErrorToast(error.getUserMessage());
+      toast.error(errorToast.message, errorToast.config);
+    },
+  });
+}
+
+/**
+ * Hook to update onboarding payment amount
+ */
+export function useUpdateOnboardingPaymentAmount() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ paymentId, data }: { paymentId: string; data: { amount: string } }) => 
+      updateOnboardingPaymentAmount(paymentId, data),
+    onSuccess: (data, variables) => {
+      // Invalidate tenant details to refresh the payment data
+      queryClient.invalidateQueries({ queryKey: tenantKeys.details() });
+      
+      const successToast = showSuccessToast('Payment amount updated successfully');
+      toast.success(successToast.message, successToast.config);
+    },
+    onError: (error: ApiError) => {
+      console.error('Failed to update payment amount:', error);
       const errorToast = showErrorToast(error.getUserMessage());
       toast.error(errorToast.message, errorToast.config);
     },

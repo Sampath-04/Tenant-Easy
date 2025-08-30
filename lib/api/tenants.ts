@@ -373,4 +373,16 @@ export async function collectPendingPayments(
   return apiClient.post<{ success: boolean; message: string }>(`/tenants/${tenantId}/collect-onboarded-pending-payments`, formData);
 }
 
+/**
+ * Update onboarding payment amount
+ */
+export async function updateOnboardingPaymentAmount(
+  paymentId: string,
+  data: {
+    amount: string;
+  }
+): Promise<{ success: boolean; message: string }> {
+  return apiClient.put<{ success: boolean; message: string }>(`/payment-transactions/${paymentId}/onboarding`, data);
+}
+
 

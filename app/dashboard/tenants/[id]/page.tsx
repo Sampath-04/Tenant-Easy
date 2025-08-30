@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { AuthGuard } from '@/contexts/AuthContext';
 import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
-import { useTenant } from '@/hooks/useTenants';
+import { useTenant, useUpdateOnboardingPaymentAmount } from '@/hooks/useTenants';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
@@ -17,8 +17,8 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import WarningIcon from '@mui/icons-material/Warning';
 import RentHistoryTable from '@/app/components/RentHistoryTable';
 import NoticeForm from '@/components/NoticeForm';
-import { Button } from '@mui/material';
-import { NotificationsActive as NoticeIcon } from '@mui/icons-material';
+import { Button, Accordion, AccordionSummary, AccordionDetails, Typography, IconButton, Chip, TextField, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { NotificationsActive as NoticeIcon, ExpandMore as ExpandMoreIcon, Edit as EditIcon, Payment as PaymentIcon } from '@mui/icons-material';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
 function TenantViewContent() {
@@ -28,8 +28,12 @@ function TenantViewContent() {
   const [activeTab, setActiveTab] = useState('rent');
   const [showNoticeForm, setShowNoticeForm] = useState(false);
   const [localTenant, setLocalTenant] = useState<any>(null);
+  const [showOnboardingHistory, setShowOnboardingHistory] = useState(false);
+  const [editingPayment, setEditingPayment] = useState<any>(null);
+  const [editAmount, setEditAmount] = useState('');
 
   const { data: tenant, isLoading, error: fetchError } = useTenant(tenantId);
+  const updatePaymentMutation = useUpdateOnboardingPaymentAmount();
   const error = fetchError?.message;
 
   const formatCurrency = (amount: number) => {
@@ -94,6 +98,46 @@ function TenantViewContent() {
       // Update local tenant state
       setLocalTenant(updatedTenant);
     }
+  };
+
+  const handleEditPayment = (payment: any) => {
+    setEditingPayment(payment);
+    setEditAmount(payment.amount.toString());
+  };
+
+  const handleSavePaymentEdit = async () => {
+    if (!editingPayment || !editAmount) return;
+
+    try {
+      await updatePaymentMutation.mutateAsync({
+        paymentId: editingPayment._id,
+        data: { amount: editAmount }
+      });
+      
+      // Update local state immediately for better UX
+      if (localTenant && localTenant.onboardingPayments) {
+        const updatedPayments = localTenant.onboardingPayments.map((payment: any) =>
+          payment._id === editingPayment._id 
+            ? { ...payment, amount: parseFloat(editAmount) }
+            : payment
+        );
+        
+        setLocalTenant({
+          ...localTenant,
+          onboardingPayments: updatedPayments
+        });
+      }
+      
+      setEditingPayment(null);
+      setEditAmount('');
+    } catch (error) {
+      console.error('Failed to update payment:', error);
+    }
+  };
+
+  const handleCancelPaymentEdit = () => {
+    setEditingPayment(null);
+    setEditAmount('');
   };
 
   useEffect(() => {
@@ -280,6 +324,17 @@ function TenantViewContent() {
                       Security Deposit
                     </div>
                     <div className="font-medium text-gray-900 dark:text-white">
+                      {formatCurrency(localTenant.securityDepositTotal || 0)}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <AccountBalanceWalletIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  <div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      Security Deposit Paid
+                    </div>
+                    <div className="font-medium text-gray-900 dark:text-white">
                       {formatCurrency(localTenant.securityDepositPaid || 0)}
                     </div>
                   </div>
@@ -304,7 +359,8 @@ function TenantViewContent() {
 
             {/* Apply Notice Button - Only show for onboarded tenants without notice */}
             {localTenant.status === 'onboarded' && !localTenant.notice && localTenant.currentCycle && (
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-4 mt-4">
+                
                 <Button
                   variant="contained"
                   startIcon={<NoticeIcon />}
@@ -326,6 +382,210 @@ function TenantViewContent() {
                 >
                   Apply Notice Period
                 </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => setShowOnboardingHistory(!showOnboardingHistory)}
+                  sx={{
+                    borderColor: '#3b82f6',
+                    color: '#3b82f6',
+                    '&:hover': {
+                      borderColor: '#2563eb',
+                      backgroundColor: 'rgba(59, 130, 246, 0.04)',
+                    },
+                    borderRadius: '12px',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                  }}
+                >
+                  {showOnboardingHistory ? 'Hide' : 'Show More'}
+                </Button>
+              </div>
+            )}
+
+            {/* Show More Button for Onboarding Payment History */}
+            {localTenant.onboardingPayments && localTenant.onboardingPayments.length > 0 && (
+              <div>
+
+                {/* Onboarding Payment History Accordion */}
+                {showOnboardingHistory && (
+                  <div className="mt-4">
+                    <Accordion 
+                      defaultExpanded
+                      sx={{ 
+                        backgroundColor: 'transparent',
+                        boxShadow: 'none',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '12px',
+                        '&:before': {
+                          display: 'none',
+                        },
+                        '&.Mui-expanded': {
+                          margin: '16px 0',
+                        }
+                      }}
+                    >
+                      <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        sx={{
+                          backgroundColor: '#f8fafc',
+                          borderRadius: '12px',
+                          '&.Mui-expanded': {
+                            borderBottomLeftRadius: 0,
+                            borderBottomRightRadius: 0,
+                          },
+                          '&:hover': {
+                            backgroundColor: '#f1f5f9',
+                          }
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <PaymentIcon sx={{ color: '#3b82f6' }} />
+                          <Typography variant="h6" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                            Onboarding Payment History
+                          </Typography>
+                        </div>
+                      </AccordionSummary>
+                      <AccordionDetails sx={{ padding: '24px' }}>
+                        <div className="space-y-4">
+                          {localTenant.onboardingPayments.map((payment: any, index: number) => (
+                            <div 
+                              key={payment._id || index}
+                              className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
+                            >
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-3">
+                                  <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#1f2937' }}>
+                                    {payment.paymentType === 'SECURITY_DEPOSIT' ? 'Security Deposit' : 'Onboarding Rent'}
+                                  </Typography>
+                                  <Chip 
+                                    label={payment.isSuccessful ? 'Successful' : payment.isPending ? 'Pending' : 'Failed'}
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: payment.isSuccessful ? '#10b981' : payment.isPending ? '#f59e0b' : '#ef4444',
+                                      color: 'white',
+                                      fontWeight: 500,
+                                    }}
+                                  />
+                                </div>
+                                 <div className="flex items-center gap-2">
+                                 {editingPayment?._id === payment._id ? (
+                                   <div className="flex items-center gap-2">
+                                     <TextField
+                                       type="number"
+                                       size="small"
+                                       value={editAmount}
+                                       onChange={(e) => {
+                                         const value = e.target.value;
+                                         // Only allow positive numbers
+                                         if (value === '' || (parseFloat(value) >= 0 && /^\d*\.?\d*$/.test(value))) {
+                                           setEditAmount(value);
+                                         }
+                                       }}
+                                       onKeyPress={(e) => {
+                                         // Allow only numbers, decimal point, and backspace
+                                         if (!/[0-9.]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete') {
+                                           e.preventDefault();
+                                         }
+                                         // Prevent multiple decimal points
+                                         if (e.key === '.' && editAmount.includes('.')) {
+                                           e.preventDefault();
+                                         }
+                                       }}
+                                       sx={{
+                                         width: '120px',
+                                         '& .MuiInputBase-root': {
+                                           fontSize: '1.125rem',
+                                           fontWeight: 700,
+                                           color: '#059669',
+                                         },
+                                         '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+                                           display: 'none',
+                                         },
+                                         '& input[type=number]': {
+                                           MozAppearance: 'textfield',
+                                         }
+                                       }}
+                                       inputProps={{
+                                         style: { textAlign: 'right' },
+                                         min: 0,
+                                         step: 0.01,
+                                         placeholder: '0'
+                                       }}
+                                     />
+                                     <IconButton
+                                       size="small"
+                                       onClick={handleSavePaymentEdit}
+                                       disabled={updatePaymentMutation.isPending}
+                                       sx={{
+                                         color: '#10b981',
+                                         '&:hover': {
+                                           backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                         }
+                                       }}
+                                     >
+                                       ✓
+                                     </IconButton>
+                                     <IconButton
+                                       size="small"
+                                       onClick={handleCancelPaymentEdit}
+                                       sx={{
+                                         color: '#ef4444',
+                                         '&:hover': {
+                                           backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                         }
+                                       }}
+                                     >
+                                       ✕
+                                     </IconButton>
+                                   </div>
+                                 ) : (
+                                   <>
+                                     <Typography variant="h6" sx={{ fontWeight: 700, color: '#059669' }}>
+                                       ₹{payment.amount}
+                                     </Typography>
+                                     <IconButton
+                                       size="small"
+                                       sx={{
+                                         color: '#6b7280',
+                                         '&:hover': {
+                                           backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                           color: '#3b82f6',
+                                         }
+                                       }}
+                                       onClick={() => handleEditPayment(payment)}
+                                     >
+                                       <EditIcon />
+                                     </IconButton>
+                                   </>
+                                 )}
+                               </div>
+                              </div>
+                              
+                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                 <div>
+                                   <Typography variant="body2" sx={{ color: '#6b7280', fontWeight: 500 }}>
+                                     Payment Method
+                                   </Typography>
+                                   <Typography variant="body1" sx={{ color: '#1f2937', fontWeight: 600 }}>
+                                     {payment.method.replace('_', ' ')}
+                                   </Typography>
+                                 </div>
+                                 <div>
+                                   <Typography variant="body2" sx={{ color: '#6b7280', fontWeight: 500 }}>
+                                     Payment Date
+                                   </Typography>
+                                   <Typography variant="body1" sx={{ color: '#1f2937', fontWeight: 600 }}>
+                                     {formatDate(payment.paidAt)}
+                                   </Typography>
+                                 </div>
+                               </div>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionDetails>
+                    </Accordion>
+                  </div>
+                )}
               </div>
             )}
           </div>
