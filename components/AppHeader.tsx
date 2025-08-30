@@ -7,6 +7,7 @@ import ThemeToggle from './ui/ThemeSwitcher';
 import { LogoutOutlined, Menu as MenuIcon, Close as CloseIcon, ChevronRight as ChevronRightIcon } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
 import BreadCrumbs from './ui/BreadCrumbs';
+import { getCurrentDate } from '@/lib/utils/formatters';
 
 interface AppHeaderProps {
   title: string;
@@ -103,6 +104,8 @@ export function AppHeader({
             onClick={() => setIsMobileMenuOpen(false)}
           />
         )}
+
+        {getCurrentDate().toLocaleDateString()}
 
         {/* Mobile Sidebar */}
         <div 

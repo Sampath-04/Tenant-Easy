@@ -5,15 +5,21 @@ import {
   createTenant, 
   updateTenant, 
   deleteTenant,
-  markTenantAsDeleted
+  markTenantAsDeleted,
+  getOnboardedPendingPayments,
+  getOnboardedCompletedPayments,
+  getUpcomingTenants,
+  processTenant,
+  collectPendingPayments,
+  type OnboardedTenantsResponse 
 } from '../lib/api/tenants';
-import { getRoomsForFilter } from '../lib/api/rooms';
 import { 
   Tenant, 
   GetTenantsRequest,
   ApiError 
 } from '../lib/api';
-import { showErrorToast } from '../lib/toast-config';
+import { showErrorToast, showSuccessToast } from '../lib/toast-config';
+import { toast } from 'react-toastify';
 
 // Query keys
 export const tenantKeys = {
@@ -143,6 +149,112 @@ export function useMarkTenantAsDeleted() {
     onError: (error: ApiError) => {
       console.error('Failed to mark tenant as deleted:', error);
       showErrorToast(error.getUserMessage());
+    },
+  });
+}
+
+/**
+ * Hook to fetch onboarding pending payments for a property
+ */
+export function useOnboardedPendingPayments(
+  propertyId: string,
+  params: {
+    page?: number;
+    limit?: number;
+    room?: string;
+    search?: string;
+    startCheckInDate?: string;
+    endCheckInDate?: string;
+  } = {}
+) {
+  return useQuery({
+    queryKey: ['onboarded-pending-payments', propertyId, params],
+    queryFn: () => getOnboardedPendingPayments(propertyId, params),
+    enabled: !!propertyId && propertyId !== '',
+    staleTime: 0, 
+    gcTime: 0,
+  });
+}
+
+/**
+ * Hook to fetch onboarding completed payments for a property
+ */
+export function useOnboardedCompletedPayments(
+  propertyId: string,
+  params: {
+    page?: number;
+    limit?: number;
+    room?: string;
+    search?: string;
+    startCheckInDate?: string;
+    endCheckInDate?: string;
+  } = {}
+) {
+  return useQuery({
+    queryKey: ['onboarded-completed-payments', propertyId, params],
+    queryFn: () => getOnboardedCompletedPayments(propertyId, params),
+    enabled: !!propertyId && propertyId !== '',
+    staleTime: 0, 
+    gcTime: 0,
+  });
+}
+
+/**
+ * Hook to fetch upcoming tenants for a property
+ */
+export function useUpcomingTenants(
+  propertyId: string,
+  params: {
+    page?: number;
+    limit?: number;
+    room?: string;
+    search?: string;
+  } = {}
+) {
+  return useQuery({
+    queryKey: ['upcoming-tenants', propertyId, params],
+    queryFn: () => getUpcomingTenants(propertyId, params),
+    enabled: !!propertyId && propertyId !== '',
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+}
+
+/**
+ * Hook to process an upcoming tenant
+ */
+export function useProcessTenant() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ tenantId, data }: { tenantId: string; data: any }) => processTenant(tenantId, data),
+    onSuccess: () => {
+      // Invalidate relevant queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['upcoming-tenants'] });
+      queryClient.invalidateQueries({ queryKey: ['onboarded-pending-payments'] });
+    },
+  });
+}
+
+/**
+ * Hook to collect pending payments from an onboarded tenant
+ */
+export function useCollectPendingPayments() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ tenantId, data }: { tenantId: string; data: any }) => collectPendingPayments(tenantId, data),
+    onSuccess: () => {
+      // Invalidate relevant queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['onboarded-pending-payments'] });
+
+      const successToast = showSuccessToast('Onboarded Pending payments collected successfully');
+      toast.success(successToast.message, successToast.config);
+    },
+    onError: (error: ApiError) => {
+      console.error('Failed to collect pending payments:', error);
+      const errorToast = showErrorToast(error.getUserMessage());
+      toast.error(errorToast.message, errorToast.config);
     },
   });
 }
