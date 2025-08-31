@@ -22,6 +22,7 @@ interface TenantFormData {
   tenantNumber: string;
   tenantEmail: string;
   monthlyRent: number;
+  securityDepositTotal: number;
   securityDepositPaid: number;
   checkInDate: string;
 }
@@ -36,9 +37,12 @@ function TenantEditContent() {
     tenantNumber: '',
     tenantEmail: '',
     monthlyRent: 0,
+    securityDepositTotal: 0,
     securityDepositPaid: 0,
     checkInDate: ''
   });
+
+  console.log('formData', formData);
 
   const { data: tenant, isLoading, error: fetchError } = useTenant(tenantId);
 
@@ -50,6 +54,7 @@ function TenantEditContent() {
         tenantNumber: tenant.tenantNumber || '',
         tenantEmail: tenant.tenantEmail || '',
         monthlyRent: tenant.monthlyRent || 0,
+        securityDepositTotal: tenant.securityDepositTotal || 0,
         securityDepositPaid: tenant.securityDepositPaid || 0,
         checkInDate: tenant.checkInDate ? tenant.checkInDate.split('T')[0] : '',
       });
@@ -67,8 +72,21 @@ function TenantEditContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const updateData = {
+      tenantName: formData.tenantName,
+      tenantNumber: formData.tenantNumber,
+      tenantEmail: formData.tenantEmail,
+      monthlyRent: formData.monthlyRent,
+      securityDepositTotal: formData.securityDepositTotal,
+      securityDepositPaid: formData.securityDepositPaid,
+      checkInDate: formData.checkInDate,
+    };
+
+    console.log('updateData', updateData);
+
     updateTenantMutation.mutate(
-      { id: tenantId, data: formData },
+      { id: tenantId, data: updateData },
       {
         onSuccess: () => {
           showSuccessToast('Tenant updated successfully!');
@@ -281,7 +299,7 @@ function TenantEditContent() {
                   <CurrencyRupeeIcon className="mr-2"/>
                   Financial Information
                 </h2>
-                <div className="flex flex-col md:flex-row gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Monthly Rent *
@@ -290,6 +308,18 @@ function TenantEditContent() {
                       <NumberInput
                         value={formData.monthlyRent}
                         onChange={(value) => handleInputChange('monthlyRent', value || 0)}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Security Deposit Total
+                    </label>
+                    <div className="relative">
+                      <NumberInput
+                        value={formData.securityDepositTotal}
+                        onChange={(value) => handleInputChange('securityDepositTotal', value || 0)}
+                        placeholder="0"
                       />
                     </div>
                   </div>

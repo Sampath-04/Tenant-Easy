@@ -107,6 +107,7 @@ export async function createTenant(tenantData: {
  * Update an existing tenant
  */
 export async function updateTenant(id: string, tenantData: Partial<Tenant>): Promise<Tenant> {
+  console.log('tenantData', tenantData);
   const response = await apiClient.put<{ success: boolean; data: Tenant }>(`/tenants/${id}`, tenantData);
   return response.data;
 }

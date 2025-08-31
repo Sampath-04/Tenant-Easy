@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AuthGuard } from '@/contexts/AuthContext';
 import { AppHeader } from '@/components/AppHeader';
@@ -23,6 +23,7 @@ import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
 function TenantViewContent() {
   const params = useParams();
+  const router = useRouter();
   const tenantId = params.id as string;
 
   const [activeTab, setActiveTab] = useState('rent');
@@ -358,54 +359,69 @@ function TenantViewContent() {
             )}
 
             {/* Apply Notice Button - Only show for onboarded tenants without notice */}
-            {localTenant.status === 'onboarded' && !localTenant.notice && localTenant.currentCycle && (
-              <div className="flex justify-end gap-4 mt-4">
-                
-                <Button
-                  variant="contained"
-                  startIcon={<NoticeIcon />}
-                  onClick={handleApplyNotice}
-                  disabled={localTenant.previousCyclePaymentStatus === 'NOT_PAID' || localTenant.previousCyclePaymentStatus === 'PARTIALLY_PAID'}
-                  sx={{
-                    backgroundColor: '#FFC04D',
-                    boxShadow: 'none',
-                    borderRadius: '12px',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    textTransform: 'none',
-                    padding: '10px 16px',
-                    '&:hover': {
-                      backgroundColor: '#d97706',
-                    },
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  Apply Notice Period
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={() => setShowOnboardingHistory(!showOnboardingHistory)}
-                  sx={{
-                    borderColor: '#3b82f6',
-                    color: '#3b82f6',
-                    '&:hover': {
-                      borderColor: '#2563eb',
-                      backgroundColor: 'rgba(59, 130, 246, 0.04)',
-                    },
-                    borderRadius: '12px',
-                    textTransform: 'none',
-                    fontWeight: 500,
-                  }}
-                >
-                  {showOnboardingHistory ? 'Hide' : 'Show More'}
-                </Button>
-              </div>
-            )}
-
+        
+            <div className="flex justify-end gap-4 mt-4">
+              
+              {localTenant.status === 'onboarded' && !localTenant.notice && localTenant.currentCycle && <Button
+                variant="contained"
+                startIcon={<NoticeIcon />}
+                onClick={handleApplyNotice}
+                disabled={localTenant.previousCyclePaymentStatus === 'NOT_PAID' || localTenant.previousCyclePaymentStatus === 'PARTIALLY_PAID'}
+                sx={{
+                  backgroundColor: '#FFC04D',
+                  boxShadow: 'none',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  textTransform: 'none',
+                  padding: '10px 16px',
+                  '&:hover': {
+                    backgroundColor: '#d97706',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                Apply Notice Period
+              </Button>}
+              <Button
+                variant="outlined"
+                onClick={() => router.push(`/dashboard/tenants/${tenantId}/edit`)}
+                sx={{
+                  borderColor: '#6b7280',
+                  color: '#6b7280',
+                  '&:hover': {
+                    borderColor: '#4b5563',
+                    backgroundColor: 'rgba(107, 114, 128, 0.04)',
+                  },
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  fontWeight: 500,
+                }}
+              >
+                Edit Tenant
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => setShowOnboardingHistory(!showOnboardingHistory)}
+                sx={{
+                  borderColor: '#3b82f6',
+                  color: '#3b82f6',
+                  '&:hover': {
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(59, 130, 246, 0.04)',
+                  },
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  fontWeight: 500,
+                }}
+              >
+                {showOnboardingHistory ? 'Hide' : 'Show More'}
+              </Button>
+            </div>
+            
             {/* Show More Button for Onboarding Payment History */}
             {localTenant.onboardingPayments && localTenant.onboardingPayments.length > 0 && (
               <div>
-
                 {/* Onboarding Payment History Accordion */}
                 {showOnboardingHistory && (
                   <div className="mt-4">
