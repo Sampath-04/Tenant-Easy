@@ -56,9 +56,9 @@ export default function PaymentCollectionForm({
   // Initialize amount when rentRecord is available
   useEffect(() => {
     if (rentRecord) {
-      if (rentRecord.paymentStatus === "PARTIALLY_PAID" && rentRecord.payments?.length > 0) {
+      if (rentRecord.paymentStatus === "PARTIALLY_PAID" && rentRecord.paymentTransactions?.length > 0) {
         // Calculate total amount paid so far
-        const totalPaid = rentRecord.payments.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0);
+        const totalPaid = rentRecord.paymentTransactions.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0);
         // Set remaining amount
         setAmount(Math.max(0, (rentRecord.totalAmount || 0) - totalPaid));
       } else {
@@ -105,8 +105,8 @@ export default function PaymentCollectionForm({
       setSelectedImages([]);
       setImagePreviewUrls([]);
       // Reset amount based on payment status
-      if (rentRecord?.paymentStatus === "PARTIALLY_PAID" && rentRecord?.payments?.length > 0) {
-        const totalPaid = rentRecord.payments.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0);
+      if (rentRecord?.paymentStatus === "PARTIALLY_PAID" && rentRecord?.paymentTransactions?.length > 0) {
+        const totalPaid = rentRecord.paymentTransactions.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0);
         setAmount(Math.max(0, (rentRecord.totalAmount || 0) - totalPaid));
       } else {
         setAmount(rentRecord?.totalAmount || 0);
@@ -165,8 +165,8 @@ export default function PaymentCollectionForm({
       setSelectedImages([]);
       setImagePreviewUrls([]);
       // Reset amount based on payment status
-      if (rentRecord?.paymentStatus === "PARTIALLY_PAID" && rentRecord?.payments?.length > 0) {
-        const totalPaid = rentRecord.payments.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0);
+      if (rentRecord?.paymentStatus === "PARTIALLY_PAID" && rentRecord?.paymentTransactions?.length > 0) {
+        const totalPaid = rentRecord.paymentTransactions.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0);
         setAmount(Math.max(0, (rentRecord.totalAmount || 0) - totalPaid));
       } else {
         setAmount(rentRecord?.totalAmount || 0);
@@ -301,13 +301,13 @@ export default function PaymentCollectionForm({
             </Box>
             
             {/* Partially Paid Details */}
-            {rentRecord?.paymentStatus === "PARTIALLY_PAID" && rentRecord?.payments?.length > 0 && (
+            {rentRecord?.paymentStatus === "PARTIALLY_PAID" && rentRecord?.paymentTransactions?.length > 0 && (
               <Box className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
                 <Typography variant="subtitle2" className="text-amber-800 dark:text-amber-300 mb-2">
                   Previous Payments
                 </Typography>
                 <div className="space-y-2">
-                  {rentRecord.payments.map((payment: any, index: number) => (
+                  {rentRecord.paymentTransactions.map((payment: any, index: number) => (
                     <div key={index} className="flex justify-between items-center text-sm">
                       <div>
                         <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
@@ -330,7 +330,7 @@ export default function PaymentCollectionForm({
                         Total Paid:
                       </Typography>
                       <Typography variant="body2" className="font-bold text-amber-800 dark:text-amber-300">
-                        {formatCurrency(rentRecord.payments.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0))}
+                        {formatCurrency(rentRecord.paymentTransactions.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0))}
                       </Typography>
                     </div>
                     <div className="flex justify-between items-center mt-1">
@@ -338,7 +338,7 @@ export default function PaymentCollectionForm({
                         Remaining Amount:
                       </Typography>
                       <Typography variant="body2" className="font-bold text-red-600 dark:text-red-400">
-                        {formatCurrency(Math.max(0, (rentRecord.totalAmount || 0) - rentRecord.payments.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0)))}
+                        {formatCurrency(Math.max(0, (rentRecord.totalAmount || 0) - rentRecord.paymentTransactions.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0)))}
                       </Typography>
                   </div>
                 </div>
@@ -522,7 +522,7 @@ export default function PaymentCollectionForm({
             {rentRecord?.paymentStatus === "PARTIALLY_PAID" ? "Collect" : "Collect - Start New"}
           </button>
           {/*  show only if the amount user paid + amount is >= rentRecord?.totalAmount */}
-          {rentRecord?.totalAmount <= amount + (rentRecord?.payments?.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0) || 0) && <button 
+          {rentRecord?.totalAmount <= amount + (rentRecord?.paymentTransactions?.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0) || 0) && <button 
             onClick={handleCollectAndApplyNotice}
             disabled={isCollectingStartNew || isCollectingApplyNotice || amount <= 0}
             className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"

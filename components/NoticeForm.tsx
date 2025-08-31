@@ -180,7 +180,7 @@ export default function NoticeForm({
           noticeId: existingNotice._id,
           data: {
             tenantId,
-            noticeDate: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
+            noticeDate: getCurrentDate().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
             noticeEndsOn: noticeEndDate.toISOString().split('T')[0], // Notice end date in YYYY-MM-DD format
             extraDays,
             extraDaysCost: cost,

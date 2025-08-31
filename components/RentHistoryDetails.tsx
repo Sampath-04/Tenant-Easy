@@ -92,17 +92,17 @@ const RentHistoryDetails: React.FC<RentHistoryDetailsProps> = ({
           <Box>
              {activeTab === 0 && (
                <PaymentHistory
-                 rentPayments={record.payments || []}
+                 rentPayments={record.paymentTransactions || []}
                  noticePayments={record.notice?.payments || []}
                  totalPaidAmount={
                    record.notice 
                      ? record.notice.totalPaidAmount || 0
-                     : record.payments?.reduce((sum, payment) => sum + payment.amount, 0) || 0
+                     : record.paymentTransactions?.reduce((sum, payment) => sum + payment.amount, 0) || 0
                  }
                  remainingAmount={
                    record.notice 
                      ? record.notice.remainingAmount || 0
-                     : record.totalAmount - (record.payments?.reduce((sum, payment) => sum + payment.amount, 0) || 0)
+                     : record.totalAmount - (record.paymentTransactions?.reduce((sum, payment) => sum + payment.amount, 0) || 0)
                  }
                  totalAmount={
                    record.notice 

@@ -27,7 +27,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
 }) => {
   // Combine both payment arrays and sort by date
   const allPayments = [...rentPayments, ...noticePayments].sort((a, b) => 
-    new Date(b.paidDate).getTime() - new Date(a.paidDate).getTime()
+    new Date(b.paidAt).getTime() - new Date(a.paidAt).getTime()
   );
 
   const totalPaymentCount = rentPayments.length + noticePayments.length;
@@ -122,7 +122,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                               Payment Date
                             </Typography>
                             <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
-                              {new Date(payment.paidDate).toLocaleDateString('en-IN', {
+                              {new Date(payment.paidAt).toLocaleDateString('en-IN', {
                                 year: 'numeric',
                                 month: 'short',
                                 day: 'numeric',
@@ -142,7 +142,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                               Paid To
                             </Typography>
                             <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
-                              {payment.paidTo}
+                              {payment.metadata.paidTo}
                             </Typography>
                           </div>
                           <div>
@@ -150,7 +150,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                               Recorded By
                             </Typography>
                             <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
-                              {payment.recordedBy.name}
+                              {payment.recordedBy.name} ({payment.recordedBy.role})
                             </Typography>
                           </div>
                           {/* <div>

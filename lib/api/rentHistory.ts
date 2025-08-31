@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import { Property } from './types';
 
 // Electricity Reading interface for rent history
 export interface ElectricityReadingDetail {
@@ -60,16 +61,30 @@ export interface RoomInfo {
 
 export interface Payment {
   _id: string;
+  tenant: TenantInfo;
+  property: Property;
+  room: RoomInfo;
   amount: number;
-  paidDate: string;
+  currency: string;
+  paymentType: string;
+  status: string;
+  method: string;
+  paidAt: string;
   paymentProofs: string[];
-  paidTo: string;
-  comments: string;
   recordedBy: {
     _id: string;
     name: string;
     role: string;
   };
+  rentHistory: string;
+  metadata: {
+    rentMonth: string;
+    comments?: string;
+    paidTo: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 // Rent History item interface
@@ -85,7 +100,7 @@ export interface RentHistoryItem {
   electricityUnits: number;
   totalAmount: number;
   paymentStatus: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
-  payments: Payment[];
+  paymentTransactions: Payment[];
   dueDate: string;
   previousCyclePaymentStatus: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
   previousCycleMonth: string;
