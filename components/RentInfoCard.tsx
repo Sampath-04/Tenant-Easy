@@ -232,7 +232,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
             </Typography>
           </div>
           {/* Show Total Amount only if not in notice period */}
-          {!record.notice || record.notice.status !== 'active' && (
+          {!record.notice && (
              <div>
                <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                  Total Amount

@@ -191,24 +191,23 @@ function TenantsContent() {
         subtitle={`Manage tenants for ${selectedProperty.name}`}
       />
 
-      <BreadCrumbs items={breadcrumbs} />
+      <div className='mt-6'>
+        <BreadCrumbs items={breadcrumbs} />
+      </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto px-4 sm:px-6 lg:px-6 py-6">
         {/* Filters Section */}
-        <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-lg md:p-8 p-4 border border-white/20 dark:border-gray-700/50 mb-8">
-          <div className="flex flex-row justify-between md:flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+        <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-lg p-4 border border-white/20 dark:border-gray-700/50 mb-4">
+          <div className="flex flex-row justify-between md:flex-col lg:flex-row lg:items-center lg:justify-between mb-3">
             <div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                 Filter Tenants
               </h2>
-              <p className="hidden md:block text-sm text-gray-600 dark:text-gray-400">
-                Find and filter tenants based on your preferences
-              </p>
             </div>
             <button
               onClick={clearFilters}
-              className="md:mt-4 lg:mt-0 text-sm border border-gray-300 dark:border-gray-700 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-[30px]  cursor-pointer font-medium transition-colors flex items-center space-x-1 w-fit"
+              className="md:mt-4 lg:mt-0 text-sm border border-gray-300 dark:border-gray-700 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-[30px] cursor-pointer font-medium transition-colors flex items-center space-x-1 w-fit"
             >
               <span className="hidden md:block">Clear All Filters</span>
               <span className="md:hidden">Clear Filters</span>
@@ -216,7 +215,7 @@ function TenantsContent() {
           </div>
 
           {/* Filter Controls */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-3">
             {/* Search */}
             <div className="space-y-2 self-end">
               <SearchInput
@@ -229,7 +228,6 @@ function TenantsContent() {
               {/* Status Filter */}
               <div className="space-y-2 w-[140px]">
                 <CustomSelect
-                  label="Status"
                   value={filters.status || ''}
                   onChange={(e: any) => handleFilterChange('status', e.target.value)}
                   options={[
@@ -244,7 +242,6 @@ function TenantsContent() {
               {/* Room Filter */}
               <div className="space-y-2 w-[180px]">
                 <CustomSelect
-                  label="Room"
                   value={filters.room || ''}
                   onChange={(e: any) => handleFilterChange('room', e.target.value)}
                   options={[

@@ -4,7 +4,7 @@ import { useProperty } from '@/contexts/PropertyContext';
 import { toast } from 'react-toastify';
 import { showSuccessToast, showErrorToast } from '@/lib/toast-config';
 
-interface UseRentRecordsParams {
+export interface UseRentRecordsParams {
   propertyId: string;
   page?: number;
   limit?: number;
@@ -12,6 +12,7 @@ interface UseRentRecordsParams {
   paymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
   search?: string;
   roomNo?: string;
+  rentStatus?: "pending" | "due" | "upcoming";
   endDateFrom?: string;
   endDateTo?: string;
   enabled?: boolean;
@@ -25,22 +26,25 @@ export function useRentRecords({
   paymentStatus,
   search,
   roomNo,
+  rentStatus,
   endDateFrom,
   endDateTo,
   enabled = true,
 }: UseRentRecordsParams) {
   return useQuery({
-    queryKey: ['rent-records', propertyId, page, limit, tenant, paymentStatus, search, roomNo, endDateFrom, endDateTo],
-    queryFn: () => getAllRentRecordsForProperty(propertyId, {
+    queryKey: ['rent-records', propertyId, page, limit, tenant, paymentStatus, search, roomNo, rentStatus, endDateFrom, endDateTo],
+    queryFn: () => getAllRentRecordsForProperty(
+      propertyId,
       page,
       limit,
       tenant,
       paymentStatus,
       search,
       roomNo,
+      rentStatus,
       endDateFrom,
-      endDateTo,
-    }),
+      endDateTo
+    ),
     enabled: enabled && !!propertyId,
     staleTime: 0, // 5 minutes
     gcTime: 0, // 10 minutes
@@ -69,11 +73,20 @@ export function usePropertyRentSummary(
   endDateTo?: string,
   paymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID",
   search?: string,
-  roomNo?: string
+  roomNo?: string,
+  rentStatus?: "pending" | "due" | "upcoming"
 ) {
   return useQuery({
-    queryKey: ['property-rent-summary', propertyId, endDateFrom, endDateTo, paymentStatus, search, roomNo],
-    queryFn: () => getPropertyRentSummary(propertyId, { endDateFrom, endDateTo, paymentStatus, search, roomNo }),
+    queryKey: ['property-rent-summary', propertyId, endDateFrom, endDateTo, paymentStatus, search, roomNo, rentStatus],
+    queryFn: () => getPropertyRentSummary(
+      propertyId,
+      endDateFrom,
+      endDateTo,
+      paymentStatus,
+      search,
+      roomNo,
+      rentStatus
+    ),
     enabled: !!propertyId && propertyId !== '',
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes

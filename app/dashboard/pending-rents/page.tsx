@@ -7,11 +7,11 @@ import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
 import { usePendingRents } from '@/hooks/useRentRecords';
 import SearchInput from '@/components/ui/SearchInput';
-import {
-  Card,
-  CardContent,
-  Typography,
-  Button,
+import { 
+  Card, 
+  CardContent, 
+  Typography, 
+  Button, 
   Theme,
 } from '@mui/material';
 import {
@@ -54,8 +54,8 @@ function PendingRentsContent() {
   // Filter rents based on search term
   const filteredRents = useMemo(() => {
     if (!pendingRentsData?.data) return [];
-
-    return pendingRentsData.data.filter(rent =>
+    
+    return pendingRentsData.data.filter(rent => 
       rent.tenant.tenantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       rent.tenant.tenantNumber.includes(searchTerm) ||
       rent.room.roomNo.toLowerCase().includes(searchTerm.toLowerCase())
@@ -195,7 +195,7 @@ Thank you!`;
       />
 
       <BreadCrumbs items={breadcrumbs} />
-
+      
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
           <div className="p-6">

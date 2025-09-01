@@ -146,7 +146,7 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
       <Card className="transition-all duration-300 h-full bg-white/70 dark:bg-gray-900/70 backdrop-blur-md border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md" sx={{ borderRadius: "20px", boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.1)" }}>
         <CardContent className="p-0 flex flex-col">
           {/* Header */}
-          <div className=" p-4 md:pb-4 pb-0">
+          <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <RoomIcon className="text-gray-500 dark:text-gray-400 mr-3 text-3xl" />
@@ -196,7 +196,7 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
             </div>
 
             {/* Room Stats - Desktop Only */}
-            <div className="hidden md:grid md:grid-cols-3 gap-4 mb-6">
+            <div className="hidden md:grid md:grid-cols-3 gap-4 mb-4">
               <div className="flex flex-col items-center p-4 bg-gradient-to-tr from-blue-50 to-blue-100 dark:from-blue-900/80 dark:to-blue-900/10 rounded-xl shadow-sm">
                 <Typography variant="h6" className="font-bold text-blue-700 dark:text-blue-400">
                   {room.maxCapacity}

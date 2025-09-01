@@ -75,7 +75,6 @@ export default function NoticeForm({
       
       // Create preview URL
       const previewUrl = URL.createObjectURL(file);
-      console.log("previewUrl", previewUrl);
       setPaymentProofPreviewUrl(previewUrl);
     }
   }, [paymentProofPreviewUrl]);
@@ -143,7 +142,6 @@ export default function NoticeForm({
      if (!noticeEndDate) {
        setNoticeEndDate(defaultNoticeEndDate);
      }
-     console.log("defaultNoticeEndDate", defaultNoticeEndDate);
      
      // Calculate extra days based on selected notice end date
      const calculateExtraDays = () => {

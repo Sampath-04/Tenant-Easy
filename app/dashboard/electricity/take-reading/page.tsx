@@ -172,7 +172,7 @@ function ElectricityReadingContent() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <AppHeader title="Electricity Readings" subtitle="Record meter readings for all rooms" />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="  mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Alert severity="info">Please select a property to view rooms</Alert>
         </main>
       </div>
@@ -183,7 +183,7 @@ function ElectricityReadingContent() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <AppHeader title="Electricity Readings" subtitle="Record meter readings for all rooms" />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="  mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center py-12">
             <CircularProgress />
           </div>
@@ -196,7 +196,7 @@ function ElectricityReadingContent() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <AppHeader title="Electricity Readings" subtitle="Record meter readings for all rooms" />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="  mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Alert severity="error">Failed to load rooms. Please try again.</Alert>
         </main>
       </div>
@@ -214,7 +214,7 @@ function ElectricityReadingContent() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <AppHeader title="Electricity Readings" subtitle="Record meter readings for all rooms" />
       <BreadCrumbs items={breadcrumbs} />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
+      <main className="  mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
     
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 md:mb-8"> 
             <Card sx={{ borderRadius: '16px', boxShadow: 'rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px' }}>

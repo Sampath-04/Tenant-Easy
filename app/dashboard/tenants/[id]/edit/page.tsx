@@ -3,9 +3,7 @@
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { AuthGuard } from '@/contexts/AuthContext';
 import { useProperty } from '@/contexts/PropertyContext';
-import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
 import { useTenant, useUpdateTenant } from '@/hooks/useTenants';
 import { showSuccessToast } from '@/lib/toast-config';
@@ -41,8 +39,6 @@ function TenantEditContent() {
     securityDepositPaid: 0,
     checkInDate: ''
   });
-
-  console.log('formData', formData);
 
   const { data: tenant, isLoading, error: fetchError } = useTenant(tenantId);
 
@@ -82,8 +78,6 @@ function TenantEditContent() {
       securityDepositPaid: formData.securityDepositPaid,
       checkInDate: formData.checkInDate,
     };
-
-    console.log('updateData', updateData);
 
     updateTenantMutation.mutate(
       { id: tenantId, data: updateData },
@@ -142,10 +136,15 @@ function TenantEditContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <AppHeader
-        title="Edit Tenant"
-        subtitle={`Editing details for ${tenant?.tenantName || 'Tenant'}`}
-      />
+      <div className="p-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Edit Tenant
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            Editing details for {tenant?.tenantName || 'Tenant'}
+          </p>
+        </div>
 
       <BreadCrumbs items={breadcrumbs} />
       
@@ -359,14 +358,11 @@ function TenantEditContent() {
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 }
 
 export default function TenantEdit() {
-  return (
-    <AuthGuard>
-      <TenantEditContent />
-    </AuthGuard>
-  );
+  return <TenantEditContent />;
 }

@@ -6,8 +6,6 @@ import { PropertySelector } from './ui/PropertySelector';
 import ThemeToggle from './ui/ThemeSwitcher';
 import { LogoutOutlined, Menu as MenuIcon, Close as CloseIcon, ChevronRight as ChevronRightIcon } from '@mui/icons-material';
 import { useState, useEffect } from 'react';
-import BreadCrumbs from './ui/BreadCrumbs';
-import { getCurrentDate } from '@/lib/utils/formatters';
 
 interface AppHeaderProps {
   title: string;
@@ -48,8 +46,8 @@ export function AppHeader({
 
   return (
     <div className="sticky top-0 z-50">
-    <header className="sticky top-0 z-30 bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700 py-2 md:py-4">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-30 bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700 py-2 md:py-3">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
             <div className="flex flex-col gap-2">
@@ -105,7 +103,7 @@ export function AppHeader({
           />
         )}
 
-        {getCurrentDate().toLocaleDateString()}
+        {/* {getCurrentDate().toLocaleDateString()} */}
 
         {/* Mobile Sidebar */}
         <div 

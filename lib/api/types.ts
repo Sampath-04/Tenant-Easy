@@ -214,7 +214,13 @@ export interface PropertyData {
     occupiedRooms: number;
     availableRooms: number;
     pendingRentAmount: number;
+    pendingRentCount: number;
     dueRentAmount: number;
+    dueRentCount: number;
+    pendingOnboardingAmount: number;
+    pendingOnboardingCount: number;
+    pendingSecurityAmount: number;
+    pendingRentOnboardingAmount: number;
     monthlyRevenue: number;
   };
 }
