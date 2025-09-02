@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -12,6 +13,8 @@ import {
   Box,
   Pagination,
   MenuItem,
+  Tooltip,
+  Skeleton,
 } from '@mui/material';
 import { Theme } from '@mui/material/styles';
 import {
@@ -21,6 +24,7 @@ import {
   CurrencyRupee as CurrencyIcon,
   Person as PersonIcon,
   FilterList as FilterIcon,
+  Clear as ClearIcon,
 } from '@mui/icons-material';
 import { useRentRecords, usePropertyRentSummary } from '@/hooks/useRentRecords';
 import { useRooms } from '@/hooks/useRooms';
@@ -43,10 +47,15 @@ import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
 import RentRecordsList from '@/app/components/RentRecordsList';
+import { showErrorToast } from '@/lib/toast-config';
+import { toast } from 'react-toastify';
 
 
 export default function RentRecordsPage() {
   const { selectedProperty } = useProperty();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [filters, setFilters] = useState({
@@ -54,17 +63,12 @@ export default function RentRecordsPage() {
     tenant: '',
     paymentStatus: '',
     roomNo: '',
+    rentStatus: '', // Add rent status filter
   });
 
-  // Date range filter - default to current month
-  const getCurrentMonthRange = () => {
-    const today = new Date();
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    return { startDate: startOfMonth, endDate: endOfMonth };
-  };
-
-  const [dateRange, setDateRange] = useState(getCurrentMonthRange());
+  // Date range filter - no initial filter
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
 
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -72,6 +76,47 @@ export default function RentRecordsPage() {
 
   // Debounce search value to prevent excessive API calls
   const debouncedSearch = useDebounce(filters.search, 500);
+
+  // Read from URL params on mount
+  useEffect(() => {
+    setFilters({
+      search: searchParams.get("search") || "",
+      tenant: searchParams.get("tenant") || "",
+      paymentStatus: searchParams.get("paymentStatus") || "",
+      roomNo: searchParams.get("roomNo") || "",
+      rentStatus: searchParams.get("rentStatus") || "",
+    });
+    setPage(parseInt(searchParams.get("page") || "1"));
+    
+    const startDateParam = searchParams.get("startDate");
+    const endDateParam = searchParams.get("endDate");
+    setStartDate(startDateParam ? new Date(startDateParam) : null);
+    setEndDate(endDateParam ? new Date(endDateParam) : null);
+  }, []);
+
+  // Write to URL params when state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    // Add pagination
+    params.set("page", page.toString());
+
+    // Add filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+    });
+
+    // Add dates
+    if (startDate) {
+      params.set("startDate", formatDateForAPI(startDate));
+    }
+    if (endDate) {
+      params.set("endDate", formatDateForAPI(endDate));
+    }
+
+    // Update the URL (shallow = true to avoid full reload)
+    router.push(`/dashboard/rent-records?${params.toString()}`);
+  }, [filters, page, startDate, endDate, router]);
 
   // Get rent records with filters
   const { data: rentRecordsResponse, isLoading: recordsLoading, error: recordsError } = useRentRecords({
@@ -82,18 +127,20 @@ export default function RentRecordsPage() {
     paymentStatus: filters.paymentStatus === '' ? undefined : filters.paymentStatus as "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID",
     search: debouncedSearch || undefined,
     roomNo: filters.roomNo || undefined,
-    endDateFrom: formatDateForAPI(dateRange.startDate),
-    endDateTo: formatDateForAPI(dateRange.endDate),
+    rentStatus: filters.rentStatus === '' ? undefined : filters.rentStatus as "pending" | "due" | "upcoming",
+    endDateFrom: startDate ? formatDateForAPI(startDate) : undefined,
+    endDateTo: endDate ? formatDateForAPI(endDate) : undefined,
   });
 
   // Get property rent summary with same date range filters
   const { data: summaryResponse, isLoading: summaryLoading } = usePropertyRentSummary(
     selectedProperty?.id || '',
-    formatDateForAPI(dateRange.startDate),
-    formatDateForAPI(dateRange.endDate),
+    startDate ? formatDateForAPI(startDate) : undefined,
+    endDate ? formatDateForAPI(endDate) : undefined,
     filters.paymentStatus === '' ? undefined : filters.paymentStatus as "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID",
     debouncedSearch || undefined,
     filters.roomNo || undefined,
+    filters.rentStatus === '' ? undefined : filters.rentStatus as "pending" | "due" | "upcoming",
   );
 
   // Get rooms for dropdown
@@ -106,7 +153,8 @@ export default function RentRecordsPage() {
   // Handle export functionality
   const handleExport = async () => {
     if (!rentRecords || rentRecords.length === 0) {
-      alert('No records to export');
+      const showToasError = showErrorToast('No records to export');
+      toast.error(showToasError.message, showToasError.config);
       return;
     }
 
@@ -188,8 +236,8 @@ export default function RentRecordsPage() {
       }
 
       // Generate filename with current date range
-      const startDateStr = formatDateForAPI(dateRange.startDate);
-      const endDateStr = formatDateForAPI(dateRange.endDate);
+      const startDateStr = startDate ? formatDateForAPI(startDate) : 'N/A';
+      const endDateStr = endDate ? formatDateForAPI(endDate) : 'N/A';
       const fileName = `rent-records-${startDateStr}-to-${endDateStr}.xlsx`;
       XLSX.writeFile(workbook, fileName);
 
@@ -222,11 +270,52 @@ export default function RentRecordsPage() {
     setPage(1); // Reset to first page when filters change
   };
 
-  const handleDateRangeChange = (startDate: Date | null, endDate: Date | null) => {
-    if (startDate && endDate) {
-      setDateRange({ startDate, endDate });
-      setPage(1); // Reset to first page when date range changes
+  const handleStartDateChange = (newValue: Date | null) => {
+    if (newValue) {
+      if (endDate) {
+        // If end date exists, update start date and keep end date
+        setStartDate(newValue);
+      } else {
+        // If no end date, set both to same date
+        setStartDate(newValue);
+        setEndDate(newValue);
+      }
+    } else {
+      // If start date is cleared, clear the entire range
+      setStartDate(null);
+      setEndDate(null);
     }
+    setPage(1); // Reset to first page when date range changes
+  };
+
+  const handleEndDateChange = (newValue: Date | null) => {
+    if (newValue) {
+      if (startDate) {
+        // If start date exists, update end date and keep start date
+        setEndDate(newValue);
+      } else {
+        // If no start date, set both to same date
+        setStartDate(newValue);
+        setEndDate(newValue);
+      }
+    } else {
+      // If end date is cleared, clear the entire range
+      setEndDate(null);
+    }
+    setPage(1); // Reset to first page when date range changes
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      search: '',
+      tenant: '',
+      paymentStatus: '',
+      roomNo: '',
+      rentStatus: '',
+    });
+    setStartDate(null);
+    setEndDate(null);
+    setPage(1);
   };
 
   const toggleFilters = () => {
@@ -254,31 +343,39 @@ export default function RentRecordsPage() {
         title="All Rent Records"
         subtitle={`${selectedProperty?.name || 'Property'} - Complete Rent History`}
       />
-      <BreadCrumbs items={breadcrumbs} />
+      <div className='px-6 pt-6'>
+        <BreadCrumbs items={breadcrumbs} />
+      </div>
 
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
-          <div className="p-6">
+          <div className="p-4">
 
             {/* Summary Cards */}
             {
               summaryLoading ? (
-                <div className="flex justify-center items-center py-12">
-                  <CircularProgress />
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+                  <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
+                  <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
+                  <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} /> 
+                  <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
+                  <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
                 </div>
               ) : (
                 (summary || !summaryLoading) && (
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
                     <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
                       borderRadius: '12px',
                       boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
                     }}>
-                      <CardContent className="p-6">
+                      <CardContent sx={{
+                        padding: '16px!important',
+                      }}>
                         <div className="flex items-center justify-between">
                           <div>
-                            <Typography variant="h4" className="font-bold text-gray-900 dark:text-white">
-                              {summaryLoading ? <CircularProgress size={24} /> : formatCurrency(summary?.totalAmount || 0)}
-                            </Typography>
+                            <p className="text-gray-900 dark:text-white text-3xl">
+                              {formatCurrency(summary?.totalAmount || 0)}
+                            </p>
                             <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                               Total Amount
                             </Typography>
@@ -292,28 +389,28 @@ export default function RentRecordsPage() {
                       borderRadius: '12px',
                       boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
                     }}>
-                      <CardContent className="p-6">
-                        <div>
+                      <CardContent sx={{
+                        padding: '16px!important',
+                      }}>
                           <div>
                             <div className='flex justify-between gap-2 items-center'>
                               <div>
-                                <Typography variant="h4" className="font-bold text-gray-900 dark:text-white">
-                                  {summaryLoading ? <CircularProgress size={24} /> : (summary?.overdueCount || 0)}
-                                </Typography>
+                                <p className="text-red-600 dark:text-red-400 text-3xl">
+                                  {formatCurrency(summary?.overdueAmount || 0)}
+                                </p>
                                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
-                                  Overdue Count
+                                  Overdue Amount
                                 </Typography>
                               </div>
                               <WarningIcon className="text-3xl text-red-500 dark:text-red-400 self-start" />
                             </div>
-                            <Typography variant="h6" className="font-semibold text-red-600 dark:text-red-400">
-                              {summaryLoading ? <CircularProgress size={16} /> : formatCurrency(summary?.overdueAmount || 0)}
+                            <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
+                              {summary?.overdueCount || 0}
                             </Typography>
                             <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                              Overdue Amount
+                              Overdue Count
                             </Typography>
                           </div>
-                        </div>
                       </CardContent>
                     </Card>
 
@@ -321,73 +418,120 @@ export default function RentRecordsPage() {
                       borderRadius: '12px',
                       boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
                     }}>
-                      <CardContent className="p-6">
-                        <div>
+                      <CardContent sx={{
+                        padding: '16px!important',
+                      }}>
                           <div>
                             <div className='flex justify-between gap-2 items-center'>
                               <div>
-                                <Typography variant="h4" className="font-bold text-gray-900 dark:text-white">
-                                  {summaryLoading ? <CircularProgress size={24} /> : (summary?.pendingCount || 0)}
-                                </Typography>
+                                <p className="text-green-600 dark:text-green-400 text-3xl">
+                                  {formatCurrency(summary?.pendingAmount || 0)}
+                                </p>
                                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
-                                  Pending Count
+                                  Pending Amount
                                 </Typography>
                               </div>
                               <ScheduleIcon className="text-3xl text-green-600 dark:text-green-400 self-start" />
                             </div>
-                            <Typography variant="h6" className="font-semibold text-green-600 dark:text-green-400">
-                              {summaryLoading ? <CircularProgress size={16} /> : formatCurrency(summary?.pendingAmount || 0)}
+                            <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
+                              {summary?.pendingCount || 0}
                             </Typography>
                             <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                              Pending Amount
+                              Pending Count
                             </Typography>
                           </div>
-                        </div>
                       </CardContent>
                     </Card>
 
-                    {/* <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
-                  borderRadius: '12px',
-                  boxShadow:"rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
-                }}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Typography variant="h4" className="font-bold text-gray-900 dark:text-white">
-                          {rentRecordsResponse?.count || 0}
-                        </Typography>
-                        <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                          Total Records
-                        </Typography>
-                      </div>
-                      <PersonIcon className="text-3xl text-blue-600 dark:text-blue-400" />
-                    </div>
-                  </CardContent>
-                </Card> */}
+                    <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
+                      borderRadius: '12px',
+                      boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
+                    }}>
+                      <CardContent sx={{
+                        padding: '16px!important',
+                      }}>
+                          <div>
+                            <div className='flex justify-between gap-2 items-center'>
+                              <div>
+                                <p className="text-blue-600 dark:text-blue-400 text-3xl">
+                                  {formatCurrency(summary?.upcomingAmount || 0)}
+                                </p>
+                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                                  Upcoming Amount
+                                </Typography>
+                              </div>
+                              <ScheduleIcon className="text-3xl text-blue-600 dark:text-blue-400 self-start" />
+                            </div>
+                            <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
+                              {summary?.upcomingCount || 0}
+                            </Typography>
+                            <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                              Upcoming Count
+                            </Typography>
+                          </div>
+                      </CardContent>
+                    </Card>
 
+                    <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
+                      borderRadius: '12px',
+                      boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
+                    }}>
+                      <CardContent sx={{
+                        padding: '16px!important',
+                      }}>
+                          <div>
+                            <div className='flex justify-between gap-2 items-center'>
+                              <div>
+                                <p className="text-emerald-600 dark:text-emerald-400 text-3xl">
+                                  {formatCurrency(summary?.collectedAmount || 0)}
+                                </p>
+                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                                  Collected Amount
+                                </Typography>
+                              </div>
+                              <CurrencyIcon className="text-3xl text-emerald-600 dark:text-emerald-400 self-start" />
+                            </div>
+                            <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
+                              {summary?.collectedCount || 0}
+                            </Typography>
+                            <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                              Collected Count
+                            </Typography>
+                          </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 ))}
 
             {/* Filter Toggle and Export Button */}
             <div className="flex justify-between items-center mb-6">
-              <Button
-                variant="outlined"
-                startIcon={<FilterIcon />}
-                onClick={toggleFilters}
-                size="small"
-                sx={{
-                  borderColor: showFilters ? '#3b82f6' : '#9ca3af',
-                  color: showFilters ? '#3b82f6' : '#9ca3af',
-                  '&:hover': {
-                    borderColor: showFilters ? '#2563eb' : '#6b7280',
-                    backgroundColor: showFilters ? 'rgba(59, 130, 246, 0.04)' : 'rgba(156, 163, 175, 0.04)',
-                  },
-                  borderRadius: '12px',
-                  textTransform: 'none',
-                }}
-              >
-                {showFilters ? 'Hide Filters' : 'Show Filters'}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Tooltip title="Toggle Filters">
+                  <IconButton
+                    onClick={toggleFilters}
+                    className={`${showFilters ? 'bg-blue-100 dark:bg-blue-900' : 'bg-gray-100 dark:bg-gray-800'} hover:bg-blue-200 dark:hover:bg-blue-800 transition-all duration-200 ease-in-out`}
+                  >
+                    <FilterIcon className={`${showFilters ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'} transition-colors duration-200`} />
+                  </IconButton>
+                </Tooltip>
+                
+                {showFilters && (
+                  <Button
+                    onClick={clearFilters}
+                    variant="outlined"
+                    size="small"
+                    className="bg-red-100 dark:bg-red-900 hover:bg-red-200 dark:hover:bg-red-800 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 transition-all duration-200 ease-in-out"
+                    sx={{
+                      borderRadius: '8px',
+                      textTransform: 'none',
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                    }}
+                  >
+                    Clear All
+                  </Button>
+                )}
+              </div>
 
               <Button
                 variant="outlined"
@@ -410,8 +554,10 @@ export default function RentRecordsPage() {
             </div>
 
             {/* Search and Filter */}
-            {showFilters && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+            <div className={`overflow-hidden transition-all duration-300 ${
+              showFilters ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+            }`}>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
                 <div className="flex flex-col md:flex-row gap-4 items-center">
                   <div className="flex-1 w-full">
                     <TextField
@@ -454,10 +600,10 @@ export default function RentRecordsPage() {
                   <div className="w-full md:w-48">
                     <TextField
                       select
-                      fullWidth
                       label="Payment Status"
                       value={filters.paymentStatus}
                       onChange={(e) => handleFilterChange('paymentStatus', e.target.value)}
+                      className="w-full md:w-48"
                       size="small"
                     >
                       <MenuItem value="">
@@ -468,12 +614,27 @@ export default function RentRecordsPage() {
                       <MenuItem value="NOT_PAID">Not Paid</MenuItem>
                     </TextField>
                   </div>
+                  <TextField
+                      select
+                      label="Rent Status"
+                      value={filters.rentStatus}
+                      onChange={(e) => handleFilterChange('rentStatus', e.target.value)}
+                      className="w-full md:w-48"
+                      size="small"
+                    >
+                      <MenuItem value="">
+                        <em>All Rent Status</em>
+                      </MenuItem>
+                      <MenuItem value="pending">Pending</MenuItem>
+                      <MenuItem value="due">Due</MenuItem>
+                      <MenuItem value="upcoming">Upcoming</MenuItem>
+                  </TextField>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <div className="w-full md:w-48">
                       <DatePicker
                         label="Start Date"
-                        value={dateRange.startDate}
-                        onChange={(newValue) => handleDateRangeChange(newValue, dateRange.endDate)}
+                        value={startDate || null}
+                        onChange={handleStartDateChange}
                         format="dd/MM/yyyy"
                         slotProps={{
                           textField: {
@@ -486,8 +647,8 @@ export default function RentRecordsPage() {
                     <div className="w-full md:w-48">
                       <DatePicker
                         label="End Date"
-                        value={dateRange.endDate}
-                        onChange={(newValue) => handleDateRangeChange(dateRange.startDate, newValue)}
+                        value={endDate || null}
+                        onChange={handleEndDateChange}
                         format="dd/MM/yyyy"
                         slotProps={{
                           textField: {
@@ -500,7 +661,7 @@ export default function RentRecordsPage() {
                   </LocalizationProvider>
                 </div>
               </div>
-            )}
+            </div>
 
             {/* Rent Records List */}
             {recordsLoading ? (
@@ -560,10 +721,11 @@ export default function RentRecordsPage() {
             <Box className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <Typography variant="body2" className="text-blue-800 dark:text-blue-300">
                 <strong>Current Filters:</strong><br />
-                Date Range: {formatDate(dateRange.startDate.toISOString())} to {formatDate(dateRange.endDate.toISOString())}<br />
+                Date Range: {startDate && endDate ? `${formatDate(startDate.toISOString())} to ${formatDate(endDate.toISOString())}` : 'N/A'}<br />
                 {filters.search && `Search: ${filters.search}<br />`}
                 {filters.roomNo && `Room: ${filters.roomNo}<br />`}
-                {filters.paymentStatus && `Payment Status: ${filters.paymentStatus.replace('_', ' ')}<br />`}
+                {filters.paymentStatus && `Payment Status: ${filters.paymentStatus}<br />`}
+                {filters.rentStatus && `Rent Status: ${filters.rentStatus}<br />`}
                 Records to export: {rentRecords.length}
               </Typography>
             </Box>

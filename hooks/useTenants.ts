@@ -79,7 +79,8 @@ export function useCreateTenant() {
     },
     onError: (error: ApiError) => {
       console.error('Failed to create tenant:', error);
-      showErrorToast(error.getUserMessage());
+      const errorToast = showErrorToast(`Failed to create tenant: ${error.getUserMessage()}`);
+      toast.error(errorToast.message, errorToast.config);
     },
   });
 }
@@ -93,9 +94,7 @@ export function useUpdateTenant() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Tenant> }) => updateTenant(id, data),
     onSuccess: (data, variables) => {
-      // Update the specific tenant in cache
-      queryClient.setQueryData(tenantKeys.detail(variables.id), data);
-      
+
       // Invalidate tenant lists to refetch
       queryClient.invalidateQueries({ queryKey: tenantKeys.lists() });
     },

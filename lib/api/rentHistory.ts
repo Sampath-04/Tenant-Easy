@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import { Property } from './types';
 
 // Electricity Reading interface for rent history
 export interface ElectricityReadingDetail {
@@ -60,16 +61,30 @@ export interface RoomInfo {
 
 export interface Payment {
   _id: string;
+  tenant: TenantInfo;
+  property: Property;
+  room: RoomInfo;
   amount: number;
-  paidDate: string;
+  currency: string;
+  paymentType: string;
+  status: string;
+  method: string;
+  paidAt: string;
   paymentProofs: string[];
-  paidTo: string;
-  comments: string;
   recordedBy: {
     _id: string;
     name: string;
     role: string;
   };
+  rentHistory: string;
+  metadata: {
+    rentMonth: string;
+    comments?: string;
+    paidTo: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 // Rent History item interface
@@ -85,7 +100,7 @@ export interface RentHistoryItem {
   electricityUnits: number;
   totalAmount: number;
   paymentStatus: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
-  payments: Payment[];
+  paymentTransactions: Payment[];
   dueDate: string;
   previousCyclePaymentStatus: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
   previousCycleMonth: string;
@@ -156,29 +171,29 @@ export async function getPendingRents(propertyId: string): Promise<PendingRentsH
 /**
  * Get all rent records for a property
  */
-export async function getAllRentRecordsForProperty(
-  propertyId: string, 
-  params: {
-    page?: number;
-    limit?: number;
-    tenant?: string;
-    paymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
-    search?: string;
-    roomNo?: string;
-    endDateFrom?: string;
-    endDateTo?: string;
-  } = {}
-): Promise<RentHistoryResponse> {
+export const getAllRentRecordsForProperty = async (
+  propertyId: string,
+  page: number = 1,
+  limit: number = 10,
+  tenant?: string,
+  paymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID",
+  search?: string,
+  roomNo?: string,
+  rentStatus?: "pending" | "due" | "upcoming",
+  endDateFrom?: string,
+  endDateTo?: string,
+) => {
   const queryParams = new URLSearchParams();
   
-  if (params.page) queryParams.append('page', params.page.toString());
-  if (params.limit) queryParams.append('limit', params.limit.toString());
-  if (params.tenant) queryParams.append('tenant', params.tenant);
-  if (params.paymentStatus) queryParams.append('paymentStatus', params.paymentStatus);
-  if (params.search) queryParams.append('search', params.search);
-  if (params.roomNo) queryParams.append('roomNo', params.roomNo);
-  if (params.endDateFrom) queryParams.append('endDateFrom', params.endDateFrom);
-  if (params.endDateTo) queryParams.append('endDateTo', params.endDateTo);
+  if (page) queryParams.append('page', page.toString());
+  if (limit) queryParams.append('limit', limit.toString());
+  if (tenant) queryParams.append('tenant', tenant);
+  if (paymentStatus) queryParams.append('paymentStatus', paymentStatus);
+  if (search) queryParams.append('search', search);
+  if (roomNo) queryParams.append('roomNo', roomNo);
+  if (rentStatus) queryParams.append('rentStatus', rentStatus);
+  if (endDateFrom) queryParams.append('endDateFrom', endDateFrom);
+  if (endDateTo) queryParams.append('endDateTo', endDateTo);
   
   return apiClient.get<RentHistoryResponse>(`/rent-history/property/${propertyId}?${queryParams.toString()}`);
 }
@@ -186,23 +201,23 @@ export async function getAllRentRecordsForProperty(
 /**
  * Get property rent summary with date range filters
  */
-export async function getPropertyRentSummary(
+export const getPropertyRentSummary = async (
   propertyId: string,
-  params: {
-    endDateFrom?: string;
-    endDateTo?: string;
-    paymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
-    search?: string;
-    roomNo?: string;
-  } = {}
-): Promise<{ success: boolean; data: any }> {
+  endDateFrom?: string,
+  endDateTo?: string,
+  paymentStatus?: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID",
+  search?: string,
+  roomNo?: string,
+  rentStatus?: "pending" | "due" | "upcoming",
+) => {
   const queryParams = new URLSearchParams();
   
-  if (params.endDateFrom) queryParams.append('endDateFrom', params.endDateFrom);
-  if (params.endDateTo) queryParams.append('endDateTo', params.endDateTo);
-  if (params.paymentStatus) queryParams.append('paymentStatus', params.paymentStatus);
-  if (params.search) queryParams.append('search', params.search);
-  if (params.roomNo) queryParams.append('roomNo', params.roomNo);
+  if (endDateFrom) queryParams.append('endDateFrom', endDateFrom);
+  if (endDateTo) queryParams.append('endDateTo', endDateTo);
+  if (paymentStatus) queryParams.append('paymentStatus', paymentStatus);
+  if (search) queryParams.append('search', search);
+  if (roomNo) queryParams.append('roomNo', roomNo);
+  if (rentStatus) queryParams.append('rentStatus', rentStatus);
   return apiClient.get<{ success: boolean; data: any }>(`/rent-history/property/${propertyId}/summary?${queryParams.toString()}`);
 }
 

@@ -211,7 +211,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
         {/* Year and Current Cycle Information */}
         <div className="space-y-4">
-          <div>
+          <div className='grid gap-1'>
             <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
               Current Cycle
             </Typography>
@@ -220,7 +220,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
             </Typography>
           </div>
     
-          <div>
+          <div className='grid gap-1'>
             <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
               Current Cycle Electricity
             </Typography>
@@ -232,8 +232,8 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
             </Typography>
           </div>
           {/* Show Total Amount only if not in notice period */}
-          {!record.notice || record.notice.status !== 'active' && (
-             <div>
+          {!record.notice && (
+             <div className='grid gap-1'>
                <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                  Total Amount
                </Typography>
@@ -244,7 +244,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
            )}
           {
             record.notice && (
-              <div>
+              <div className='grid gap-1'>
                  <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                    Extra Days
                  </Typography>
@@ -256,7 +256,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
           }
         </div>
          <div className="space-y-4">
-           <div>
+           <div className='grid gap-1'>
              <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                Current Cycle Rent
              </Typography>
@@ -287,19 +287,27 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
                 />
              </div>
            </div>
-           <div>
+           <div className='grid gap-1'>
              <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                Next Cycle Rent
              </Typography>
-             <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
-               {record.notice && record.notice.status === 'active' ? '₹0' : formatCurrency(record.totalAmount)}
-             </Typography>
+             <div className="flex items-center gap-2">
+              <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
+                {record.notice && record.notice.status === 'active' ? '₹0' : formatCurrency(record.totalAmount)}
+              </Typography>
+              <Chip
+                label={record.paymentStatus?.replace('_', ' ').charAt(0).toUpperCase() + record.paymentStatus?.replace('_', ' ').slice(1).toLowerCase() || 'NOT_PAID'} 
+                size="small"
+                color={record.paymentStatus === 'FULLY_PAID' ? 'success' : record.paymentStatus === 'PARTIALLY_PAID' ? 'warning' : 'error'}
+                variant="outlined"
+              />
+             </div>
            </div>
            
            {/* Extra Days Information for Notice Period */}
            {record.notice && (
              <>
-               <div>
+               <div className='grid gap-1'>
                  <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                    Cost for Extra Days
                  </Typography>
@@ -327,7 +335,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
       {/* Due Date and notice period status */}
       <div className="flex items-center gap-6">
         {/* Show Due Date only if not in notice period */}
-        {record.paymentStatus === "NOT_PAID" || record.paymentStatus === "PARTIALLY_PAID" && (
+        {(record.paymentStatus === "NOT_PAID" || record.paymentStatus === "PARTIALLY_PAID") && (
           <div className="flex items-center gap-2">
             <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
               Due Date:

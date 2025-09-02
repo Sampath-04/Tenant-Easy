@@ -26,14 +26,17 @@ import {
   Chip,
   Accordion,
   AccordionSummary,
-  AccordionDetails
+  AccordionDetails,
+  TablePagination,
 } from '@mui/material';
 import { ExpandMore } from '@mui/icons-material';
 import DateRangePicker from '../../../components/ui/DateRange';
 import { LAYOUT_CLASSES } from '../../../lib/constants/styles';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
+import { useRouter } from 'next/navigation';
 
 function TenantsContent() {
+  const router = useRouter();
   const { selectedProperty } = useProperty();
 
   // Pagination state
@@ -191,24 +194,31 @@ function TenantsContent() {
         subtitle={`Manage tenants for ${selectedProperty.name}`}
       />
 
-      <BreadCrumbs items={breadcrumbs} />
+      <div className='px-6 pt-6 flex flex-row justify-between items-center'>
+        <BreadCrumbs items={breadcrumbs} />
+        {/* add tenant button */}
+        <button 
+          onClick={() => router.push('/dashboard/tenants/create')}
+          className="md:mt-4 lg:mt-0 text-sm border border-gray-300 dark:border-gray-700 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-[30px] cursor-pointer font-medium transition-colors flex items-center space-x-1 w-fit"
+        >
+          <span className="hidden md:block">Add Tenant</span>
+          <span className="md:hidden">Add Tenant</span>
+        </button>
+      </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto px-4 sm:px-6 lg:px-6 pt-4">
         {/* Filters Section */}
-        <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-lg md:p-8 p-4 border border-white/20 dark:border-gray-700/50 mb-8">
-          <div className="flex flex-row justify-between md:flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+        <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-lg p-4 border border-white/20 dark:border-gray-700/50 mb-4">
+          <div className="flex flex-row justify-between md:flex-col lg:flex-row lg:items-center lg:justify-between mb-3">
             <div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                 Filter Tenants
               </h2>
-              <p className="hidden md:block text-sm text-gray-600 dark:text-gray-400">
-                Find and filter tenants based on your preferences
-              </p>
             </div>
             <button
               onClick={clearFilters}
-              className="md:mt-4 lg:mt-0 text-sm border border-gray-300 dark:border-gray-700 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-[30px]  cursor-pointer font-medium transition-colors flex items-center space-x-1 w-fit"
+              className="md:mt-4 lg:mt-0 text-sm border border-gray-300 dark:border-gray-700 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-[30px] cursor-pointer font-medium transition-colors flex items-center space-x-1 w-fit"
             >
               <span className="hidden md:block">Clear All Filters</span>
               <span className="md:hidden">Clear Filters</span>
@@ -216,7 +226,7 @@ function TenantsContent() {
           </div>
 
           {/* Filter Controls */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
             {/* Search */}
             <div className="space-y-2 self-end">
               <SearchInput
@@ -229,7 +239,6 @@ function TenantsContent() {
               {/* Status Filter */}
               <div className="space-y-2 w-[140px]">
                 <CustomSelect
-                  label="Status"
                   value={filters.status || ''}
                   onChange={(e: any) => handleFilterChange('status', e.target.value)}
                   options={[
@@ -244,7 +253,6 @@ function TenantsContent() {
               {/* Room Filter */}
               <div className="space-y-2 w-[180px]">
                 <CustomSelect
-                  label="Room"
                   value={filters.room || ''}
                   onChange={(e: any) => handleFilterChange('room', e.target.value)}
                   options={[
@@ -283,7 +291,9 @@ function TenantsContent() {
                 Advanced Filters
               </p>
             </AccordionSummary>
-            <AccordionDetails className="p-6 bg-white dark:bg-gray-900">
+            <AccordionDetails sx={{
+              padding: '16px',
+            }} className=" bg-white dark:bg-gray-900">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -399,7 +409,7 @@ function TenantsContent() {
                 <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">Try adjusting your filters or add new tenants</p>
                 <Link
                   href="/dashboard/tenants/add"
-                  className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                  className="mt-4 inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -412,10 +422,12 @@ function TenantsContent() {
             <>
               {/* Desktop Table View */}
               <div className="hidden md:block">
-                <TableContainer component={Paper} className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg shadow-xl border border-white/20 dark:border-gray-700/50">
+                <TableContainer component={Paper} className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg shadow-xl border border-white/20 dark:border-gray-700/50" sx={{
+                  height:"460px"
+                }}>
                   <Table>
                     <TableHead>
-                      <TableRow className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900/30">
+                      <TableRow className="bg-white dark:bg-gray-800 shadow-sm  sticky top-0 z-10">
                         <TableCell className="font-bold text-gray-700 dark:text-gray-300">
                           Tenant Details
                         </TableCell>
@@ -451,11 +463,6 @@ function TenantsContent() {
                                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                                   {tenant.tenantNumber}
                                 </Typography>
-                                {tenant.tenantEmail && (
-                                  <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                                    {tenant.tenantEmail}
-                                  </Typography>
-                                )}
                               </div>
                             </div>
                           </TableCell>
@@ -630,31 +637,37 @@ function TenantsContent() {
                 ))}
               </div>
 
-              {/* MUI Pagination */}
-              {pagination && pagination.totalPages > 0 && (
-                <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl p-6 border border-white/20 dark:border-gray-700/50 mt-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                    <div>
-                      <Typography variant="body2" className="text-gray-700 dark:text-gray-300">
-                        Page {pagination.currentPage} of {pagination.totalPages}
-                      </Typography>
-                      <Typography variant="caption" className="text-gray-500 dark:text-gray-400">
-                        {tenantsData?.total || 0} total results
-                      </Typography>
-                    </div>
-
-                    <Pagination
-                      count={pagination.totalPages}
-                      page={currentPage}
-                      onChange={(_, page) => setCurrentPage(page)}
-                      color="primary"
-                      size="large"
-                      showFirstButton
-                      showLastButton
-                    />
-                  </div>
-                </div>
-              )}
+               {/* MUI Pagination */}
+               {pagination && pagination.totalPages > 0 && (
+                 <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
+                   <TablePagination
+                     component="div"
+                     count={tenantsData?.total || 0}
+                     page={currentPage - 1} // MUI uses 0-based indexing
+                     onPageChange={(_, newPage) => setCurrentPage(newPage + 1)} // Convert back to 1-based
+                     rowsPerPage={pageSize}
+                     onRowsPerPageChange={(e) => {
+                       const newPageSize = parseInt(e.target.value, 10);
+                       setPageSize(newPageSize);
+                       setCurrentPage(1); // Reset to first page when changing page size
+                     }}
+                     rowsPerPageOptions={[10, 25, 50, 100]}
+                     labelRowsPerPage="Rows per page:"
+                     labelDisplayedRows={({ from, to, count }) =>
+                       `${from}-${to} of ${count !== -1 ? count : `more than ${to}`}`
+                     }
+                     sx={{
+                       backgroundColor: 'transparent',
+                       '& .MuiTablePagination-toolbar': {
+                         padding: '8px',
+                       },
+                       '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                         color: 'inherit',
+                       },
+                     }}
+                   />
+                 </div>
+               )}
             </>
           )}
         </div>

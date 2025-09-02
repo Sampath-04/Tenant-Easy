@@ -3,9 +3,7 @@
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { AuthGuard } from '@/contexts/AuthContext';
 import { useProperty } from '@/contexts/PropertyContext';
-import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
 import { useTenant, useUpdateTenant } from '@/hooks/useTenants';
 import { showSuccessToast } from '@/lib/toast-config';
@@ -16,6 +14,7 @@ import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import PersonIcon from '@mui/icons-material/Person';
 import SaveIcon from '@mui/icons-material/Save';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
+import { AppHeader } from '@/components/AppHeader';
 
 interface TenantFormData {
   tenantName: string;
@@ -41,8 +40,6 @@ function TenantEditContent() {
     securityDepositPaid: 0,
     checkInDate: ''
   });
-
-  console.log('formData', formData);
 
   const { data: tenant, isLoading, error: fetchError } = useTenant(tenantId);
 
@@ -82,8 +79,6 @@ function TenantEditContent() {
       securityDepositPaid: formData.securityDepositPaid,
       checkInDate: formData.checkInDate,
     };
-
-    console.log('updateData', updateData);
 
     updateTenantMutation.mutate(
       { id: tenantId, data: updateData },
@@ -142,45 +137,22 @@ function TenantEditContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+
       <AppHeader
         title="Edit Tenant"
         subtitle={`Editing details for ${tenant?.tenantName || 'Tenant'}`}
       />
-
-      <BreadCrumbs items={breadcrumbs} />
+      <div className='px-6 pt-6'>
+        <BreadCrumbs items={breadcrumbs} />
+      </div>
       
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
-        <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
-          <div className="p-4 md:p-6">
+        <div className={LAYOUT_CLASSES.CARD_CONTAINER} style={{boxShadow: "rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px"}}>
+          <div className="p-4 md:p-6 w-[60%] mx-auto">
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Tenant Information
               </h1>
-              <div className="hidden md:flex space-x-2">
-                <button
-                  onClick={() => router.push(`/dashboard/tenants/${tenantId}`)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 hover:border-gray-400 dark:border-gray-600 dark:text-gray-300 dark:hover:border-gray-500 rounded-[30px] cursor-pointer transition-colors duration-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  disabled={updateTenantMutation.isPending}
-                  className="px-4 py-2 bg-gray-500 dark:bg-gray-700 hover:bg-gray-600 rounded-[30px] cursor-pointer text-white font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {updateTenantMutation.isPending ? (
-                    <div className="flex items-center">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Saving...
-                    </div>
-                  ) : (
-                    <div className="flex items-center">
-                      <SaveIcon className="mr-2"/>
-                      Save Changes
-                    </div>
-                  )}
-                </button>
-              </div>
             </div>
 
             {updateTenantMutation.error && (
@@ -264,27 +236,15 @@ function TenantEditContent() {
                             fullWidth: true,
                             placeholder: "Select check-in date",
                             required: true,
-                            sx: {
-                              "& .MuiInputBase-root": {
+                            sx:(theme) => ({
+                              "& .MuiPickersInputBase-root":{
                                 borderRadius: "8px",
-                                height: "48px",
-                                color: "white",
-                                backgroundColor: "rgba(55, 65, 81, 0.8)",
-                                border: "1px solid rgba(229,231,235,1)",
-                                boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-                                transition: "all 0.2s ease-in-out",
+                                backgroundColor: theme.palette.mode === "dark" ? "#374151" : "rgba(255,255,255,0.8)",
                               },
-                              "& .MuiOutlinedInput-notchedOutline": {
-                                border: "none",
-                              },
-                              "&:hover .MuiOutlinedInput-notchedOutline": {
-                                borderColor: "rgba(0,0,0,0.3)",
-                              },
-                              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                                borderColor: "#3b82f6",
-                                boxShadow: "0 0 0 3px rgba(59,130,246,0.2)",
-                              },
-                            }
+                              "& .MuiPickersSectionList-root":{
+                                padding: "14px 4px",
+                              }
+                            })
                           },
                         }}
                       />
@@ -299,7 +259,7 @@ function TenantEditContent() {
                   <CurrencyRupeeIcon className="mr-2"/>
                   Financial Information
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:flex flex-row items-center gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Monthly Rent *
@@ -349,10 +309,37 @@ function TenantEditContent() {
                   Save Changes
                 </button>
                 <button
+                  type="button"
                   onClick={() => router.push(`/dashboard/tenants/${tenantId}`)}
                   className="px-4 py-2 bg-gray-500 dark:bg-gray-700 hover:bg-gray-600 rounded-[30px] cursor-pointer text-white font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
+                </button>
+              </div>
+              <div className="hidden md:flex space-x-2 justify-end">
+                <button
+                  type="button"
+                  onClick={() => router.push(`/dashboard/tenants/${tenantId}`)}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 hover:border-gray-400 dark:border-gray-600 dark:text-gray-300 dark:hover:border-gray-500 rounded-[30px] cursor-pointer transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={updateTenantMutation.isPending}
+                  className="px-4 py-2 bg-gray-500 dark:bg-gray-700 hover:bg-gray-600 rounded-[30px] cursor-pointer text-white font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {updateTenantMutation.isPending ? (
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Saving...
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      <SaveIcon className="mr-2"/>
+                      Save Changes
+                    </div>
+                  )}
                 </button>
               </div>
             </form>
@@ -364,9 +351,5 @@ function TenantEditContent() {
 }
 
 export default function TenantEdit() {
-  return (
-    <AuthGuard>
-      <TenantEditContent />
-    </AuthGuard>
-  );
+  return <TenantEditContent />;
 }

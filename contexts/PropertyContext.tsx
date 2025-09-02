@@ -13,7 +13,11 @@ export interface Property {
   occupiedRooms: number;
   totalTenants: number;
   pendingRent: number;
+  pendingRentCount: number;
   dueRent: number;
+  dueRentCount: number;
+  pendingOnboardingAmount: number;
+  pendingOnboardingCount: number;
   monthlyRevenue: number;
 }
 
@@ -38,7 +42,11 @@ const convertToProperty = (propertyData: PropertyData): Property => ({
   occupiedRooms: propertyData.summary.occupiedRooms,
   totalTenants: propertyData.summary.totalTenants,
   pendingRent: propertyData.summary.pendingRentAmount,
+  pendingRentCount: propertyData.summary.pendingRentCount,
   dueRent: propertyData.summary.dueRentAmount,
+  dueRentCount: propertyData.summary.dueRentCount,
+  pendingOnboardingAmount: propertyData.summary.pendingOnboardingAmount,
+  pendingOnboardingCount: propertyData.summary.pendingOnboardingCount,
   monthlyRevenue: propertyData.summary.monthlyRevenue,
 });
 

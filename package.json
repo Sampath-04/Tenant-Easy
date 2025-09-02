@@ -18,6 +18,7 @@
     "@mui/x-date-pickers-pro": "^8.10.1",
     "@tanstack/react-query": "^5.85.3",
     "@tanstack/react-query-devtools": "^5.85.3",
+    "@toolpad/core": "^0.16.0",
     "date-fns": "^4.1.0",
     "next": "15.4.6",
     "next-themes": "^0.4.6",

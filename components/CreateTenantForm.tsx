@@ -146,8 +146,11 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    console.log('handleSubmit', e);
+    if (e) {
+      e.preventDefault();
+    }
     
     if (!formData.property || !formData.room) {
       const errorToast = showErrorToast('Please select property and room');
@@ -186,10 +189,6 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
           onSuccess();
         }
       },
-      onError: (error) => {
-        const errorToast = showErrorToast('Failed to create tenant');
-        toast.error(errorToast.message, errorToast.config);
-      }
     });
   };
 
@@ -238,7 +237,7 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
         </IconButton>
       </DialogTitle>
 
-      <form onSubmit={handleSubmit} className="overflow-y-auto">
+      <form onSubmit={handleSubmit}  className="overflow-y-auto">
         <DialogContent sx={(theme: Theme) => ({ 
            pt: 3,
            backgroundColor: theme.palette.mode === 'dark' ? '#1A202C' : '#f8fafc',
@@ -361,7 +360,7 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
               </div>
             </div>
 
-                         {/* Financial Information */}
+          {/* Financial Information */}
              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
                <Typography variant="h6" className="mb-4">Financial Information</Typography>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -491,7 +490,7 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
             Cancel
           </button>
           <button
-             type="button"
+             type="submit"
              onClick={handleSubmit}
              disabled={createTenantMutation.isPending}
              className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-[30px] text-md font-medium transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer"
@@ -508,7 +507,7 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
               </>
             )}
           </button>
-        </DialogActions>
+      </DialogActions>
     </Dialog>
   );
 }

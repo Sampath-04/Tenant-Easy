@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { AuthGuard, useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useProperty } from '../../contexts/PropertyContext';
-import { AppHeader } from '../../components/AppHeader';
 import { useEffect } from 'react';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
+import { AppHeader } from '@/components/AppHeader';
 
 function DashboardContent() {
   const { user } = useAuth();
@@ -47,14 +47,39 @@ function DashboardContent() {
     {
       title: 'Pending Rent',
       value: formatCurrency(selectedProperty.pendingRent),
+      subtitle: `${selectedProperty.pendingRentCount} ${selectedProperty.pendingRentCount > 1 ? 'tenants' : 'tenant'}`,
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
         </svg>
       ),
       color: 'orange',
-      href: '/dashboard/pending-rents',
+      href: '/dashboard/rent-records?rentStatus=pending',
     }, 
+    {
+      title: 'Due Rent',
+      value: formatCurrency(selectedProperty.dueRent),
+      subtitle: `${selectedProperty.dueRentCount} ${selectedProperty.dueRentCount > 1 ? 'tenants' : 'tenant'}`,
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+        </svg>
+      ),
+      color: 'red',
+      href: '/dashboard/rent-records?rentStatus=due',
+    },
+    {
+      title: 'Onbaording Payments due',
+      value: formatCurrency(selectedProperty.pendingOnboardingAmount),
+      subtitle: `${selectedProperty.pendingOnboardingCount} ${selectedProperty.pendingOnboardingCount > 1 ? 'tenants' : 'tenant'}`,
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+        </svg>
+      ),
+      color: 'purple',
+      href: '/dashboard/tenant-onboard-payments/pending',
+    },
   ] : [];
 
   const quickActions = [
@@ -160,8 +185,16 @@ function DashboardContent() {
   if (!selectedProperty) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <AppHeader title="Property Dashboard" subtitle={`Welcome, ${user?.name}`} />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="p-6">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Property Dashboard
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              Welcome, {user?.name}
+            </p>
+          </div>
+        <main className="  mx-auto">
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               {propertyError ? (
@@ -186,6 +219,7 @@ function DashboardContent() {
             </div>
           </div>
         </main>
+        </div>
       </div>
     );
   }
@@ -199,10 +233,10 @@ function DashboardContent() {
       />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto px-4 sm:px-6  py-6">
         {/* Current Property Info */}
-        <div className="mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+        <div className="mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -223,7 +257,7 @@ function DashboardContent() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           {stats.map((stat, index) => (
             <Link
               key={index}
@@ -261,7 +295,7 @@ function DashboardContent() {
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
             Quick Actions
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-6">
             {quickActions.map((action, index) => (
               <Link
                 key={index}
@@ -340,14 +374,11 @@ function DashboardContent() {
           </div>
         </div> */}
       </main>
-    </div>
+      </div>
+    
   );
 }
 
 export default function OwnerDashboard() {
-  return (
-    <AuthGuard allowedRoles={['owner']}>
-      <DashboardContent />
-    </AuthGuard>
-  );
+  return <DashboardContent />;
 }
