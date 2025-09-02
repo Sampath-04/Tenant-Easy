@@ -18,8 +18,8 @@ const appHeaderData = [
     },
     
     {
-        title: 'Pending Onboard Payments',
-        subtitle: 'Pending Onboard Payments',
+        title: 'Onboarding Payments due',
+        subtitle: 'Onboarding Payments due',
     },
     {
         title: 'Completed Tenants',

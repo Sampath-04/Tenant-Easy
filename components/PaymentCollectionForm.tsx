@@ -311,7 +311,7 @@ export default function PaymentCollectionForm({
                     <div key={index} className="flex justify-between items-center text-sm">
                       <div>
                         <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                          Payment {index + 1} - {payment.paidDate ? formatDate(payment.paidDate) : 'Unknown Date'}
+                          Payment {index + 1} - {payment.paidAt ? formatDate(payment.paidAt) : 'Unknown Date'}
                         </Typography>
                         {payment.paidTo && (
                           <Typography variant="body2" className="text-gray-500 dark:text-gray-500 text-xs">

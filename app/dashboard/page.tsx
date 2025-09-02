@@ -54,7 +54,7 @@ function DashboardContent() {
         </svg>
       ),
       color: 'orange',
-      href: '/dashboard/pending-rents',
+      href: '/dashboard/rent-records?rentStatus=pending',
     }, 
     {
       title: 'Due Rent',
@@ -66,10 +66,10 @@ function DashboardContent() {
         </svg>
       ),
       color: 'red',
-      href: '/dashboard/due-rents',
+      href: '/dashboard/rent-records?rentStatus=due',
     },
     {
-      title: 'Pending Onboarding',
+      title: 'Onbaording Payments due',
       value: formatCurrency(selectedProperty.pendingOnboardingAmount),
       subtitle: `${selectedProperty.pendingOnboardingCount} ${selectedProperty.pendingOnboardingCount > 1 ? 'tenants' : 'tenant'}`,
       icon: (

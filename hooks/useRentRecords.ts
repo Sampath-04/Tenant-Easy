@@ -124,6 +124,11 @@ export function useMarkRentAsPaid() {
         queryClient.invalidateQueries({
           queryKey: ['rent-records', selectedProperty.id]
         });
+
+        // Invalidate property rent summary to refresh the summary data
+        queryClient.invalidateQueries({
+          queryKey: ['property-rent-summary', selectedProperty.id]
+        });
       }
     },
     

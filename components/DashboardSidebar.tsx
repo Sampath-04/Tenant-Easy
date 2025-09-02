@@ -54,31 +54,18 @@ const menuItems: MenuItem[] = [
     icon: <RoomIcon />,
     href: '/dashboard/rooms',
   },
+  
   {
     id: 'tenants',
     label: 'Tenants',
     icon: <PeopleIcon />,
-    children: [
-      {
-        id: 'all-tenants',
-        label: 'All Tenants',
-        icon: <PeopleIcon />,
-        href: '/dashboard/tenants',
-      },
-    ],
+    href: '/dashboard/tenants',
   },
   {
     id: 'rents',
     label: 'Rents',
     icon: <PaymentIcon />,
-    children: [
-      {
-        id: 'pending-rents',
-        label: 'Pending Rents',
-        icon: <ReceiptIcon />,
-        href: '/dashboard/pending-rents',
-      },
-    ],
+    href: '/dashboard/rent-records',
   },
   {
     id: 'refunds',
@@ -162,10 +149,6 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       return item.children.some(child => pathname === child.href);
     }
     return false;
-  };
-
-  const isChildActive = (child: MenuItem): boolean => {
-    return pathname === child.href;
   };
 
   const renderMenuItem = (item: MenuItem, level: number = 0) => {

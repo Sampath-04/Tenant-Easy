@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -52,6 +53,9 @@ import { toast } from 'react-toastify';
 
 export default function RentRecordsPage() {
   const { selectedProperty } = useProperty();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [filters, setFilters] = useState({
@@ -72,6 +76,47 @@ export default function RentRecordsPage() {
 
   // Debounce search value to prevent excessive API calls
   const debouncedSearch = useDebounce(filters.search, 500);
+
+  // Read from URL params on mount
+  useEffect(() => {
+    setFilters({
+      search: searchParams.get("search") || "",
+      tenant: searchParams.get("tenant") || "",
+      paymentStatus: searchParams.get("paymentStatus") || "",
+      roomNo: searchParams.get("roomNo") || "",
+      rentStatus: searchParams.get("rentStatus") || "",
+    });
+    setPage(parseInt(searchParams.get("page") || "1"));
+    
+    const startDateParam = searchParams.get("startDate");
+    const endDateParam = searchParams.get("endDate");
+    setStartDate(startDateParam ? new Date(startDateParam) : null);
+    setEndDate(endDateParam ? new Date(endDateParam) : null);
+  }, []);
+
+  // Write to URL params when state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    // Add pagination
+    params.set("page", page.toString());
+
+    // Add filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+    });
+
+    // Add dates
+    if (startDate) {
+      params.set("startDate", formatDateForAPI(startDate));
+    }
+    if (endDate) {
+      params.set("endDate", formatDateForAPI(endDate));
+    }
+
+    // Update the URL (shallow = true to avoid full reload)
+    router.push(`/dashboard/rent-records?${params.toString()}`);
+  }, [filters, page, startDate, endDate, router]);
 
   // Get rent records with filters
   const { data: rentRecordsResponse, isLoading: recordsLoading, error: recordsError } = useRentRecords({
