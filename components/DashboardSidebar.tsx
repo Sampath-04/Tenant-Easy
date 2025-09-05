@@ -29,9 +29,10 @@ import {
   ExpandMore,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
+  AttachMoney as ExpenseIcon,
+  PieChart as PieChartIcon,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
-import Link from 'next/link';
 
 interface MenuItem {
   id: string;
@@ -66,6 +67,31 @@ const menuItems: MenuItem[] = [
     label: 'Rents',
     icon: <PaymentIcon />,
     href: '/dashboard/rent-records',
+  },
+  {
+    id: 'expenses',
+    label: 'Expenses',
+    icon: <ExpenseIcon />,
+    children: [
+      {
+        id: 'expenses',
+        label: 'Add Expense',
+        icon: <AddIcon />,
+        href: '/dashboard/expenses',
+      },
+      {
+        id: 'expenses-list',
+        label: 'Expenses List',
+        icon: <ReceiptIcon />,
+        href: '/dashboard/expenses/list',
+      },
+      {
+        id: 'profit-loss',
+        label: 'Profit Loss',
+        icon: <PieChartIcon />,
+        href: '/dashboard/profit-loss',
+      },
+    ],
   },
   {
     id: 'refunds',

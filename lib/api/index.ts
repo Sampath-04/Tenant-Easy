@@ -7,3 +7,4 @@ export * from './auth';
 export * from './tenants';
 export * from './profiles';
 export * from './rooms';
+export * from './expenses';
