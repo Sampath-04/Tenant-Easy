@@ -3,6 +3,8 @@ import { getAllRentRecordsForProperty, markRentAsPaid, getPendingRents, createNo
 import { useProperty } from '@/contexts/PropertyContext';
 import { toast } from 'react-toastify';
 import { showSuccessToast, showErrorToast } from '@/lib/toast-config';
+import { SingleRentRecordResponse } from '@/lib/api/rentHistory';
+import { getRentRecordById } from '@/lib/api/rentHistory';
 
 export interface UseRentRecordsParams {
   propertyId: string;
@@ -280,3 +282,19 @@ export function useRentRecordsForExport(
   });
 }
 
+// Query keys
+export const rentRecordKeys = {
+  all: ['rentRecord'] as const,
+  byId: (rentRecordId: string) => [...rentRecordKeys.all, rentRecordId] as const,
+};
+
+// Get rent record by ID
+export const useRentRecord = (rentRecordId: string, enabled: boolean = true) => {
+  return useQuery<SingleRentRecordResponse>({
+    queryKey: rentRecordKeys.byId(rentRecordId),
+    queryFn: () => getRentRecordById(rentRecordId),
+    enabled: enabled && !!rentRecordId,
+    staleTime: 0,
+    gcTime: 0,
+  });
+};

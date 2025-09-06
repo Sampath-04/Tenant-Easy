@@ -8,3 +8,8 @@ export * from './tenants';
 export * from './profiles';
 export * from './rooms';
 export * from './expenses';
+export * from './rentHistory';
+export * from './properties';
+export * from './notice';
+export * from "./electricityReadings";
+export * from './paymentRequests';

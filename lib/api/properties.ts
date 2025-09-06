@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import { Tenant } from './types';
 
 export interface PropertyDetails {
   electricitySettings: {
@@ -47,16 +48,6 @@ export interface Room {
   __v: number;
 }
 
-export interface Tenant {
-  _id: string;
-  tenantName: string;
-  tenantNumber: string;
-  tenantEmail?: string;
-  monthlyRent: number;
-  status: string;
-  checkInDate: string;
-}
-
 export interface PropertyDetailsResponse {
   success: boolean;
   data: PropertyDetails;
@@ -69,3 +60,20 @@ export async function getPropertyById(propertyId: string): Promise<PropertyDetai
   const response = await apiClient.get<PropertyDetailsResponse>(`/properties/${propertyId}`);
   return response.data;
 }
+
+
+// Get basic property data by ID
+export interface PropertyBasicData {
+  _id: string;
+  propertyName: string;
+  propertyAddress: string;
+}
+
+export interface PropertyBasicResponse {
+  success: boolean;
+  data: PropertyBasicData;
+}
+
+export const getPropertyBasic = async (propertyId: string): Promise<PropertyBasicResponse> => {
+  return await apiClient.get(`/properties/${propertyId}/basic`);
+};

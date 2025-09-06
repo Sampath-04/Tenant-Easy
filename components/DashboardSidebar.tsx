@@ -25,12 +25,14 @@ import {
   AccountBalance as RefundIcon,
   Add as AddIcon,
   ElectricBolt as ElectricIcon,
+  Assessment as AssessmentIcon,
   ExpandLess,
   ExpandMore,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
   AttachMoney as ExpenseIcon,
   PieChart as PieChartIcon,
+  RequestPage as RequestPageIcon,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -117,6 +119,18 @@ const menuItems: MenuItem[] = [
         href: '/dashboard/tenant-onboard-payments/pending',
       },
     ],
+  },
+  {
+    id: 'reports',
+    label: 'Reports',
+    icon: <AssessmentIcon />,
+    href: '/dashboard/reports',
+  },
+  {
+    id: 'payment-requests',
+    label: 'Payment Requests',
+    icon: <RequestPageIcon />,
+    href: '/dashboard/payment-requests',
   },
 ];
 

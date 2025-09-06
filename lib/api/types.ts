@@ -1,4 +1,5 @@
 // API Types for the application
+import { Room } from './properties';
 import { RentHistoryItem } from './rentHistory';
 
 export interface CreateUserRequest {
@@ -28,14 +29,6 @@ export interface CreateUserResponse {
   data: {
     user: User;
   };
-}
-
-// Room interface
-export interface Room {
-  _id: string;
-  roomNo: string;
-  roomType: string;
-  maxCapacity: number;
 }
 
 // Detailed Room interface for API response

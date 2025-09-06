@@ -100,7 +100,48 @@ export async function createTenant(tenantData: {
   paymentMethod: string;
   paymentProofs?: File[];
 }): Promise<Tenant> {
-  const response = await apiClient.post<{ success: boolean; data: Tenant }>('/tenants', tenantData);
+  // Create FormData for file uploads
+  const formData = new FormData();
+  
+  // Add all non-file fields
+  formData.append('property', tenantData.property);
+  formData.append('room', tenantData.room);
+  formData.append('tenantName', tenantData.tenantName);
+  formData.append('tenantNumber', tenantData.tenantNumber);
+  formData.append('monthlyRent', tenantData.monthlyRent.toString());
+  formData.append('securityDepositTotal', tenantData.securityDepositTotal.toString());
+  formData.append('securityDepositPaid', tenantData.securityDepositPaid.toString());
+  formData.append('checkinDate', tenantData.checkinDate);
+  formData.append('rentPaid', tenantData.rentPaid.toString());
+  formData.append('paymentMethod', tenantData.paymentMethod);
+  
+  // Add optional fields
+  if (tenantData.tenantEmail) {
+    formData.append('tenantEmail', tenantData.tenantEmail);
+  }
+  
+  if (tenantData.currentReading !== undefined) {
+    formData.append('currentReading', tenantData.currentReading.toString());
+  }
+  
+  // Add emergency contact as JSON string
+  if (tenantData.emergencyContact) {
+    formData.append('emergencyContact', JSON.stringify(tenantData.emergencyContact));
+  }
+  
+  // Add tenant ID proof file
+  if (tenantData.tenantIdProof) {
+    formData.append('tenantIdProof', tenantData.tenantIdProof);
+  }
+  
+  // Add payment proof files
+  if (tenantData.paymentProofs && tenantData.paymentProofs.length > 0) {
+    tenantData.paymentProofs.forEach((file, index) => {
+      formData.append(`paymentProofs`, file);
+    });
+  }
+  
+  const response = await apiClient.post<{ success: boolean; data: Tenant }>('/tenants', formData);
   return response.data;
 }
 

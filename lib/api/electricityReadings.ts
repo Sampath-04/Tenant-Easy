@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import { Room } from './properties';
 
 export interface ElectricityReadingRequest {
   property: string;
@@ -41,18 +42,6 @@ export interface ElectricityReadingResponse {
     perTenantCost: number;
     id: string;
   };
-}
-
-export interface Room {
-  _id: string;
-  roomNo: string;
-  roomType: string;
-  currentMeterReading: number;
-  previousMeterReading: number;
-  tenants: Array<{
-    _id: string;
-    tenantName: string;
-  }>;
 }
 
 export interface RoomsResponse {

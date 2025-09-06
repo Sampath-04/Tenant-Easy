@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import { Property } from './types';
+import { PaymentRequest } from './paymentRequests';
 
 // Electricity Reading interface for rent history
 export interface ElectricityReadingDetail {
@@ -346,3 +347,102 @@ export async function getRentRecordsForExport(
   
   return apiClient.get<RentHistoryResponse>(`/rent-history/property/${propertyId}?${queryParams.toString()}`);
 }
+
+export interface TenantHistoryRecord {
+  _id: string;
+  tenant: {
+    _id: string;
+    tenantName: string;
+    tenantNumber: string;
+    tenantEmail: string;
+    checkInDate?: string;
+    remainingSecurityDeposit?: number | null;
+    isSecurityDepositFullyPaid: boolean;
+    isSecurityDepositPartiallyPaid: boolean;
+    id: string;
+  };
+  property: {
+    _id: string;
+    propertyName: string;
+    propertyAddress: string;
+    paymentInfo: {
+      qrCodeLink: string;
+    };
+  };
+  room: {
+    _id: string;
+    roomNo: string;
+    roomType: string;
+    maxCapacity?: number;
+  };
+  startDate: string;
+  endDate: string;
+  month: string;
+  rent: number;
+  electricityReadings: any[];
+  electricityBill: number;
+  electricityUnits: number;
+  totalAmount: number;
+  paymentStatus: string;
+  isValid: boolean;
+  paymentTransactions: Array<{
+    _id: string;
+    amount: number;
+    paymentType: string;
+    status: string;
+    method: string;
+    paidAt: string;
+    paymentProofs?: string[];
+    metadata?: {
+      rentMonth: string;
+      paidTo: string;
+    };
+    isSuccessful: boolean;
+    isPending: boolean;
+    id: string;
+  }>;
+  dueDate: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  totalPaidAmount: number;
+  remainingAmount: number;
+  isPending: boolean;
+  isOverdue: boolean;
+  daysOverdue: number;
+  lastPaymentDate: string | null;
+  id: string;
+  paymentRequests: PaymentRequest[];
+}
+
+export interface TenantHistoryResponse {
+  success: boolean;
+  count: number;
+  data: TenantHistoryRecord[];
+  summary: {
+    totalRecords: number;
+    totalPaid: number;
+    totalPending: number;
+    totalAmount: number;
+    paidAmount: number;
+    pendingAmount: number;
+    statusBreakdown: {
+      NOT_PAID: number;
+      PARTIALLY_PAID: number;
+      FULLY_PAID: number;
+    };
+  };
+  searchCriteria: {
+    phoneNumber: string;
+    propertyId: string;
+  };
+}
+
+export interface SingleRentRecordResponse {
+  success: boolean;
+  data: TenantHistoryRecord;
+}
+
+export const getRentRecordById = async (rentRecordId: string): Promise<SingleRentRecordResponse> => {
+  return await apiClient.get(`/rent-history/${rentRecordId}`);
+};

@@ -21,6 +21,7 @@ import {
 } from '../lib/api';
 import { showErrorToast, showSuccessToast } from '../lib/toast-config';
 import { toast } from 'react-toastify';
+import { TenantHistoryResponse } from '@/lib/api/rentHistory';
 
 // Query keys
 export const tenantKeys = {
@@ -282,5 +283,3 @@ export function useUpdateOnboardingPaymentAmount() {
     },
   });
 }
-
-
