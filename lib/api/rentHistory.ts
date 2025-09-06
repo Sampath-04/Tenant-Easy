@@ -105,6 +105,7 @@ export interface RentHistoryItem {
   dueDate: string;
   previousCyclePaymentStatus: "PARTIALLY_PAID" | "FULLY_PAID" | "NOT_PAID";
   previousCycleMonth: string;
+  receiptUrl?: string;
   createdAt: string;
   updatedAt: string;
   isOverdue: boolean;

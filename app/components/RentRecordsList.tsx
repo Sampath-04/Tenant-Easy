@@ -49,6 +49,7 @@ export default function RentRecordsList({
     };
 
     const getWhatsAppMessage = (rent: any) => {
+    const paymentLink = `http://localhost:3000/tenant-payment?rentRecordId=${rent._id}`;
     const message = 
 `Hi ${rent.tenant.tenantName}, 
 
@@ -62,6 +63,9 @@ Details:
 • Remaining Amount: ₹${rent.remainingAmount}
 • Due Date: ${formatDate(rent.dueDate)}
 
+You can complete your payment online using this link:
+${paymentLink}
+
 Please make the payment at your earliest convenience. If you have any questions, please contact us.
 * If you have already paid the rent, please ignore this message.
 
@@ -73,6 +77,14 @@ Thank you!`;
     const handleWhatsAppReminder = (rent: any) => {
         // open whatsapp
         window.open(`https://wa.me/+91${rent.tenant.tenantNumber}?text=${getWhatsAppMessage(rent)}`, '_blank');
+    };
+
+    const handleShareReceipt = (rent: any) => {
+        if (rent?.tenant?.tenantNumber && rent?.receiptUrl) {
+            const message = `Hi ${rent.tenant.tenantName}, your payment has been processed! Here's your receipt: ${rent.receiptUrl}`;
+            const whatsappUrl = `https://wa.me/+91${rent.tenant.tenantNumber}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
     };
 
     const handleCompleteEviction = (rent: any) => {
@@ -364,31 +376,62 @@ Thank you!`;
                                                 </Button>
                                             </>
                                         ) :
-                                            <Button
-                                                variant="outlined"
-                                                startIcon={<ElectricBoltIcon />}
-                                                endIcon={expandedRentId === record._id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                                                onClick={() => toggleReadings(record._id)}
-                                                sx={(theme: Theme) => ({
-                                                    borderColor: theme.palette.mode === 'dark' ? '#8b5cf6' : '#8b5cf6',
-                                                    color: theme.palette.mode === 'dark' ? '#a78bfa' : '#8b5cf6',
-                                                    borderRadius: '12px',
-                                                    textTransform: 'none',
-                                                    fontWeight: 600,
-                                                    padding: '8px 16px',
-                                                    '&:hover': {
-                                                        backgroundColor: theme.palette.mode === 'dark'
-                                                            ? 'rgba(139, 92, 246, 0.1)'
-                                                            : '#f3f4f6',
-                                                        borderColor: theme.palette.mode === 'dark' ? '#a78bfa' : '#7c3aed',
-                                                        color: theme.palette.mode === 'dark' ? '#a78bfa' : '#7c3aed',
-                                                    },
-                                                    transition: 'all 0.2s ease',
-                                                })}
-                                                size="small"
-                                            >
-                                                {expandedRentId === record._id ? 'Hide Details' : 'Show Details'}
-                                            </Button>
+                                            <>
+                                                {/* Share Receipt button for fully paid records with receipt */}
+                                                {record.paymentStatus === "FULLY_PAID" && record.receiptUrl && (
+                                                    <Button
+                                                        variant="contained"
+                                                        startIcon={<WhatsAppIcon />}
+                                                        onClick={() => handleShareReceipt(record)}
+                                                        sx={(theme: Theme) => ({
+                                                            backgroundColor: theme.palette.mode === 'dark' ? '#059669' : '#10b981',
+                                                            borderRadius: '12px',
+                                                            color: '#fff',
+                                                            textTransform: 'none',
+                                                            fontWeight: 600,
+                                                            padding: '8px 16px',
+                                                            boxShadow: theme.palette.mode === 'dark'
+                                                                ? '0 1px 3px 0 rgba(0, 0, 0, 0.3)'
+                                                                : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+                                                            '&:hover': {
+                                                                backgroundColor: theme.palette.mode === 'dark' ? '#047857' : '#059669',
+                                                                boxShadow: theme.palette.mode === 'dark'
+                                                                    ? '0 4px 6px -1px rgba(0, 0, 0, 0.3)'
+                                                                    : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                                            },
+                                                            transition: 'all 0.2s ease',
+                                                        })}
+                                                        size="small"
+                                                    >
+                                                        Share Receipt
+                                                    </Button>
+                                                )}
+                                                <Button
+                                                    variant="outlined"
+                                                    startIcon={<ElectricBoltIcon />}
+                                                    endIcon={expandedRentId === record._id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                                                    onClick={() => toggleReadings(record._id)}
+                                                    sx={(theme: Theme) => ({
+                                                        borderColor: theme.palette.mode === 'dark' ? '#8b5cf6' : '#8b5cf6',
+                                                        color: theme.palette.mode === 'dark' ? '#a78bfa' : '#8b5cf6',
+                                                        borderRadius: '12px',
+                                                        textTransform: 'none',
+                                                        fontWeight: 600,
+                                                        padding: '8px 16px',
+                                                        '&:hover': {
+                                                            backgroundColor: theme.palette.mode === 'dark'
+                                                                ? 'rgba(139, 92, 246, 0.1)'
+                                                                : '#f3f4f6',
+                                                            borderColor: theme.palette.mode === 'dark' ? '#a78bfa' : '#7c3aed',
+                                                            color: theme.palette.mode === 'dark' ? '#a78bfa' : '#7c3aed',
+                                                        },
+                                                        transition: 'all 0.2s ease',
+                                                    })}
+                                                    size="small"
+                                                >
+                                                    {expandedRentId === record._id ? 'Hide Details' : 'Show Details'}
+                                                </Button>
+                                            </>
                                         }
                                     </div>
                                 </div>

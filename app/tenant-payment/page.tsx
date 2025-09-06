@@ -46,34 +46,11 @@ export default function TenantPaymentPage() {
   // React Query hooks
   const submitPaymentRequestMutation = useSubmitPaymentRequest();
   
-  // Commented out form-related state and functions
-  // const [phoneNumber, setPhoneNumber] = useState('');
-  // const [searchEnabled, setSearchEnabled] = useState(false);
-
-  // const { data: tenantHistoryResponse, isLoading, error, refetch } = useTenantHistory(
-  //   '', // roomNo not needed anymore
-  //   phoneNumber,
-  //   propertyId || undefined,
-  //   searchEnabled
-  // );
 
   const { data: rentRecordResponse, error } = useRentRecord(
     rentRecordId || '',
     !!rentRecordId
   );
-
-  // Commented out form handlers
-  // const handleSearch = () => {
-  //   if (phoneNumber.trim()) {
-  //     setSearchEnabled(true);
-  //     refetch();
-  //   }
-  // };
-
-  // const handleReset = () => {
-  //   setPhoneNumber('');
-  //   setSearchEnabled(false);
-  // };
 
   const getPaymentStatusColor = (status: string) => {
     switch (status) {
@@ -383,7 +360,7 @@ export default function TenantPaymentPage() {
         {hasPendingPayments && !hasPaymentRequest && !submitPaymentRequestMutation.isSuccess && (
           <Card className="mb-6 shadow-lg border border-blue-200 dark:border-blue-700 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
             <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center gap-3 mb-6 cursor-pointer">
                 <SendIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 <h3 className="text-xl font-semibold text-blue-900 dark:text-blue-100">
                   Submit Payment Request
@@ -516,10 +493,10 @@ export default function TenantPaymentPage() {
                 <button
                   onClick={handlePaymentRequestSubmit}
                   disabled={submitPaymentRequestMutation.isPending || !paymentProof}
-                  className={`w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 ${
+                  className={`w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 cursor-pointer ${
                     submitPaymentRequestMutation.isPending || !paymentProof
                       ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
+                      : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl'
                   }`}
                 >
                   {submitPaymentRequestMutation.isPending ? (

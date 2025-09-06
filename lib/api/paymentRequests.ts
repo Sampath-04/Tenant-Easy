@@ -15,6 +15,7 @@ export interface PaymentRequest {
     isOverdue: boolean;
     daysOverdue: number;
     lastPaymentDate: string | null;
+    receiptUrl?: string;
     id: string;
   } | null;
   tenant: {
