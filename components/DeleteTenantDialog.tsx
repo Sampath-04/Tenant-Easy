@@ -129,7 +129,6 @@ export default function DeleteTenantDialog({
                 backgroundColor: theme.palette.mode === 'dark' ? '#111827' : '#f9fafb',
                 borderRadius: '8px',
                 p: 2.5,
-                mt: 3,
                 border: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
               })}
             >
@@ -234,8 +233,8 @@ export default function DeleteTenantDialog({
 
       <DialogActions 
         sx={(theme) => ({
-          px: 3, 
-          pb: 3, 
+          px: 3,
+          py: 2, 
           gap: 2,
           backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
           borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
@@ -248,7 +247,6 @@ export default function DeleteTenantDialog({
             backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
             color: '#ffffff',
             px: 3,
-            py: 1.5,
             borderRadius: '30px',
             fontSize: '0.875rem',
             fontWeight: 500,
@@ -271,7 +269,6 @@ export default function DeleteTenantDialog({
             backgroundColor: theme.palette.mode === 'dark' ? '#dc2626' : '#ef4444',
             color: '#ffffff',
             px: 3,
-            py: 1.5,
             borderRadius: '30px',
             fontSize: '0.875rem',
             fontWeight: 500,

@@ -237,21 +237,21 @@ function TenantViewContent() {
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER + " py-4"}>
         {/* Tenant Overview Card */}
         <div className={`${LAYOUT_CLASSES.CARD_CONTAINER} mb-6`}>
-          <div className="p-4 md:p-4">
+          <div className="p-2 md:p-3">
             <div className="flex flex-row items-center justify-between mb-3">
               <div className="flex items-center md:space-x-4 gap-2 md:gap-0">
-                <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
                   {localTenant.tenantName.charAt(0).toUpperCase()}
                 </div>
                 <div className='flex flex-row items-center gap-2'>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white ">
+                  <h1 className="text-lg font-bold text-gray-900 dark:text-white ">
                     {localTenant.tenantName}
                   </h1>
                   <div className="flex items-center space-x-2">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(localTenant.status)}`}>
                       {getStatusLabel(localTenant.status)}
                     </span>
-                    <span className="text-gray-600 dark:text-gray-400">
+                    <span className="text-gray-600 dark:text-gray-400 text-sm font-bold">
                       {localTenant.room.roomNo}
                     </span>
                   </div>
@@ -259,7 +259,7 @@ function TenantViewContent() {
               </div>
 
               <div className="mt-0 text-right">
-                <div className="text-lg md:text-2xl text-green-600 dark:text-green-400 font-bold">
+                <div className="text-md md:text-lg text-green-600 dark:text-green-400 font-bold">
                   {formatCurrency(localTenant.monthlyRent)}
                 </div>
                 <div className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
@@ -270,105 +270,105 @@ function TenantViewContent() {
 
             <hr className="my-4 border-gray-200 dark:border-gray-700" />
 
-            <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center space-x-3">
-                  <PhoneIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                  <div>
+            <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-[220px_auto] items-center">
+                  <div className='flex items-center gap-2'>
+                    <PhoneIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     <div className="text-sm text-gray-500 dark:text-gray-400">
                       Phone Number
                     </div>
-                    <div className="font-medium text-gray-900 dark:text-white text-sm">
-                      {localTenant.tenantNumber}
-                    </div>
+                  </div>
+                  <div className="font-medium text-gray-900 dark:text-white text-sm">
+                    {localTenant.tenantNumber}
                   </div>
                 </div>
 
                 {localTenant.tenantEmail && (
-                  <div className="flex items-center space-x-3">
+                  <div className="grid grid-cols-[220px_auto] items-center">
+                    <div className='flex items-center gap-2'>
                     <EmailIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                    <div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Email
-                      </div>
-                      <div className="font-medium text-gray-900 dark:text-white text-sm">
-                        {localTenant.tenantEmail}
-                      </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      Email
+                    </div>
+                    </div>
+                    <div className="font-medium text-gray-900 dark:text-white text-sm">
+                      {localTenant.tenantEmail}
                     </div>
                   </div>
                 )}
 
-                <div className="flex items-center space-x-3">
-                  <LocationOnIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                  <div>
+                <div className="grid grid-cols-[220px_auto] items-center">
+                  <div className='flex items-center gap-2'>
+                    <LocationOnIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Property
+                        Property
                     </div>
+                  </div>
                     <div className="font-medium text-gray-900 dark:text-white text-sm">
                       {localTenant.property?.propertyName || 'N/A'}
                     </div>
-                  </div>
                 </div>
 
                 {localTenant.currentReading > 0 && (
-                  <div className="flex items-center space-x-3">
-                    <ReceiptIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                    <div>
+                  <div className="grid grid-cols-[220px_auto] items-center">
+                    <div className='flex items-center gap-2'>
+                      <ReceiptIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Current Meter Reading
+                          Current Meter Reading
                       </div>
-                      <div className="font-medium text-gray-900 dark:text-white text-sm">
-                        {localTenant.currentReading} units
-                      </div>
+                    </div>
+                    <div className="font-medium text-gray-900 dark:text-white text-sm">
+                      {localTenant.currentReading} units
                     </div>
                   </div>
                 )}
 
-                <div className="flex items-center space-x-3">
-                  <CalendarTodayIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                  <div>
+                <div className="grid grid-cols-[220px_auto] items-center">
+                  <div className='flex items-center gap-2'>
+                    <CalendarTodayIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Check-in Date
+                        Check-in Date
                     </div>
-                    <div className="font-medium text-gray-900 dark:text-white text-sm">
-                      {formatDate(localTenant.checkInDate)}
-                    </div>
+                  </div>
+                  <div className="font-medium text-gray-900 dark:text-white text-sm">
+                    {formatDate(localTenant.checkInDate)}
                   </div>
                 </div>
 
                 {localTenant.checkOutDate && (
-                  <div className="flex items-center space-x-3">
-                    <CalendarTodayIcon className="w-5 h-5 text-red-500 dark:text-red-400" />
-                    <div>
+                  <div className="grid grid-cols-[220px_auto] items-center">
+                    <div className='flex items-center gap-2'>
+                      <CalendarTodayIcon className="w-5 h-5 text-red-500 dark:text-red-400" />
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Check-out Date
+                          Check-out Date
                       </div>
+                    </div>
                       <div className="font-medium text-red-600 dark:text-red-400 text-sm">
                         {formatDate((new Date(localTenant.checkOutDate).toISOString()))}
                       </div>
-                    </div>
                   </div>
                 )}
 
-                <div className="flex items-center space-x-3">
-                  <AccountBalanceWalletIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                  <div>
+                <div className="grid grid-cols-[220px_auto] items-center">
+                  <div className='flex items-center gap-2'>
+                    <AccountBalanceWalletIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Security Deposit
-                    </div>
-                    <div className="font-medium text-gray-900 dark:text-white text-sm">
-                      {formatCurrency(localTenant.securityDepositTotal || 0)}
+                        Security Deposit
                     </div>
                   </div>
+                  <div className="font-medium text-gray-900 dark:text-white text-sm">
+                    {formatCurrency(localTenant.securityDepositTotal || 0)}
+                  </div>
                 </div>
-                <div className="flex items-center space-x-3">
+                <div className="grid grid-cols-[220px_auto] items-center">
+                  <div className='flex items-center gap-2'>
                   <AccountBalanceWalletIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                  <div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Security Deposit Paid
-                    </div>
-                    <div className="font-medium text-gray-900 dark:text-white text-sm">
-                      {formatCurrency(localTenant.securityDepositPaid || 0)}
-                    </div>
+                        Security Deposit Paid
+                      </div>
+                  </div>
+                  <div className="font-medium text-gray-900 dark:text-white text-sm">
+                    {formatCurrency(localTenant.securityDepositPaid || 0)}
                   </div>
                 </div>
             </div>
@@ -392,29 +392,7 @@ function TenantViewContent() {
 
               {/* Apply Notice Button - Only show for onboarded tenants without notice */}
           
-              <div className="flex justify-end gap-4 mt-2 ml-auto">
-                
-                {localTenant.status === 'onboarded' && !localTenant.notice && localTenant.currentCycle && <Button
-                  variant="contained"
-                  startIcon={<NoticeIcon />}
-                  onClick={handleApplyNotice}
-                  disabled={localTenant.previousCyclePaymentStatus === 'NOT_PAID' || localTenant.previousCyclePaymentStatus === 'PARTIALLY_PAID'}
-                  sx={{
-                    backgroundColor: '#FFC04D',
-                    boxShadow: 'none',
-                    borderRadius: '12px',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    textTransform: 'none',
-                    padding: '10px 16px',
-                    '&:hover': {
-                      backgroundColor: '#d97706',
-                    },
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  Apply Notice Period
-                </Button>}
+              <div className="flex justify-end gap-4 mt-4 ml-auto">
                 <Button
                   variant="outlined"
                   onClick={() => router.push(`/dashboard/tenants/${tenantId}/edit`)}
@@ -434,23 +412,6 @@ function TenantViewContent() {
                 </Button>
                 <Button
                   variant="outlined"
-                  onClick={() => setShowOnboardingHistory(!showOnboardingHistory)}
-                  sx={{
-                    borderColor: '#3b82f6',
-                    color: '#3b82f6',
-                    '&:hover': {
-                      borderColor: '#2563eb',
-                      backgroundColor: 'rgba(59, 130, 246, 0.04)',
-                    },
-                    borderRadius: '12px',
-                    textTransform: 'none',
-                    fontWeight: 500,
-                  }}
-                >
-                  {showOnboardingHistory ? 'Hide' : 'Show More'}
-                </Button>
-                <Button
-                  variant="outlined"
                   startIcon={<DeleteIcon />}
                   onClick={handleDeleteTenant}
                   sx={{
@@ -467,6 +428,46 @@ function TenantViewContent() {
                 >
                   Delete Tenant
                 </Button>
+
+                {localTenant.status === 'onboarded' && !localTenant.notice && localTenant.currentCycle && 
+                <Button
+                  variant="contained"
+                  startIcon={<NoticeIcon />}
+                  onClick={handleApplyNotice}
+                  disabled={localTenant.previousCyclePaymentStatus === 'NOT_PAID' || localTenant.previousCyclePaymentStatus === 'PARTIALLY_PAID'}
+                  sx={{
+                    backgroundColor: '#FFC04D',
+                    boxShadow: 'none',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    padding: '6px 12px',
+                    '&:hover': {
+                      backgroundColor: '#d97706',
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  Apply Notice Period
+                </Button>}
+                <Button
+                  variant="outlined"
+                  onClick={() => setShowOnboardingHistory(!showOnboardingHistory)}
+                  sx={{
+                    borderColor: '#3b82f6',
+                    color: '#3b82f6',
+                    '&:hover': {
+                      borderColor: '#2563eb',
+                      backgroundColor: 'rgba(59, 130, 246, 0.04)',
+                    },
+                    borderRadius: '12px',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                  }}
+                >
+                  {showOnboardingHistory ? 'Hide' : 'Show More'}
+                </Button>
               </div>
             </div>
                       
@@ -474,9 +475,9 @@ function TenantViewContent() {
             {localTenant.onboardingPayments && localTenant.onboardingPayments.length > 0 && (
                 <div>
                   {/* Onboarding Payment History Accordion */}
-                  <div className={`mt-4 transition-all duration-300 ease-in-out overflow-hidden ${
+                  <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
                     showOnboardingHistory 
-                      ? 'max-h-[1000px] opacity-100' 
+                      ? 'max-h-[1000px] opacity-100 mt-4' 
                       : 'max-h-0 opacity-0'
                   }`}>
                     <Accordion 
@@ -745,7 +746,7 @@ function TenantViewContent() {
                   Payment Details
                 </Typography>
                 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-[auto_1fr] gap-2">
                   <div className="flex flex-row items-center gap-2">
                     <Typography variant="body2" sx={(theme) => ({
                       color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',

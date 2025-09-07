@@ -132,7 +132,8 @@ function TenantEditContent() {
   const breadcrumbs = [
     { label: 'Dashboard', url: '/dashboard' },
     { label: 'Tenants', url: '/dashboard/tenants' },
-    { label: tenant?.tenantName || 'Tenant', url: `/dashboard/tenants/${tenantId}/edit` },
+    { label: tenant?.tenantName || 'Tenant', url: `/dashboard/tenants/${tenantId}` },
+    { label: 'Edit', url: `/dashboard/tenants/${tenantId}/edit` },
   ];
 
   return (
