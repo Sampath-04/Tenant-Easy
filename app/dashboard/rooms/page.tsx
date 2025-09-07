@@ -1,22 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AuthGuard } from '@/contexts/AuthContext';
 import { useProperty } from '@/contexts/PropertyContext';
 import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
 import { useRooms, useUpdateRoom, useRoomList } from '@/hooks/useRooms';
 import { RoomCard } from '@/app/components/RoomCard';
+import CustomSelect from '@/components/ui/CustomSelect';
 import { 
   Button,
   Dialog,
   Pagination,
   Box,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   IconButton,
   Tooltip,
 } from '@mui/material';
@@ -31,6 +29,8 @@ import { showSuccessToast } from '@/lib/toast-config';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
 function RoomsContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { selectedProperty } = useProperty();
   const [addRoomDialogOpen, setAddRoomDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -55,6 +55,32 @@ function RoomsContent() {
   } = useRoomList(selectedProperty?.id || '');
 
   const updateRoomMutation = useUpdateRoom();
+
+  // Read from URL params on mount
+  useEffect(() => {
+    setFilters({
+      roomType: searchParams.get("roomType") || "all",
+      availability: searchParams.get("availability") || "all",
+      roomId: searchParams.get("roomId") || "all",
+    });
+    setCurrentPage(parseInt(searchParams.get("page") || "1"));
+  }, []);
+
+  // Write to URL params when state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    // Add pagination
+    params.set("page", currentPage.toString());
+
+    // Add filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value && value !== 'all') params.set(key, value);
+    });
+
+    // Update the URL (shallow = true to avoid full reload)
+    router.push(`/dashboard/rooms?${params.toString()}`);
+  }, [filters, currentPage, router]);
 
   const handleRoomUpdate = (roomId: string, updatedData: any) => {
     updateRoomMutation.mutate(
@@ -179,7 +205,7 @@ function RoomsContent() {
           showFilters ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
         }`}>
           <div className="bg-white dark:bg-gray-800 mt-4 rounded-lg p-4 mb-2 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-2">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Filters</h3>
               <button
                 onClick={handleClearFilters}
@@ -190,51 +216,50 @@ function RoomsContent() {
             </div>
             
             <div className="flex gap-4">
-              {/* Room Type Filter */}
-              <FormControl size="small" sx={{width:"150px"}}>
-                <InputLabel>Room Type</InputLabel>
-                <Select
-                  value={filters.roomType}
-                  onChange={(e) => handleFilterChange('roomType', e.target.value)}
-                  label="Room Type"
-                >
-                  <MenuItem value="all">All Types</MenuItem>
-                  <MenuItem value="single">Single Room</MenuItem>
-                  <MenuItem value="sharing">Sharing Room</MenuItem>
-                </Select>
-              </FormControl>
+               {/* Room Type Filter */}
+               <div className="space-y-2 w-[150px]">
+                 <CustomSelect
+                   label="Room Type"
+                   value={filters.roomType}
+                   onChange={(e: any) => handleFilterChange('roomType', e.target.value)}
+                   options={[
+                     { value: 'all', label: 'All Types' },
+                     { value: 'single', label: 'Single Room' },
+                     { value: 'sharing', label: 'Sharing Room' }
+                   ]}
+                 />
+               </div>
 
-              {/* Availability Filter */}
-              <FormControl size="small" sx={{width:"150px"}}>
-                <InputLabel>Availability</InputLabel>
-                <Select
-                  value={filters.availability}
-                  onChange={(e) => handleFilterChange('availability', e.target.value)}
-                  label="Availability"
-                >
-                  <MenuItem value="all">All Rooms</MenuItem>
-                  <MenuItem value="available">Available</MenuItem>
-                  <MenuItem value="occupied">Occupied</MenuItem>
-                </Select>
-              </FormControl>
+               {/* Availability Filter */}
+               <div className="space-y-2 w-[150px]">
+                 <CustomSelect
+                   label="Availability"
+                   value={filters.availability}
+                   onChange={(e: any) => handleFilterChange('availability', e.target.value)}
+                   options={[
+                     { value: 'all', label: 'All Rooms' },
+                     { value: 'available', label: 'Available' },
+                     { value: 'occupied', label: 'Occupied' }
+                   ]}
+                 />
+               </div>
 
-              {/* Room Selection Filter */}
-              <FormControl size="small" sx={{width:"150px"}}>
-                <InputLabel>Specific Room</InputLabel>
-                <Select
-                  value={filters.roomId}
-                  onChange={(e) => handleFilterChange('roomId', e.target.value)}
-                  label="Specific Room"
-                  disabled={isLoadingAllRooms}
-                >
-                  <MenuItem value="all">All Rooms</MenuItem>
-                  {allRoomsData?.data?.map((room) => (
-                    <MenuItem key={room._id} value={room._id}>
-                      {room.roomNo}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+               {/* Room Selection Filter */}
+               <div className="space-y-2 w-[150px]">
+                 <CustomSelect
+                   label="Specific Room"
+                   value={filters.roomId}
+                   onChange={(e: any) => handleFilterChange('roomId', e.target.value)}
+                   options={[
+                     { value: 'all', label: 'All Rooms' },
+                     ...(allRoomsData?.data?.map((room) => ({
+                       value: room._id,
+                       label: room.roomNo
+                     })) || [])
+                   ]}
+                   disabled={isLoadingAllRooms}
+                 />
+               </div>
             </div>
           </div>
         </div>

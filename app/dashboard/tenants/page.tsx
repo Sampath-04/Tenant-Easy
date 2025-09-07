@@ -28,15 +28,18 @@ import {
   AccordionSummary,
   AccordionDetails,
   TablePagination,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
-import { ExpandMore } from '@mui/icons-material';
+import { ExpandMore, FilterList as FilterIcon } from '@mui/icons-material';
 import DateRangePicker from '../../../components/ui/DateRange';
 import { LAYOUT_CLASSES } from '../../../lib/constants/styles';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 function TenantsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { selectedProperty } = useProperty();
 
   // Pagination state
@@ -48,6 +51,9 @@ function TenantsContent() {
 
   // Debounced search term for API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  // Filter toggle state
+  const [showFilters, setShowFilters] = useState(false);
 
   // Filter state - Initialize with selected property
   const [filters, setFilters] = useState<TenantFilters>({
@@ -79,6 +85,62 @@ function TenantsContent() {
     setFilters(prev => ({ ...prev, search: debouncedSearchTerm }));
     setCurrentPage(1);
   }, [debouncedSearchTerm]);
+
+  // Read from URL params on mount
+  useEffect(() => {
+    const statusParam = searchParams.get("status");
+    const isActiveParam = searchParams.get("isActive");
+    const sortByParam = searchParams.get("sortBy");
+    const sortOrderParam = searchParams.get("sortOrder");
+
+    setFilters({
+      status: (statusParam as 'onboarded' | 'notice_serving' | 'evicted') || '',
+      property: selectedProperty?.id || '',
+      room: searchParams.get("room") || '',
+      search: searchParams.get("search") || '',
+      isActive: isActiveParam === 'true' ? true : isActiveParam === 'false' ? false : '',
+      rentRange: {
+        min: searchParams.get("rentMin") ? parseInt(searchParams.get("rentMin")!) : undefined,
+        max: searchParams.get("rentMax") ? parseInt(searchParams.get("rentMax")!) : undefined,
+      },
+      checkInDateRange: {
+        from: searchParams.get("checkInFrom") || '',
+        to: searchParams.get("checkInTo") || '',
+      },
+      sortBy: (sortByParam as 'tenantName' | 'checkInDate' | 'monthlyRent' | 'createdAt') || 'createdAt',
+      sortOrder: (sortOrderParam as 'asc' | 'desc') || 'desc',
+    });
+    setCurrentPage(parseInt(searchParams.get("page") || "1"));
+    setSearchTerm(searchParams.get("search") || '');
+  }, []);
+
+  // Write to URL params when state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    // Add pagination
+    params.set("page", currentPage.toString());
+
+    // Add filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value && value !== '' && value !== selectedProperty?.id) {
+        if (key === 'rentRange' && typeof value === 'object') {
+          if (value.min !== undefined) params.set("rentMin", value.min.toString());
+          if (value.max !== undefined) params.set("rentMax", value.max.toString());
+        } else if (key === 'checkInDateRange' && typeof value === 'object') {
+          if (value.from) params.set("checkInFrom", value.from);
+          if (value.to) params.set("checkInTo", value.to);
+        } else if (key === 'isActive' && typeof value === 'boolean') {
+          params.set(key, value.toString());
+        } else if (typeof value === 'string') {
+          params.set(key, value);
+        }
+      }
+    });
+
+    // Update the URL (shallow = true to avoid full reload)
+    router.push(`/dashboard/tenants?${params.toString()}`);
+  }, [filters, currentPage, router, selectedProperty?.id]);
 
   // Fetch data
   const { data: tenantsData, isLoading, error } = useTenants({
@@ -139,6 +201,10 @@ function TenantsContent() {
     setCurrentPage(1);
   };
 
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
+
   const tenants = tenantsData?.data || [];
 
   const pagination = tenantsData?.pagination;
@@ -197,20 +263,34 @@ function TenantsContent() {
 
       <div className='px-6 pt-6 flex flex-row justify-between items-center'>
         <BreadCrumbs items={breadcrumbs} />
-        {/* add tenant button */}
-        <button 
-          onClick={() => router.push('/dashboard/tenants/create')}
-          className="md:mt-4 lg:mt-0 text-sm border border-gray-300 dark:border-gray-700 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-[30px] cursor-pointer font-medium transition-colors flex items-center space-x-1 w-fit"
-        >
-          <span className="hidden md:block">Add Tenant</span>
-          <span className="md:hidden">Add Tenant</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {tenants.length > 0 && (
+            <Tooltip title="Toggle Filters">
+              <IconButton
+                onClick={toggleFilters}
+                className={`${showFilters ? 'bg-blue-100 dark:bg-blue-900' : 'bg-gray-100 dark:bg-gray-800'}`}
+              >
+                <FilterIcon className={showFilters ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'} />
+              </IconButton>
+            </Tooltip>
+          )}
+          <button 
+            onClick={() => router.push('/dashboard/tenants/create')}
+            className="text-sm border border-gray-300 dark:border-gray-700 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-[30px] cursor-pointer font-medium transition-colors flex items-center space-x-1 w-fit"
+          >
+            <span className="hidden md:block">Add Tenant</span>
+            <span className="md:hidden">Add Tenant</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Content */}
       <main className="mx-auto px-4 md:px-6 pt-4">
         {/* Filters Section */}
-        <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-lg p-4 border border-white/20 dark:border-gray-700/50 mb-4">
+        <div className={`overflow-hidden transition-all duration-300 ${
+          showFilters ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
+        }`}>
+          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-lg p-4 border border-white/20 dark:border-gray-700/50 mb-4">
           <div className="flex flex-row justify-between md:flex-col lg:flex-row lg:items-center lg:justify-between mb-3">
             <div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
@@ -260,7 +340,7 @@ function TenantsContent() {
                     { value: '', label: 'All Rooms' },
                     ...(Array.isArray(roomsData?.data) ? roomsData.data.map((room: any) => ({
                       value: room._id,
-                      label: `Room ${room.roomNo} (${room.roomType})`
+                      label: `${room.roomNo} (${room.roomType})`
                     })) : [])
                   ]}
                 />
@@ -270,10 +350,16 @@ function TenantsContent() {
 
           {/* Advanced Filters Accordion */}
           <Accordion 
-            className="rounded-2xl border border-gray-300 dark:border-gray-700 overflow-hidden"
+            className="rounded-2xl border border-gray-200 dark:border-gray-600 overflow-hidden bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
             sx={{
               '&:before': {
                 display: 'none',
+              },
+              '.MuiAccordionSummary-content':{
+                margin: '12px 0',
+              },
+              '.MuiButtonBase-root ':{
+                minHeight: "45px",
               },
               boxShadow: 'none',
               backgroundColor: 'transparent',
@@ -281,20 +367,20 @@ function TenantsContent() {
           >
             <AccordionSummary
               expandIcon={<ExpandMore />}
-              className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="bg-gray-50/80 dark:bg-gray-700/80 hover:bg-gray-100/80 dark:hover:bg-gray-600/80 transition-colors backdrop-blur-sm"
               sx={{
                 '& .MuiAccordionSummary-content': {
                   margin: '12px 0',
                 },
               }}
             >
-              <p  className="font-semibold text-gray-700 dark:text-gray-300 flex items-center text-md">
+              <p  className="font-semibold text-gray-700 dark:text-gray-200 flex items-center text-md">
                 Advanced Filters
               </p>
             </AccordionSummary>
             <AccordionDetails sx={{
               padding: '16px',
-            }} className=" bg-white dark:bg-gray-900">
+            }} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -365,10 +451,11 @@ function TenantsContent() {
               </div>
             </AccordionDetails>
           </Accordion>
+          </div>
         </div>
 
         {/* Tenants Table */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-lg border border-white/30 dark:border-gray-700/50 overflow-hidden">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-lg border border-white/30 dark:border-gray-700/50 overflow-hidden mb-5">
           {isLoading ? (
             <div className="flex items-center justify-center py-16">
               <div className="text-center">
@@ -408,15 +495,6 @@ function TenantsContent() {
                 </div>
                 <p className="text-gray-600 dark:text-gray-400 font-medium">No tenants found</p>
                 <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">Try adjusting your filters or add new tenants</p>
-                <Link
-                  href="/dashboard/tenants/add"
-                  className="mt-4 inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Add First Tenant
-                </Link>
               </div>
             </div>
           ) : (
@@ -424,7 +502,7 @@ function TenantsContent() {
               {/* Desktop Table View */}
               <div className="hidden md:block">
                 <TableContainer component={Paper} className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg shadow-xl border border-white/20 dark:border-gray-700/50" sx={{
-                  height:"460px"
+                  height: !showFilters ? 'calc(100vh - 250px)' : 'auto',
                 }}>
                   <Table>
                     <TableHead>
@@ -469,7 +547,7 @@ function TenantsContent() {
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2" className="font-medium text-gray-900 dark:text-white">
-                              Room {tenant.room.roomNo}
+                              {tenant.room.roomNo}
                             </Typography>
                           </TableCell>
                           <TableCell>

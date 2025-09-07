@@ -71,6 +71,43 @@ const menuItems: MenuItem[] = [
     href: '/dashboard/rent-records',
   },
   {
+    id: 'refunds',
+    label: 'Refunds',
+    icon: <RefundIcon />,
+    href: '/dashboard/refunds',
+  },
+  {
+    id: 'reports',
+    label: 'Reports',
+    icon: <AssessmentIcon />,
+    href: '/dashboard/reports',
+  },
+  {
+    id: 'payment-requests',
+    label: 'Payment Requests',
+    icon: <RequestPageIcon />,
+    href: '/dashboard/payment-requests',
+  },
+  {
+    id: 'onboard-payments',
+    label: 'Onboard Payments',
+    icon: <PaymentIcon />,
+    children: [
+      {
+        id: 'upcoming',
+        label: 'Upcoming',
+        icon: <ReceiptIcon />,
+        href: '/dashboard/tenant-onboard-payments/upcoming',
+      },
+      {
+        id: 'pending',
+        label: 'Pending',
+        icon: <ReceiptIcon />,
+        href: '/dashboard/tenant-onboard-payments/pending',
+      },
+    ],
+  },
+  {
     id: 'expenses',
     label: 'Expenses',
     icon: <ExpenseIcon />,
@@ -95,43 +132,7 @@ const menuItems: MenuItem[] = [
       },
     ],
   },
-  {
-    id: 'refunds',
-    label: 'Refunds',
-    icon: <RefundIcon />,
-    href: '/dashboard/refunds',
-  },
-  {
-    id: 'onboard-payments',
-    label: 'Onboard Payments',
-    icon: <PaymentIcon />,
-    children: [
-      {
-        id: 'upcoming',
-        label: 'Upcoming',
-        icon: <ReceiptIcon />,
-        href: '/dashboard/tenant-onboard-payments/upcoming',
-      },
-      {
-        id: 'pending',
-        label: 'Pending',
-        icon: <ReceiptIcon />,
-        href: '/dashboard/tenant-onboard-payments/pending',
-      },
-    ],
-  },
-  {
-    id: 'reports',
-    label: 'Reports',
-    icon: <AssessmentIcon />,
-    href: '/dashboard/reports',
-  },
-  {
-    id: 'payment-requests',
-    label: 'Payment Requests',
-    icon: <RequestPageIcon />,
-    href: '/dashboard/payment-requests',
-  },
+
 ];
 
 const actionItems: MenuItem[] = [

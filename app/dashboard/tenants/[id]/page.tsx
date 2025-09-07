@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { AuthGuard } from '@/contexts/AuthContext';
 import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
-import { useTenant, useUpdateOnboardingPaymentAmount } from '@/hooks/useTenants';
+import { useTenant, useUpdateOnboardingPaymentAmount, useMarkTenantAsDeleted } from '@/hooks/useTenants';
+import DeleteTenantDialog from '@/components/DeleteTenantDialog';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
@@ -17,8 +18,8 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import WarningIcon from '@mui/icons-material/Warning';
 import RentHistoryTable from '@/app/components/RentHistoryTable';
 import NoticeForm from '@/components/NoticeForm';
-import { Button, Accordion, AccordionSummary, AccordionDetails, Typography, IconButton, Chip, TextField, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import { NotificationsActive as NoticeIcon, ExpandMore as ExpandMoreIcon, Edit as EditIcon, Payment as PaymentIcon } from '@mui/icons-material';
+import { Button, Accordion, AccordionSummary, AccordionDetails, Typography, IconButton, Chip, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Alert, Box } from '@mui/material';
+import { NotificationsActive as NoticeIcon, ExpandMore as ExpandMoreIcon, Edit as EditIcon, Payment as PaymentIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
 import { useTheme } from '@mui/material/styles';
 
@@ -34,9 +35,11 @@ function TenantViewContent() {
   const [editingPayment, setEditingPayment] = useState<any>(null);
   const [editAmount, setEditAmount] = useState('');
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const { data: tenant, isLoading, error: fetchError } = useTenant(tenantId);
   const updatePaymentMutation = useUpdateOnboardingPaymentAmount();
+  const markTenantAsDeletedMutation = useMarkTenantAsDeleted();
   const error = fetchError?.message;
 
   const formatCurrency = (amount: number) => {
@@ -64,6 +67,10 @@ function TenantViewContent() {
         return 'Notice Period';
       case 'evicted':
         return 'Evicted';
+      case 'upcoming':
+        return 'Upcoming';
+      case 'deleted':
+        return 'Deleted';
       default:
         return status;
     }
@@ -77,9 +84,32 @@ function TenantViewContent() {
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
       case 'evicted':
         return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+      case 'upcoming':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'deleted':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
     }
+  };
+
+  const handleDeleteTenant = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (tenant) {
+      markTenantAsDeletedMutation.mutate(tenant._id, {
+        onSuccess: () => {
+          setDeleteDialogOpen(false);
+          router.push('/dashboard/tenants');
+        }
+      });
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
   };
 
   const handleApplyNotice = () => {
@@ -138,12 +168,6 @@ function TenantViewContent() {
     } catch (error) {
       console.error('Failed to update payment:', error);
     }
-  };
-
-  const handleCancelPaymentEdit = () => {
-    setEditingPayment(null);
-    setEditAmount('');
-    setShowEditDialog(false);
   };
 
   useEffect(() => {
@@ -228,7 +252,7 @@ function TenantViewContent() {
                       {getStatusLabel(localTenant.status)}
                     </span>
                     <span className="text-gray-600 dark:text-gray-400">
-                      Room {localTenant.room.roomNo}
+                      {localTenant.room.roomNo}
                     </span>
                   </div>
                 </div>
@@ -424,6 +448,24 @@ function TenantViewContent() {
                   }}
                 >
                   {showOnboardingHistory ? 'Hide' : 'Show More'}
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<DeleteIcon />}
+                  onClick={handleDeleteTenant}
+                  sx={{
+                    borderColor: '#ef4444',
+                    color: '#ef4444',
+                    '&:hover': {
+                      borderColor: '#dc2626',
+                      backgroundColor: 'rgba(239, 68, 68, 0.04)',
+                    },
+                    borderRadius: '12px',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                  }}
+                >
+                  Delete Tenant
                 </Button>
               </div>
             </div>
@@ -873,6 +915,15 @@ function TenantViewContent() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Delete Tenant Confirmation Dialog */}
+      <DeleteTenantDialog
+        open={deleteDialogOpen}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        tenant={tenant}
+        isDeleting={markTenantAsDeletedMutation.isPending}
+      />
     </div>
   );
 }
