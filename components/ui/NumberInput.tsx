@@ -26,56 +26,42 @@ const NumberInput: React.FC<NumberInputProps> = ({
     }
   };
 
+  // Show placeholder when value is 0, empty, or undefined
+  const displayValue = (value === 0 || value === "" || value === undefined) ? "" : value;
+
   return (
     <TextField
       type="number"
       variant="outlined"
       placeholder={placeholder}
-      value={value}
+      value={displayValue}
       onChange={handleChange}
       className={className}
       sx={(theme: Theme) => ({
         flex: 1,
         minWidth: minWidth,
-        "& .MuiInputBase-root": {
-          borderRadius: "30px",
-          height: "48px",
-          backgroundColor:
-            theme.palette.mode === "dark"
-              ? "rgba(55, 65, 81, 0.8)" // gray-700/80
-              : "rgba(255, 255, 255, 0.8)",
+        "& .MuiOutlinedInput-root": {
+          borderRadius: "8px", // Match standard TextField styling
           color: theme.palette.mode === "dark" ? "white" : "black",
-          border: `1px solid ${theme.palette.mode === "dark"
-            ? "rgba(75, 85, 99, 1)" // gray-600
-            : "rgba(209, 213, 219, 1)" // gray-300
-            }`,
-          boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-          transition: "all 0.2s ease-in-out",
-        },
-        "& .MuiInputBase-input": {
-          padding: "12px 14px",
-        },
-        "& .MuiOutlinedInput-notchedOutline": {
-          border: "none", // already handled above
-        },
-        "&:hover .MuiOutlinedInput-notchedOutline": {
-          borderColor:
-            theme.palette.mode === "dark"
-              ? "rgba(156, 163, 175, 0.6)"
-              : "rgba(0, 0, 0, 0.3)",
-        },
-        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-          borderColor: theme.palette.primary.main,
-          boxShadow: `0 0 0 3px ${theme.palette.mode === "dark"
-            ? "rgba(59, 130, 246, 0.4)"
-            : "rgba(59, 130, 246, 0.2)"
-            }`,
+          "& fieldset": {
+            borderColor: theme.palette.mode === "dark" 
+              ? "rgba(75, 85, 99, 1)" 
+              : "rgba(209, 213, 219, 1)",
+          },
+          "&:hover fieldset": {
+            borderColor: theme.palette.mode === "dark" 
+              ? "rgba(75, 85, 99, 0.8)" 
+              : "rgba(209, 213, 219, 0.8)",
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: theme.palette.primary.main,
+            borderWidth: "2px",
+          },
         },
         "& .MuiInputBase-input::placeholder": {
-          color:
-            theme.palette.mode === "dark"
-              ? "rgba(255,255,255,0.6)"
-              : "rgba(0,0,0,0.5)",
+          color: theme.palette.mode === "dark"
+            ? "rgba(255,255,255,0.6)"
+            : "rgba(0,0,0,0.5)",
         },
         ...(typeof customeStyles === 'function' ? customeStyles(theme) : customeStyles)
       })}

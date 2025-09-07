@@ -93,27 +93,6 @@ function RoomsContent() {
     setShowFilters(!showFilters);
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <AppHeader title="Rooms" subtitle="Loading rooms..." />
-        <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
-          <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
-            <div className="flex items-center justify-center min-h-[400px]">
-              <div className="text-center">
-                <div className="relative w-16 h-16 mx-auto mb-4">
-                  <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-200 dark:border-blue-800 rounded-full"></div>
-                  <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-600 rounded-full animate-spin border-t-transparent"></div>
-                </div>
-                <p className="text-gray-600 dark:text-gray-400 font-medium">Loading rooms...</p>
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
   if (!selectedProperty && !isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -197,25 +176,22 @@ function RoomsContent() {
         </div>
         {/* Filters Section */}
         <div  className={`overflow-hidden transition-all duration-300 ${
-    showFilters ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-  }`}>
+          showFilters ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        }`}>
           <div className="bg-white dark:bg-gray-800 mt-4 rounded-lg p-4 mb-2 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Filters</h3>
-              <Tooltip title="Clear All Filters">
-                <IconButton
-                  onClick={handleClearFilters}
-                  size="small"
-                  className="text-gray-500 hover:text-red-500"
-                >
-                  <ClearIcon />
-                </IconButton>
-              </Tooltip>
+              <button
+                onClick={handleClearFilters}
+                className="px-4 py-1 rounded-[30px] cursor-pointer border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors duration-200"
+              >
+                Clear Filters
+              </button>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex gap-4">
               {/* Room Type Filter */}
-              <FormControl fullWidth size="small">
+              <FormControl size="small" sx={{width:"150px"}}>
                 <InputLabel>Room Type</InputLabel>
                 <Select
                   value={filters.roomType}
@@ -229,7 +205,7 @@ function RoomsContent() {
               </FormControl>
 
               {/* Availability Filter */}
-              <FormControl fullWidth size="small">
+              <FormControl size="small" sx={{width:"150px"}}>
                 <InputLabel>Availability</InputLabel>
                 <Select
                   value={filters.availability}
@@ -243,7 +219,7 @@ function RoomsContent() {
               </FormControl>
 
               {/* Room Selection Filter */}
-              <FormControl fullWidth size="small">
+              <FormControl size="small" sx={{width:"150px"}}>
                 <InputLabel>Specific Room</InputLabel>
                 <Select
                   value={filters.roomId}
@@ -254,107 +230,101 @@ function RoomsContent() {
                   <MenuItem value="all">All Rooms</MenuItem>
                   {allRoomsData?.data?.map((room) => (
                     <MenuItem key={room._id} value={room._id}>
-                      Room {room.roomNo}
+                      {room.roomNo}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
-
-              {/* Active Filters Display */}
-              <div className="flex flex-wrap gap-1 items-center">
-                {filters.roomType !== 'all' && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                    {filters.roomType === 'single' ? 'Single Room' : 'Sharing Room'}
-                  </span>
-                )}
-                {filters.availability !== 'all' && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                    {filters.availability === 'available' ? 'Available' : 'Occupied'}
-                  </span>
-                )}
-                                      {filters.roomId !== 'all' && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                      {allRoomsData?.data?.find(r => r._id === filters.roomId)?.roomNo ? `Room ${allRoomsData.data.find(r => r._id === filters.roomId)?.roomNo}` : 'Specific Room'}
-                    </span>
-                  )}
-              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
-        <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
-          <div className="md:p-4 p-3">
-            {/* Rooms Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {rooms.map((room) => (
-                <div key={room._id} className="w-full h-[555px]">
-                  <RoomCard 
-                    room={room} 
-                    onRoomUpdate={handleRoomUpdate}
-                  />
+        {isLoading ? <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
+          <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="text-center">
+                <div className="relative w-16 h-16 mx-auto mb-4">
+                  <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-200 dark:border-blue-800 rounded-full"></div>
+                  <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-600 rounded-full animate-spin border-t-transparent"></div>
                 </div>
-              ))}
-            </div>
-
-            {/* Pagination */}
-            {roomsData?.pagination && roomsData.pagination.totalPages > 1 && (
-              <Box className="flex flex-col items-center mt-8 gap-4">
-                {/* Page Info */}
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Showing {roomsData.count} of {roomsData.total} rooms
-                  {roomsData.pagination.totalPages > 1 && (
-                    <span> • Page {currentPage} of {roomsData.pagination.totalPages}</span>
-                  )}
-                </div>
-                
-                {/* Pagination Controls */}
-                <Pagination
-                  count={roomsData.pagination.totalPages}
-                  page={currentPage}
-                  onChange={handlePageChange}
-                  color="primary"
-                  size="large"
-                  showFirstButton
-                  showLastButton
-                  sx={{
-                    '& .MuiPaginationItem-root': {
-                      borderRadius: '12px',
-                      fontWeight: 500,
-                    },
-                    '& .Mui-selected': {
-                      backgroundColor: '#2563eb',
-                      color: 'white',
-                      '&:hover': {
-                        backgroundColor: '#1d4ed8',
-                      },
-                    },
-                  }}
-                />
-              </Box>
-            )}
-
-            {/* Empty State */}
-            {rooms.length === 0 && (
-              <div className="text-center py-12">
-                <RoomIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Rooms Found</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  No rooms have been added to this property yet.
-                </p>
-                <button
-                  className="bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 text-white px-4 py-2 rounded-[30px] cursor-pointer"
-                  onClick={handleAddRoom}
-                >
-                  Add First Room
-                </button>
+                <p className="text-gray-600 dark:text-gray-400 font-medium">Loading rooms...</p>
               </div>
-            )}
+            </div>
           </div>
-        </div>
-      </main>
+        </main>: 
+        <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
+          <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
+            <div className="md:p-4 p-3">
+              {/* Rooms Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {rooms.map((room) => (
+                  <div key={room._id} className="w-full h-[555px]">
+                    <RoomCard 
+                      room={room} 
+                      onRoomUpdate={handleRoomUpdate}
+                    />
+                  </div>
+                ))}
+              </div>
 
+              {/* Pagination */}
+              {roomsData?.pagination && roomsData.pagination.totalPages > 1 && (
+                <Box className="flex flex-col items-center mt-8 gap-4">
+                  {/* Page Info */}
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Showing {roomsData.count} of {roomsData.total} rooms
+                    {roomsData.pagination.totalPages > 1 && (
+                      <span> • Page {currentPage} of {roomsData.pagination.totalPages}</span>
+                    )}
+                  </div>
+                  
+                  {/* Pagination Controls */}
+                  <Pagination
+                    count={roomsData.pagination.totalPages}
+                    page={currentPage}
+                    onChange={handlePageChange}
+                    color="primary"
+                    size="large"
+                    showFirstButton
+                    showLastButton
+                    sx={{
+                      '& .MuiPaginationItem-root': {
+                        borderRadius: '12px',
+                        fontWeight: 500,
+                      },
+                      '& .Mui-selected': {
+                        backgroundColor: '#2563eb',
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: '#1d4ed8',
+                        },
+                      },
+                    }}
+                  />
+                </Box>
+              )}
+
+              {/* Empty State */}
+              {rooms.length === 0 && (
+                <div className="text-center py-12">
+                  <RoomIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Rooms Found</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    No rooms have been added to this property yet.
+                  </p>
+                  <button
+                    className="bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 text-white px-4 py-2 rounded-[30px] cursor-pointer"
+                    onClick={handleAddRoom}
+                  >
+                    Add First Room
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+        }
       </div>
 
       {/* Add Room Dialog */}

@@ -31,6 +31,8 @@ interface SummaryCardsProps {
 export default function TenantOnboardSummaryCards({ summary, variant = 'pending' }: SummaryCardsProps) {
   const isUpcoming = variant === 'upcoming';
   const isCompleted = variant === 'completed';
+
+  // console.log("summary", summary);
   
   if (isCompleted) {
     return (

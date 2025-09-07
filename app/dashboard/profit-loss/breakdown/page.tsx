@@ -376,25 +376,50 @@ export default function ProfitLossBreakdownPage() {
                   Expense Category Breakdown
                 </h3>
                 {expenseCategoryData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={200}>
-                    <PieChart>
-                     <Pie
-                         data={expenseCategoryData}
-                         cx="50%"
-                         cy="50%"
-                         labelLine={false}
-                         label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                         outerRadius={80}
-                         fill="#8884d8"
-                         dataKey="value"
-                       >
-                        {expenseCategoryData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[entry.category as keyof typeof COLORS] || '#8884d8'} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value: number) => [formatCurrency(value), 'Amount']} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <div className="flex items-center gap-6">
+                    {/* Pie Chart */}
+                    <div className="flex-1">
+                      <ResponsiveContainer width="100%" height={200}>
+                        <PieChart>
+                         <Pie
+                             data={expenseCategoryData}
+                             cx="50%"
+                             cy="50%"
+                             labelLine={false}
+                             label={false}
+                             outerRadius={80}
+                             fill="#8884d8"
+                             dataKey="value"
+                           >
+                            {expenseCategoryData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[entry.category as keyof typeof COLORS] || '#8884d8'} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value: number) => [formatCurrency(value), 'Amount']} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    {/* Category Labels */}
+                    <div className="flex-1 space-y-3">
+                    {expenseCategoryData.map((entry, index) => (
+                      <div key={entry.category} className="flex items-center gap-3">
+                        <div 
+                          className="w-4 h-4 rounded-full" 
+                          style={{ backgroundColor: COLORS[entry.category as keyof typeof COLORS] || '#8884d8' }}
+                        />
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                            {entry.category.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                          </div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">
+                            {formatCurrency(entry.value)} ({((entry.value / expenseCategoryData.reduce((sum, item) => sum + item.value, 0)) * 100).toFixed(1)}%)
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    </div>
+                  </div>
                 ) : (
                   <div className="flex items-center justify-center">
                     <div className="text-center">
@@ -406,30 +431,55 @@ export default function ProfitLossBreakdownPage() {
               </div>
 
               {/* Income Category Breakdown */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
                 <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
                   Income Category Breakdown
                 </h3>
                 {incomeCategoryData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={200}>
-                    <PieChart>
-                     <Pie
-                         data={incomeCategoryData}
-                         cx="50%"
-                         cy="50%"
-                         labelLine={false}
-                         label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                         outerRadius={80}
-                         fill="#8884d8"
-                         dataKey="value"
-                       >
-                        {incomeCategoryData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[entry.category as keyof typeof COLORS] || '#8884d8'} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value: number) => [formatCurrency(value), 'Amount']} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <div className="flex items-center gap-6">
+                    
+                    {/* Pie Chart */}
+                    <div className="flex-1">
+                      <ResponsiveContainer width="100%" height={200}>
+                        <PieChart>
+                         <Pie
+                             data={incomeCategoryData}
+                             cx="50%"
+                             cy="50%"
+                             labelLine={false}
+                             label={false}
+                             outerRadius={80}
+                             fill="#8884d8"
+                             dataKey="value"
+                           >
+                            {incomeCategoryData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[entry.category as keyof typeof COLORS] || '#8884d8'} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value: number) => [formatCurrency(value), 'Amount']} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    {/* Category Labels */}
+                    <div className="flex-1 space-y-3">
+                      {incomeCategoryData.map((entry, index) => (
+                        <div key={index} className="flex items-center gap-3">
+                          <div 
+                            className="w-4 h-4 rounded-full" 
+                            style={{ backgroundColor: COLORS[entry.category as keyof typeof COLORS] || '#8884d8' }}
+                          />
+                          <div>
+                            <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                              {entry.category.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                            </div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">
+                              {formatCurrency(entry.value)} ({((entry.value / incomeCategoryData.reduce((sum, item) => sum + item.value, 0)) * 100).toFixed(1)}%)
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 ) : (
                   <div className="flex items-center justify-center h-64">
                     <div className="text-center">

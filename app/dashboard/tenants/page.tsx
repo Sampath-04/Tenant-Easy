@@ -140,6 +140,7 @@ function TenantsContent() {
   };
 
   const tenants = tenantsData?.data || [];
+
   const pagination = tenantsData?.pagination;
 
   const { error: propertyError } = useProperty();
@@ -207,7 +208,7 @@ function TenantsContent() {
       </div>
 
       {/* Main Content */}
-      <main className="mx-auto px-4 sm:px-6 lg:px-6 pt-4">
+      <main className="mx-auto px-4 md:px-6 pt-4">
         {/* Filters Section */}
         <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-lg p-4 border border-white/20 dark:border-gray-700/50 mb-4">
           <div className="flex flex-row justify-between md:flex-col lg:flex-row lg:items-center lg:justify-between mb-3">

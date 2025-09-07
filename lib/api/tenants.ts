@@ -85,9 +85,9 @@ export async function createTenant(tenantData: {
   tenantName: string;
   tenantNumber: string;
   tenantEmail?: string;
-  monthlyRent: number;
-  securityDepositTotal: number;
-  securityDepositPaid: number;
+  monthlyRent?: number;
+  securityDepositTotal?: number;
+  securityDepositPaid?: number;
   currentReading?: number;
   checkinDate: string;
   tenantIdProof?: File;
@@ -96,7 +96,7 @@ export async function createTenant(tenantData: {
     phone: string;
     relation: string;
   };
-  rentPaid: number;
+  rentPaid?: number;
   paymentMethod: string;
   paymentProofs?: File[];
 }): Promise<Tenant> {
@@ -108,11 +108,11 @@ export async function createTenant(tenantData: {
   formData.append('room', tenantData.room);
   formData.append('tenantName', tenantData.tenantName);
   formData.append('tenantNumber', tenantData.tenantNumber);
-  formData.append('monthlyRent', tenantData.monthlyRent.toString());
-  formData.append('securityDepositTotal', tenantData.securityDepositTotal.toString());
-  formData.append('securityDepositPaid', tenantData.securityDepositPaid.toString());
+  formData.append('monthlyRent', (tenantData.monthlyRent || 0).toString());
+  formData.append('securityDepositTotal', (tenantData.securityDepositTotal || 0).toString());
+  formData.append('securityDepositPaid', (tenantData.securityDepositPaid || 0).toString());
   formData.append('checkinDate', tenantData.checkinDate);
-  formData.append('rentPaid', tenantData.rentPaid.toString());
+  formData.append('rentPaid', (tenantData.rentPaid || 0).toString());
   formData.append('paymentMethod', tenantData.paymentMethod);
   
   // Add optional fields
@@ -327,7 +327,7 @@ export async function getUpcomingTenants(
     room?: string;
     search?: string;
   } = {}
-): Promise<OnboardedTenantsResponse> {
+): Promise<UpcomingTenantsResponse> {
   const queryParams = new URLSearchParams();
   
   if (params.page) queryParams.append('page', params.page.toString());
@@ -335,7 +335,7 @@ export async function getUpcomingTenants(
   if (params.room) queryParams.append('room', params.room);
   if (params.search) queryParams.append('search', params.search);
   
-  return apiClient.get<OnboardedTenantsResponse>(`/tenants/upcoming?property=${propertyId}&${queryParams.toString()}`);
+  return apiClient.get<UpcomingTenantsResponse>(`/tenants/upcoming?property=${propertyId}&${queryParams.toString()}`);
 }
 
 /**

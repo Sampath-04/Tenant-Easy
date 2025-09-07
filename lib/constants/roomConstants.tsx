@@ -15,8 +15,7 @@ export const AMENITY_OPTIONS = [
   { value: 'ac', label: 'AC', icon: <AcIcon fontSize="small" /> },
   { value: 'attached_bathroom', label: 'Attached Bathroom', icon: <BedIcon fontSize="small" /> },
   { value: 'balcony', label: 'Balcony', icon: <BalconyIcon fontSize="small" /> },
-  { value: 'kitchen', label: 'Kitchen', icon: <KitchenIcon fontSize="small" /> },
-  { value: 'parking', label: 'Parking', icon: <ParkingIcon fontSize="small" /> }
+  { value: 'kitchen', label: 'Kitchen', icon: <KitchenIcon fontSize="small" /> }
 ];
 
 export const ROOM_TYPE_OPTIONS = [

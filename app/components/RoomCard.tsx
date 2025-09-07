@@ -76,6 +76,7 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
+
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [createTenantFormOpen, setCreateTenantFormOpen] = useState(false);
@@ -120,7 +121,6 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
     if (tenantToDelete) {
       markTenantAsDeletedMutation.mutate(tenantToDelete._id, {
         onSuccess: () => {
-          const successToast = showSuccessToast('Tenant deleted successfully!');
           setDeleteDialogOpen(false);
           setTenantToDelete(null);
         }
@@ -131,14 +131,6 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
   const handleCancelDelete = () => {
     setDeleteDialogOpen(false);
     setTenantToDelete(null);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
   };
 
   return (
@@ -207,7 +199,7 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
               </div>
               <div className="flex flex-col items-center p-4 bg-gradient-to-tr from-green-50 to-green-100 dark:from-green-900/80 dark:to-green-900/10 rounded-xl shadow-sm">
                 <Typography variant="h6" className="font-bold text-green-700 dark:text-green-400 ">
-                  {room.tenants.length}
+                  {room.tenants.length + (room.upcomingTenants?.length || 0)}
                 </Typography>
                 <Typography variant="caption" className="text-gray-600 dark:text-gray-400">
                   Tenants
@@ -232,7 +224,7 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
               </div>
               <div className="flex items-center gap-1">
               <span className="text-gray-500">Tenants: </span> 
-                <span className="font-semibold text-green-600 dark:text-green-400">{room.tenants.length}</span>
+                <span className="font-semibold text-green-600 dark:text-green-400">{room.tenants.length + (room.upcomingTenants?.length || 0)}</span>
                 
               </div>
               <div className="flex items-center gap-1">
@@ -299,7 +291,7 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
                 variant="fullWidth"
                 TabIndicatorProps={{ style: { backgroundColor: "#2563eb", height: "3px", borderRadius: "2px" } }}
               >
-                <Tab label={`Tenants (${room.tenants.length})`} />
+                <Tab label={`Tenants (${room.tenants.length + (room.upcomingTenants?.length || 0)})`} />
                 <Tab label={`Readings (${room.electricityReadings?.length || 0})`} />
               </Tabs>
             </Box>
@@ -307,8 +299,9 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
             {/* Tab Content */}
             <div className="min-h-[220px]">
               <TabPanel value={tabValue} index={0}>
-                {room.tenants.length > 0 ? (
+                {(room.tenants.length > 0 || (room.upcomingTenants?.length || 0) > 0) ? (
                   <List dense>
+                    {/* Current Tenants */}
                     {room.tenants.map((tenant: any) => (
                       <ListItem
                         key={tenant._id}
@@ -319,9 +312,64 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
                         </ListItemIcon>
                         <ListItemText
                           primary={
-                            <span className="font-medium text-gray-900 dark:text-gray-100">
-                              {tenant.tenantName}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-gray-900 dark:text-gray-100">
+                                {tenant.tenantName}
+                              </span>
+                              <Chip 
+                                label="Current" 
+                                size="small" 
+                                color="success" 
+                                variant="outlined"
+                                sx={{ fontSize: '0.7rem', height: '20px' }}
+                              />
+                            </div>
+                          }
+                          secondary={
+                            <>
+                              <span className="block text-sm text-gray-600 dark:text-gray-400">
+                                ₹{tenant.monthlyRent} • {tenant.tenantNumber}
+                              </span>
+                              <span className="block text-xs text-gray-500">
+                                Check-in: {new Date(tenant.checkInDate).toLocaleDateString()}
+                              </span>
+                            </>
+                          }
+                        />
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteTenant(tenant)}
+                          className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                          title="Delete Tenant"
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </ListItem>
+                    ))}
+                    
+                    {/* Upcoming Tenants */}
+                    {room.upcomingTenants?.map((tenant: any) => (
+                      <ListItem
+                        key={tenant._id}
+                        className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-all"
+                      >
+                        <ListItemIcon>
+                          <PeopleIcon className="text-orange-500" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-gray-900 dark:text-gray-100">
+                                {tenant.tenantName}
+                              </span>
+                              <Chip 
+                                label="Upcoming" 
+                                size="small" 
+                                color="warning" 
+                                variant="outlined"
+                                sx={{ fontSize: '0.7rem', height: '20px' }}
+                              />
+                            </div>
                           }
                           secondary={
                             <>
@@ -367,14 +415,14 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
                           <HistoryIcon className="text-yellow-600" />
                         </ListItemIcon>
                         <ListItemText
-                          primary={`${reading.meterReading} units (${reading.consumption} consumed)`}
+                          primary={`${reading.meterReading} units (${reading.meterReading - reading.previousReading} consumed)`}
                           secondary={
                             <>
                               <span className="block text-sm text-gray-600 dark:text-gray-400">
-                                ₹{reading.consumption * room.property.electricitySettings.ratePerUnit} • {formatDate(reading._id)}
+                                ₹{((reading.meterReading - reading.previousReading) * room.property.electricitySettings.ratePerUnit).toFixed(2)} • {new Date(reading.readingDate).toLocaleDateString()}
                               </span>
                               <span className="block text-xs text-gray-500">
-                                Rate: ₹{room.property.electricitySettings.ratePerUnit}/unit
+                                Rate: ₹{room.property.electricitySettings.ratePerUnit}/unit • Recorded by: {reading.recordedBy?.name || 'System'}
                               </span>
                             </>
                           }
@@ -402,14 +450,32 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
         onClose={() => setEditDialogOpen(false)}
         fullWidth
         maxWidth="sm"
+        slotProps={{
+          paper: {
+            sx: (theme) => ({
+              borderRadius: '16px',
+              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+              backgroundColor: theme.palette.mode === 'dark' ? '#1A202C' : '#f8fafc',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+            })
+          }
+        }}
       >
         <DialogTitle
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            borderBottom: "1px solid #e5e7eb",
-          }}
+          sx={(theme) => ({
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: theme.palette.mode === 'dark' ? '1px solid #4A5568' : '1px solid #e5e7eb',
+            pb: 2,
+            color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#000000',
+            backgroundColor: theme.palette.mode === 'dark' ? '#1F2937' : '#F9FAFB',
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+          })}
         >
           <div style={{ display: "flex", alignItems: "center", fontWeight: 600 }}>
             <EditIcon sx={{ marginRight: 1 }} className='text-gray-500 dark:text-gray-400' />
@@ -420,94 +486,128 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
           </IconButton>
         </DialogTitle>
 
-        <DialogContent sx={{
-          paddingBottom: 0, 
-          paddingTop: 3,
-        }}
+        <DialogContent sx={(theme) => ({ 
+           paddingTop: "24px !important",
+           paddingBottom: "24px !important",
+           backgroundColor: theme.palette.mode === 'dark' ? '#1A202C' : '#f8fafc',
+           overflow: 'auto',
+           flex: 1,
+           '&::-webkit-scrollbar': {
+             width: '6px',
+           },
+           '&::-webkit-scrollbar-track': {
+             background: 'transparent',
+           },
+           '&::-webkit-scrollbar-thumb': {
+             background: theme.palette.mode === 'dark' ? '#4A5568' : '#CBD5E0',
+             borderRadius: '3px',
+           },
+           '&::-webkit-scrollbar-thumb:hover': {
+             background: theme.palette.mode === 'dark' ? '#718096' : '#A0AEC0',
+           },
+         })}
         >
-        {/* Adding gap using marginBottom */}
-        <TextField
-          label="Room Number"
-          value={editForm.roomNo}
-          onChange={(e) =>
-            setEditForm((prev) => ({ ...prev, roomNo: e.target.value }))
-          }
-          fullWidth
-          sx={{ mb: 3, mt: 3 }}
-        />
+        <div className="space-y-6">
+          {/* Room Information */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <p className="mb-4">Room Information</p>
+            <div className="space-y-4 grid grid-cols-2 gap-4">
+              <TextField
+                label="Room Number"
+                value={editForm.roomNo}
+                onChange={(e) =>
+                  setEditForm((prev) => ({ ...prev, roomNo: e.target.value }))
+                }
+                fullWidth
+              />
 
-        <FormControl fullWidth sx={{ mb: 3 }}>  
-          <Select
-            value={editForm.roomType}
-            onChange={(e) =>
-              setEditForm((prev) => ({ ...prev, roomType: e.target.value as string }))
-            }
-          >
-            {ROOM_TYPE_OPTIONS.map((type) => (
-              <MenuItem key={type.value} value={type.value}>
-                {type.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+              <FormControl fullWidth>  
+                <InputLabel>Room Type</InputLabel>
+                <Select
+                  value={editForm.roomType}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, roomType: e.target.value as string }))
+                  }
+                  label="Room Type"
+                >
+                  {ROOM_TYPE_OPTIONS.map((type) => (
+                    <MenuItem key={type.value} value={type.value}>
+                      {type.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-        
-        <TextField
-          label="Max Capacity"
-          type="number"
-          value={editForm.maxCapacity}
-          onChange={(e) =>
-            setEditForm((prev) => ({ ...prev, maxCapacity: Number(e.target.value) }))
-          }
-          fullWidth
-          inputProps={{ min: 1, max: 10 }}
-          sx={{ mb: 3 }}
-        />
+              <TextField
+                label="Max Capacity"
+                type="number"
+                value={editForm.maxCapacity}
+                onChange={(e) =>
+                  setEditForm((prev) => ({ ...prev, maxCapacity: Number(e.target.value) }))
+                }
+                fullWidth
+                inputProps={{ min: 1, max: 10 }}
+              />
+            </div>
+          </div>
 
-        <FormControl fullWidth sx={{ mb: 3 }}>
-          <InputLabel>Amenities</InputLabel>
-          <Select
-            multiple
-            value={editForm.amenities}
-            onChange={(e) =>
-              setEditForm((prev) => ({ ...prev, amenities: e.target.value as string[] }))
-            }
-            input={<OutlinedInput label="Amenities" />}
-            renderValue={(selected) => (
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                {selected.map((value: string) => (
-                  <Chip
-                    key={value}
-                    label={value.replace("_", " ").toUpperCase()}
-                    size="small"
-                    sx={{ borderRadius: "8px" }}
-                  />
+          {/* Amenities */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <p className="mb-4">Amenities</p>
+            <FormControl fullWidth>
+              <InputLabel>Amenities</InputLabel>
+              <Select
+                multiple
+                value={editForm.amenities}
+                onChange={(e) =>
+                  setEditForm((prev) => ({ ...prev, amenities: e.target.value as string[] }))
+                }
+                input={<OutlinedInput label="Amenities" />}
+                renderValue={(selected) => (
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                    {selected.map((value: string) => (
+                      <Chip
+                        key={value}
+                        label={value.replace("_", " ").toUpperCase()}
+                        size="small"
+                        sx={{ borderRadius: "8px" }}
+                      />
+                    ))}
+                  </Box>
+                )}
+              >
+                {AMENITY_OPTIONS.map((amenity) => (
+                  <MenuItem key={amenity.value} value={amenity.value}>
+                    <Checkbox checked={editForm.amenities.indexOf(amenity.value) > -1} />
+                    {amenity.icon}
+                    <span style={{ marginLeft: 8 }}>{amenity.label}</span>
+                  </MenuItem>
                 ))}
-              </Box>
-            )}
-          >
-            {AMENITY_OPTIONS.map((amenity) => (
-              <MenuItem key={amenity.value} value={amenity.value}>
-                <Checkbox checked={editForm.amenities.indexOf(amenity.value) > -1} />
-                {amenity.icon}
-                <span style={{ marginLeft: 8 }}>{amenity.label}</span>
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+              </Select>
+            </FormControl>
+          </div>
+        </div>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 3 }}>
+      <DialogActions sx={(theme) => ({ 
+           px: 3, 
+           py: 2, 
+           gap: 2,
+           backgroundColor: theme.palette.mode === 'dark' ? '#1F2937' : '#F9FAFB',
+           borderTop: theme.palette.mode === 'dark' ? '1px solid #4A5568' : '1px solid #e5e7eb',
+           flexShrink: 0,
+         })}>
         <button
           onClick={() => setEditDialogOpen(false)}
-          className='bg-gray-500 cursor-pointer hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 rounded-[30px] text-white px-4 py-2'
+          className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-[30px] text-md font-medium transition-colors disabled:opacity-50"
         >
           Cancel
         </button>
         <button
           onClick={handleSaveRoom}
-         className=' bg-gray-500 cursor-pointer hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 rounded-[30px] text-white px-4 py-2'
+          className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-[30px] text-md font-medium transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer"
         >
+          <SaveIcon fontSize="small" />
           Save Changes
         </button>
       </DialogActions>
@@ -530,74 +630,247 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
        onClose={handleCancelDelete}
        maxWidth="sm"
        fullWidth
-       PaperProps={{
-         sx: {
-           borderRadius: '16px',
-           boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+       slotProps={{
+         paper: {
+           sx: (theme) => ({
+             borderRadius: '16px',
+             backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
+             boxShadow: theme.palette.mode === 'dark' 
+               ? '0 10px 40px rgba(0, 0, 0, 0.3)' 
+               : '0 10px 40px rgba(0, 0, 0, 0.1)',
+           })
          }
        }}
      >
        <DialogTitle
-         sx={{
+         sx={(theme) => ({
            display: 'flex',
            alignItems: 'center',
            justifyContent: 'space-between',
-           borderBottom: '1px solid #e5e7eb',
+           borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
            pb: 2,
-         }}
+           backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
+         })}
        >
-         <Typography variant="h6" className="font-semibold text-red-600">
+         <Typography 
+           variant="h6" 
+           sx={(theme) => ({
+             fontWeight: 600,
+             color: theme.palette.mode === 'dark' ? '#f87171' : '#ef4444',
+           })}
+         >
            Delete Tenant
          </Typography>
-         <IconButton onClick={handleCancelDelete} disabled={markTenantAsDeletedMutation.isPending}>
+         <IconButton 
+           onClick={handleCancelDelete} 
+           disabled={markTenantAsDeletedMutation.isPending}
+           sx={(theme) => ({
+             color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
+             '&:hover': {
+               backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f3f4f6',
+             }
+           })}
+         >
            <CloseIcon />
          </IconButton>
        </DialogTitle>
 
-       <DialogContent sx={{ pt: 3 }}>
-         <Alert severity="warning" sx={{ mb: 2 }}>
+       <DialogContent 
+         sx={(theme) => ({
+           paddingTop:"24px !important",
+           backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
+         })}
+       >
+         <Alert 
+           severity="warning" 
+           sx={(theme) => ({
+             mb: 2,
+             backgroundColor: theme.palette.mode === 'dark' ? '#451a03' : '#fef3c7',
+             color: theme.palette.mode === 'dark' ? '#fbbf24' : '#92400e',
+             border: theme.palette.mode === 'dark' ? '1px solid #451a03' : '1px solid #fde68a',
+             '& .MuiAlert-icon': {
+               color: theme.palette.mode === 'dark' ? '#fbbf24' : '#f59e0b',
+             }
+           })}
+         >
            This action cannot be undone. The tenant will be permanently removed from the room.
          </Alert>
          
          {tenantToDelete && (
            <Box>
-             <Typography variant="body1" className="mb-2">
+             <Typography 
+               variant="body1" 
+               sx={(theme) => ({
+                 mb: 2,
+                 color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+               })}
+             >
                Are you sure you want to delete <strong>{tenantToDelete.tenantName}</strong> from Room {room.roomNo}?
              </Typography>
              
-             <Box className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 mt-3">
-               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                 <strong>Tenant Details:</strong>
+             <Box 
+               sx={(theme) => ({
+                 backgroundColor: theme.palette.mode === 'dark' ? '#111827' : '#f9fafb',
+                 borderRadius: '8px',
+                 p: 2.5,
+                 mt: 3,
+                 border: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+               })}
+             >
+               <Typography 
+                 variant="body2" 
+                 sx={(theme) => ({
+                   color: theme.palette.mode === 'dark' ? '#d1d5db' : '#6b7280',
+                   fontWeight: 600,
+                   mb: 2,
+                 })}
+               >
+                 Tenant Details:
                </Typography>
-               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                 • Name: {tenantToDelete.tenantName}
-               </Typography>
-               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                 • Phone: {tenantToDelete.tenantNumber}
-               </Typography>
-               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                 • Monthly Rent: ₹{tenantToDelete.monthlyRent}
-               </Typography>
-               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                 • Check-in Date: {new Date(tenantToDelete.checkInDate).toLocaleDateString()}
-               </Typography>
+               
+               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                 <Box>
+                   <Typography 
+                     variant="body2" 
+                     sx={(theme) => ({
+                       color: theme.palette.mode === 'dark' ? '#d1d5db' : '#6b7280',
+                       mb: 1,
+                       fontWeight: 500,
+                     })}
+                   >
+                     Name
+                   </Typography>
+                   <Typography 
+                     variant="body2" 
+                     sx={(theme) => ({
+                       color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+                       mb: 2,
+                     })}
+                   >
+                     {tenantToDelete.tenantName}
+                   </Typography>
+                   
+                   <Typography 
+                     variant="body2" 
+                     sx={(theme) => ({
+                       color: theme.palette.mode === 'dark' ? '#d1d5db' : '#6b7280',
+                       mb: 1,
+                       fontWeight: 500,
+                     })}
+                   >
+                     Phone
+                   </Typography>
+                   <Typography 
+                     variant="body2" 
+                     sx={(theme) => ({
+                       color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+                     })}
+                   >
+                     {tenantToDelete.tenantNumber}
+                   </Typography>
+                 </Box>
+                 
+                 <Box>
+                   <Typography 
+                     variant="body2" 
+                     sx={(theme) => ({
+                       color: theme.palette.mode === 'dark' ? '#d1d5db' : '#6b7280',
+                       mb: 1,
+                       fontWeight: 500,
+                     })}
+                   >
+                     Monthly Rent
+                   </Typography>
+                   <Typography 
+                     variant="body2" 
+                     sx={(theme) => ({
+                       color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+                       mb: 2,
+                     })}
+                   >
+                     ₹{tenantToDelete.monthlyRent}
+                   </Typography>
+                   
+                   <Typography 
+                     variant="body2" 
+                     sx={(theme) => ({
+                       color: theme.palette.mode === 'dark' ? '#d1d5db' : '#6b7280',
+                       mb: 1,
+                       fontWeight: 500,
+                     })}
+                   >
+                     Check-in Date
+                   </Typography>
+                   <Typography 
+                     variant="body2" 
+                     sx={(theme) => ({
+                       color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+                     })}
+                   >
+                     {new Date(tenantToDelete.checkInDate).toLocaleDateString()}
+                   </Typography>
+                 </Box>
+               </Box>
              </Box>
            </Box>
          )}
        </DialogContent>
 
-       <DialogActions sx={{ px: 3, pb: 3, gap: 2 }}>
+       <DialogActions 
+         sx={(theme) => ({
+           px: 3, 
+           pb: 3, 
+           gap: 2,
+           backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
+           borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+         })}
+       >
          <Button
            onClick={handleCancelDelete}
            disabled={markTenantAsDeletedMutation.isPending}
-           className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-[30px] text-sm font-medium transition-colors disabled:opacity-50"
+           sx={(theme) => ({
+             backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
+             color: '#ffffff',
+             px: 3,
+             py: 1.5,
+             borderRadius: '30px',
+             fontSize: '0.875rem',
+             fontWeight: 500,
+             textTransform: 'none',
+             transition: 'all 0.2s ease',
+             '&:hover': {
+               backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#4b5563',
+             },
+             '&:disabled': {
+               opacity: 0.5,
+             }
+           })}
          >
            Cancel
          </Button>
          <Button
            onClick={handleConfirmDelete}
            disabled={markTenantAsDeletedMutation.isPending}
-           className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-[30px] text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+           sx={(theme) => ({
+             backgroundColor: theme.palette.mode === 'dark' ? '#dc2626' : '#ef4444',
+             color: '#ffffff',
+             px: 3,
+             py: 1.5,
+             borderRadius: '30px',
+             fontSize: '0.875rem',
+             fontWeight: 500,
+             textTransform: 'none',
+             transition: 'all 0.2s ease',
+             display: 'flex',
+             alignItems: 'center',
+             gap: 1,
+             '&:hover': {
+               backgroundColor: theme.palette.mode === 'dark' ? '#b91c1c' : '#dc2626',
+             },
+             '&:disabled': {
+               opacity: 0.5,
+             }
+           })}
          >
            {markTenantAsDeletedMutation.isPending ? (
              <>

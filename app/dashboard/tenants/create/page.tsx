@@ -163,12 +163,14 @@ function CreateTenantContent() {
         title="Add New Tenant"
         subtitle="Create a new tenant record"
       />
+      <div className='px-6 pt-6 flex flex-row justify-between items-center'>
       <BreadCrumbs items={breadcrumbs} /> 
+      </div>
       
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
           <div className="p-6">
-                         <div className="mb-6">
+            <div className="mb-6">
                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                  New Tenant
                </h1>

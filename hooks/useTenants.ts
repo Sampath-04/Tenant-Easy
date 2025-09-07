@@ -146,10 +146,14 @@ export function useMarkTenantAsDeleted() {
       // Invalidate room queries since tenant count will change
       queryClient.invalidateQueries({ queryKey: ['rooms'], exact: false });
       queryClient.invalidateQueries({ queryKey: ['room-list'], exact: false });
+
+      const successToast = showSuccessToast('Tenant marked as deleted successfully');
+      toast.success(successToast.message, successToast.config);
     },
     onError: (error: ApiError) => {
       console.error('Failed to mark tenant as deleted:', error);
-      showErrorToast(error.getUserMessage());
+      const errorToast = showErrorToast(error.getUserMessage());
+      toast.error(errorToast.message, errorToast.config);
     },
   });
 }

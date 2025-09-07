@@ -39,7 +39,6 @@ import {
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import * as XLSX from 'xlsx';
-import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
@@ -68,7 +67,6 @@ export default function UpcomingTenantsPage() {
     room: filters.roomNo || undefined,
     search: debouncedSearch || undefined,
   });
-
   // Process tenant mutation
   const processTenantMutation = useProcessTenant();
 
@@ -78,6 +76,7 @@ export default function UpcomingTenantsPage() {
 
   const upcomingTenants = upcomingResponse?.data || [];
   const summary = upcomingResponse?.summary;
+  
 
   // Handle export functionality
   const handleExport = async () => {
@@ -118,7 +117,7 @@ export default function UpcomingTenantsPage() {
       if (summary) {
         const summaryData = [
           { 'Metric': 'SUMMARY', 'Value': '' },
-                     { 'Metric': 'Total Tenants', 'Value': summary.totalTenants },
+          { 'Metric': 'Total Tenants', 'Value': summary.totalUpcomingTenants },
           { 'Metric': 'Total Pending Amount', 'Value': formatCurrency(summary.totalPendingAmount) },
           { 'Metric': 'Total Security Pending', 'Value': formatCurrency(summary.totalSecurityPending) },
           { 'Metric': 'Total Rent Pending', 'Value': formatCurrency(summary.totalRentPending) },
@@ -205,7 +204,7 @@ export default function UpcomingTenantsPage() {
   ];
 
   const summaryData = {
-            totalTenants: summary?.totalTenants || 0,
+    totalTenants: summary?.totalUpcomingTenants || 0,
     totalPendingAmount: summary?.totalPendingAmount || 0,
     totalSecurityPending: summary?.totalSecurityPending || 0,
     totalRentPending: summary?.totalRentPending || 0,
@@ -213,9 +212,10 @@ export default function UpcomingTenantsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className='px-6 pt-6 flex flex-row justify-between items-center'>
       <BreadCrumbs items={breadcrumbs} />
-      
-      <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
+      </div>
+      <main className={LAYOUT_CLASSES.MAIN_CONTAINER + ' px-6 pt-4'}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
           <div className="p-6">
 

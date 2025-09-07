@@ -66,6 +66,7 @@ export interface RoomDetail {
   roomType: string;
   maxCapacity: number;
   tenants: any[];
+  upcomingTenants: any[];
   amenities: string[];
   currentMeterReading: number;
   isActive: boolean;

@@ -31,29 +31,28 @@ import NumberInput from '@/components/ui/NumberInput';
 import CustomSelect from '@/components/ui/CustomSelect';
 import FileUploadField from '@/components/ui/FileUploadField';
 
-
-
-interface CreateTenantRequest {
+// Form data interface that allows undefined for number fields
+interface CreateTenantFormData {
   property: string;
   room: string;
   tenantName: string;
   tenantNumber: string;
-  tenantEmail?: string;
-  monthlyRent: number;
-  securityDepositTotal: number;
-  securityDepositPaid: number;
+  tenantEmail: string;
+  monthlyRent?: number;
+  securityDepositTotal?: number;
+  securityDepositPaid?: number;
   currentReading?: number;
   checkinDate: string;
-  tenantIdProof?: File;
-  emergencyContact?: {
+  emergencyContact: {
     name: string;
     phone: string;
     relation: string;
   };
-  rentPaid: number;
+  rentPaid?: number;
   paymentMethod: string;
-  paymentProofs?: File[];
+  paymentProofs: File[];
 }
+
 
 interface CreateTenantFormProps {
   open: boolean;
@@ -67,42 +66,25 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
   const createTenantMutation = useCreateTenant();
   const { data: roomsData, isLoading: isLoadingRooms } = useRooms(selectedProperty?.id || '', 1, 1000);
 
-  // Reusable NumberInput styles with theme support
-  const numberInputStyles = (theme: Theme) => ({
-    "& .MuiInputBase-root": {
-      borderRadius: "8px", // Override the default 30px to match other inputs
-      backgroundColor: theme.palette.mode === "dark" 
-        ? "rgba(55, 65, 81, 0.8)" 
-        : "rgba(255, 255, 255, 0.8)",
-      color: theme.palette.mode === "dark" ? "white" : "black",
-      border: theme.palette.mode === "dark" 
-        ? "1px solid #4a5565" 
-        : "1px solid #d1d5db",
-      "&.Mui-focused": {
-        borderColor: "#3B82F6",
-        border: "2px solid #3B82F6",
-      }
-    }
-  });
 
-  const [formData, setFormData] = useState<CreateTenantRequest>({
+  const [formData, setFormData] = useState<CreateTenantFormData>({
     property: selectedProperty?.id || '',
     room: '',
     tenantName: '',
     tenantNumber: '',
     tenantEmail: '',
-    monthlyRent: 0,
-    securityDepositTotal: 0,
-    securityDepositPaid: 0,
-    currentReading: 0,
+    monthlyRent: undefined,
+    securityDepositTotal: undefined,
+    securityDepositPaid: undefined,
+    currentReading: undefined,
     checkinDate: formatDateToYYYYMMDD(new Date()),
     emergencyContact: {
       name: '',
       phone: '',
       relation: ''
     },
-    rentPaid: 0,
-    paymentMethod: 'CASH',
+    rentPaid: undefined,
+    paymentMethod: 'UPI',
     paymentProofs: []
   });
 
@@ -122,18 +104,18 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
         tenantName: '',
         tenantNumber: '',
         tenantEmail: '',
-        monthlyRent: 0,
-        securityDepositTotal: 0,
-        securityDepositPaid: 0,
-        currentReading: 0,
+        monthlyRent: undefined,
+        securityDepositTotal: undefined,
+        securityDepositPaid: undefined,
+        currentReading: undefined,
         checkinDate: formatDateToYYYYMMDD(new Date()),
         emergencyContact: {
           name: '',
           phone: '',
           relation: ''
         },
-        rentPaid: 0,
-        paymentMethod: 'CASH',
+        rentPaid: undefined,
+        paymentMethod: 'UPI',
         paymentProofs: []
       });
     }
@@ -146,8 +128,26 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
     }));
   };
 
+  // Validation function for current reading
+  const getCurrentReadingValidation = () => {
+    if (!formData.room || !formData.currentReading) return null;
+    
+    const selectedRoom = availableRooms.find((room: RoomDetail) => room._id === formData.room);
+    const previousReading = selectedRoom?.currentMeterReading || 0;
+    
+    if (formData.currentReading < previousReading) {
+      return {
+        error: true,
+        message: `Current reading must be greater than or equal to previous reading (${previousReading})`
+      };
+    }
+    
+    return null;
+  };
+
+
   const handleSubmit = async (e?: React.FormEvent) => {
-    console.log('handleSubmit', e);
+ 
     if (e) {
       e.preventDefault();
     }
@@ -172,15 +172,37 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
       return;
     }
 
+    // Validate current reading is greater than or equal to previous reading
+    if (formData.checkinDate === today && formData.currentReading && formData.room) {
+      const selectedRoom = availableRooms.find((room: RoomDetail) => room._id === formData.room);
+      const previousReading = selectedRoom?.currentMeterReading || 0;
+      
+      if (formData.currentReading < previousReading) {
+        const errorToast = showErrorToast(`Current reading (${formData.currentReading}) must be greater than or equal to previous reading (${previousReading})`);
+        toast.error(errorToast.message, errorToast.config);
+        return;
+      }
+    }
+
     // Validate payment proofs if rent or security is paid
-    if ((formData.rentPaid > 0 || formData.securityDepositPaid > 0) && 
+    if (((formData.rentPaid || 0) > 0 || (formData.securityDepositPaid || 0) > 0) && 
         (!formData.paymentProofs || formData.paymentProofs.length === 0)) {
       const errorToast = showErrorToast('Payment proof is required when rent or security deposit is paid');
       toast.error(errorToast.message, errorToast.config);
       return;
     }
 
-    createTenantMutation.mutate(formData, {
+    // Convert undefined values to 0 for API submission
+    const submitData = {
+      ...formData,
+      monthlyRent: formData.monthlyRent || 0,
+      securityDepositTotal: formData.securityDepositTotal || 0,
+      securityDepositPaid: formData.securityDepositPaid || 0,
+      currentReading: formData.currentReading || 0,
+      rentPaid: formData.rentPaid || 0,
+    };
+
+    createTenantMutation.mutate(submitData, {
       onSuccess: () => {
         const successToast = showSuccessToast('Tenant created successfully!');
         toast.success(successToast.message, successToast.config);
@@ -205,13 +227,16 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
     <Dialog
       open={open}
       onClose={handleClose}
-      maxWidth="lg"
+      maxWidth="sm"
       fullWidth
       PaperProps={{
         sx: (theme: Theme) => ({
           borderRadius: '16px',
           boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
           backgroundColor: theme.palette.mode === 'dark' ? '#1A202C' : '#f8fafc',
+          maxHeight: '90vh',
+          display: 'flex',
+          flexDirection: 'column',
         })
       }}
     >
@@ -237,15 +262,31 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
         </IconButton>
       </DialogTitle>
 
-      <form onSubmit={handleSubmit}  className="overflow-y-auto">
+      <form onSubmit={handleSubmit}>
         <DialogContent sx={(theme: Theme) => ({ 
            pt: 3,
+           pb: 2,
            backgroundColor: theme.palette.mode === 'dark' ? '#1A202C' : '#f8fafc',
+           overflow: 'auto',
+           flex: 1,
+           '&::-webkit-scrollbar': {
+             width: '6px',
+           },
+           '&::-webkit-scrollbar-track': {
+             background: 'transparent',
+           },
+           '&::-webkit-scrollbar-thumb': {
+             background: theme.palette.mode === 'dark' ? '#4A5568' : '#CBD5E0',
+             borderRadius: '3px',
+           },
+           '&::-webkit-scrollbar-thumb:hover': {
+             background: theme.palette.mode === 'dark' ? '#718096' : '#A0AEC0',
+           },
          })}>
           <div className="space-y-6">
            {/* Room Selection */}
              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-               <Typography variant="h6" className="mb-4">Room Selection</Typography>
+               <p className="mb-4">Room Selection</p>
               <FormControl fullWidth>
                 <InputLabel>Room *</InputLabel>
                 <Select
@@ -265,7 +306,7 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
 
               {/* Basic Information */}
              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-               <Typography variant="h6" className="mb-4">Basic Information</Typography>
+               <p className="mb-4">Basic Information</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TextField
                   label="Tenant Name *"
@@ -346,14 +387,20 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
                 {/* Current Meter Reading - Only show if check-in date is today */}
                 {formData.checkinDate === formatDateToYYYYMMDD(new Date()) && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Current Meter Reading *
-                    </label>
                     <NumberInput
+                      label="Current Meter Reading *"
                       value={formData.currentReading}
-                      onChange={(value) => handleInputChange('currentReading', value || 0)}
+                      onChange={(value) => handleInputChange('currentReading', value)}
                       placeholder="Enter current reading"
-                      customeStyles={numberInputStyles}
+                      fullWidth
+                      disabled={createTenantMutation.isPending}
+                      error={getCurrentReadingValidation()?.error || false}
+                      helperText={
+                        getCurrentReadingValidation()?.message ||
+                        (formData.room && availableRooms.find((room: RoomDetail) => room._id === formData.room)?.currentMeterReading !== undefined
+                          ? `Previous reading: ${availableRooms.find((room: RoomDetail) => room._id === formData.room)?.currentMeterReading} units`
+                          : "Select a room to see the previous reading")
+                      }
                     />
                   </div>
                 )}
@@ -362,7 +409,7 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
 
           {/* Financial Information */}
              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-               <Typography variant="h6" className="mb-4">Financial Information</Typography>
+              <p className="mb-4">Financial Information</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -370,9 +417,10 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
                   </label>
                   <NumberInput
                     value={formData.monthlyRent}
-                    onChange={(value) => handleInputChange('monthlyRent', value || 0)}
+                    onChange={(value) => handleInputChange('monthlyRent', value)}
                     placeholder="Enter monthly rent"
-                    customeStyles={numberInputStyles}
+                    fullWidth
+                    disabled={createTenantMutation.isPending}
                   />
                 </div>
 
@@ -382,27 +430,29 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
                   </label>
                   <NumberInput
                     value={formData.securityDepositTotal}
-                    onChange={(value) => handleInputChange('securityDepositTotal', value || 0)}
+                    onChange={(value) => handleInputChange('securityDepositTotal', value)}
                     placeholder="Enter security deposit total"
-                    customeStyles={numberInputStyles}
+                    fullWidth
+                    disabled={createTenantMutation.isPending}
                   />
                 </div>
               </div>
             </div>
 
-                         {/* Amount Paid Information */}
+             {/* Amount Paid Information */}
              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-               <Typography variant="h6" className="mb-4">Amount Paid</Typography>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+               <p className="mb-4">Amount Paid</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Rent Paid
                   </label>
                   <NumberInput
                     value={formData.rentPaid}
-                    onChange={(value) => handleInputChange('rentPaid', value || 0)}
+                    onChange={(value) => handleInputChange('rentPaid', value)}
                     placeholder="Enter rent paid"
-                    customeStyles={numberInputStyles}
+                    fullWidth
+                    disabled={createTenantMutation.isPending}
                   />
                 </div>
 
@@ -412,9 +462,10 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
                   </label>
                   <NumberInput
                     value={formData.securityDepositPaid}
-                    onChange={(value) => handleInputChange('securityDepositPaid', value || 0)}
+                    onChange={(value) => handleInputChange('securityDepositPaid', value)}
                     placeholder="Enter security deposit paid"
-                    customeStyles={numberInputStyles}
+                    fullWidth
+                    disabled={createTenantMutation.isPending}
                   />
                 </div>
 
@@ -426,9 +477,9 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
                     value={formData.paymentMethod}
                     onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
                     options={[
+                      { value: 'UPI', label: 'UPI' },
                       { value: 'CASH', label: 'Cash' },
                       { value: 'BANK_TRANSFER', label: 'Bank Transfer' },
-                      { value: 'UPI', label: 'UPI' },
                       { value: 'CHEQUE', label: 'Cheque' },
                       { value: 'CARD', label: 'Card' },
                     ]}
@@ -443,28 +494,34 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
               </div>
             </div>
 
-                         {/* Document Uploads - Only show if any amount is paid */}
-             {(formData.rentPaid > 0 || formData.securityDepositPaid > 0) && (
-               <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-                 <Typography variant="h6" className="mb-4">Document Uploads</Typography>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Payment Proofs *
-                  </label>
-                  <FileUploadField
-                    onFileSelect={(files: File | File[]) => handleInputChange('paymentProofs', files as File[])}
-                    accept="image/*"
-                    placeholder="Upload payment proofs"
-                    multiple={true}
-                    selectedFiles={formData.paymentProofs}
-                    maxFiles={4}
-                  />
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    Required when rent or security deposit is paid
-                  </p>
+            {/* Document Uploads - Only show if any amount is paid */}
+             <div className={`transition-all duration-300 ease-in-out ${
+               ((formData.rentPaid || 0) > 0 || (formData.securityDepositPaid || 0) > 0) 
+                 ? 'opacity-100 max-h-screen' 
+                 : 'opacity-0 max-h-0 overflow-hidden'
+             }`}>
+               {((formData.rentPaid || 0) > 0 || (formData.securityDepositPaid || 0) > 0) && (
+                 <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                   <Typography variant="h6" className="mb-4">Document Uploads</Typography>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Payment Proofs *
+                    </label>
+                    <FileUploadField
+                      onFileSelect={(files: File | File[]) => handleInputChange('paymentProofs', files as File[])}
+                      accept="image/*"
+                      placeholder="Upload payment proofs"
+                      multiple={true}
+                      selectedFiles={formData.paymentProofs}
+                      maxFiles={4}
+                    />
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      Required when rent or security deposit is paid
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+               )}
+             </div>
           </div>
         </DialogContent>
 
@@ -475,11 +532,8 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
            py: 2, 
            gap: 2,
            backgroundColor: theme.palette.mode === 'dark' ? '#1F2937' : '#F9FAFB',
-           position: 'sticky',
-           bottom: 0,
-           zIndex: 10,
            borderTop: theme.palette.mode === 'dark' ? '1px solid #4A5568' : '1px solid #e5e7eb',
-           boxShadow: '0 -2px 4px rgba(0, 0, 0, 0.1)',
+           flexShrink: 0,
          })}>
           <button
             type="button"
