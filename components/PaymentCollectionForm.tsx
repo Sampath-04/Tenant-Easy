@@ -12,6 +12,10 @@ import {
   Box,
   IconButton,
   Theme,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { Close as CloseIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 import { CircularProgress } from '@mui/material';
@@ -23,6 +27,7 @@ import { useDropzone } from 'react-dropzone';
 import { useMarkRentAsPaid } from '@/hooks/useRentRecords';
 import { showErrorToast } from '@/lib/toast-config';
 import { toast } from 'react-toastify';
+import { PAYMENT_METHOD_OPTIONS, DEFAULT_PAYMENT_METHOD } from '@/lib/constants/paymentConstants';
 
 interface PaymentCollectionFormProps {
   isOpen: boolean;
@@ -52,6 +57,7 @@ export default function PaymentCollectionForm({
   const [cycleEndDate, setCycleEndDate] = useState<string>(rentRecord?.endDate || '');
   const [amount, setAmount] = useState<number>(0);
   const [paidTo, setPaidTo] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<string>(DEFAULT_PAYMENT_METHOD);
 
   // Initialize amount when rentRecord is available
   useEffect(() => {
@@ -132,17 +138,20 @@ export default function PaymentCollectionForm({
 
   const handleCollectAndStartNew = async () => {
     try {
+
       setIsCollectingStartNew(true);
       if(amount <= 0 || !paidTo.trim()) {
         const errorToast = showErrorToast("Please enter the amount and paid to");
         toast.error(errorToast.message, errorToast.config);
         return;
       }
+
       await markRentAsPaidMutation.mutateAsync({
         rentId: rentRecord._id,
         data: {
           amount: amount,
           paidDate: getCurrentDate().toISOString().split('T')[0],
+          paymentMethod: paymentMethod,
           paymentProofs: selectedImages.length > 0 ? selectedImages : undefined,
           paidTo: paidTo.trim(),
           comments: comments.trim() || undefined,
@@ -195,6 +204,7 @@ export default function PaymentCollectionForm({
         data: {
           amount: amount,
           paidDate: getCurrentDate().toISOString().split('T')[0],
+          paymentMethod: paymentMethod,
           paymentProofs: selectedImages.length > 0 ? selectedImages : undefined,
           paidTo: paidTo.trim(),
           comments: comments.trim() || undefined,
@@ -211,7 +221,6 @@ export default function PaymentCollectionForm({
     const nextMonthCycleEndDate = new Date(rentRecord.endDate);
     nextMonthCycleEndDate.setMonth(nextMonthCycleEndDate.getMonth() + 1);
     setCycleEndDate(nextMonthCycleEndDate.toISOString().split('T')[0]);
-
       // Step 2: Open notice form after successful payment collection
       setShowNoticeForm(true);
     } catch (error) {
@@ -243,27 +252,80 @@ export default function PaymentCollectionForm({
         onClose={handleClose}
         maxWidth="sm"
         fullWidth
-        sx= {(theme: Theme) => ({
+        sx={(theme: Theme) => ({
           '& .MuiDialog-paper': {
             borderRadius: '20px',
             backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
             '@media (max-width: 600px)': {
               margin: '16px',
               width: '100%',
+              maxHeight: '95vh',
             }
           }
         })}
       >
-        <DialogTitle className="flex items-center justify-between">
-          <p className="font-semibold text-lg">Collect Payment</p>
-          <IconButton onClick={handleClose} disabled={isCollectingStartNew || isCollectingApplyNotice}>
+        <DialogTitle
+          sx={(theme: Theme) => ({
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+            pb: 2,
+            backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+          })}
+        >
+          <Typography
+            sx={(theme: Theme) => ({
+              fontWeight: 600,
+              fontSize: '1.25rem',
+              color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+            })}
+          >
+            Collect Payment
+          </Typography>
+          <IconButton 
+            onClick={handleClose} 
+            disabled={isCollectingStartNew || isCollectingApplyNotice}
+            sx={(theme: Theme) => ({
+              color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
+              '&:hover': {
+                backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f3f4f6',
+              }
+            })}
+          >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
         
-        <DialogContent>
+        <DialogContent
+          sx={(theme: Theme) => ({
+            flex: 1,
+            overflow: 'auto',
+            padding: '24px',
+            backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+            minHeight: 0, // Important for flex child to shrink
+            '&::-webkit-scrollbar': {
+              width: '6px',
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f1f5f9',
+              borderRadius: '3px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#6b7280' : '#cbd5e1',
+              borderRadius: '3px',
+              '&:hover': {
+                backgroundColor: theme.palette.mode === 'dark' ? '#9ca3af' : '#94a3b8',
+              },
+            },
+          })}
+        >
               {/* Rent Details */}
-          <Box className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <Box className="mb-4 mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <Typography variant="subtitle2" className="text-blue-800 dark:text-blue-300 mb-3">
                   Rent Details
             </Typography>
@@ -349,9 +411,9 @@ export default function PaymentCollectionForm({
 
           {/* Payment Details */}
           <Box className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-            <Typography variant="subtitle2" className="text-green-800 dark:text-green-300 mb-3">
+            <p className="text-green-800 dark:text-green-300 mb-3">
               Payment Details
-            </Typography>
+            </p>
             <Box className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <TextField
                 fullWidth
@@ -369,6 +431,31 @@ export default function PaymentCollectionForm({
                   },
                 })}
               />
+              <FormControl fullWidth variant="outlined">
+                <InputLabel>Payment Method</InputLabel>
+                <Select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  label="Payment Method"
+                  sx={(theme: Theme) => ({
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: theme.palette.mode === 'dark' ? '#3b82f6' : '#2563eb',
+                    },
+                  })}
+                >
+                  {PAYMENT_METHOD_OPTIONS.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
               <TextField
                 fullWidth
                 label="Paid To"
@@ -500,36 +587,107 @@ export default function PaymentCollectionForm({
           />
         </DialogContent>
 
-        <DialogActions sx={{
-          padding: '20px',
-          paddingTop: '16px',
-          borderTop: '1px solid #e0e0e0',
-          gap: '10px',
-          '@media (max-width: 600px)': {
-            justifyContent: 'center',
-            gap: '8px',
-          }
-        }}>
-          <button onClick={handleClose} disabled={isCollectingStartNew || isCollectingApplyNotice} className='hidden md:block border-2 border-gray-300 text-gray-600 px-4 py-2 rounded-[30px] cursor-pointer dark:border-gray-400 dark:text-gray-200'>
-                Cancel
-              </button>
-              <button
+        <DialogActions
+          sx={(theme: Theme) => ({
+            px: 2,
+            py: 2,
+            gap: 1,
+            backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+            borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+          })}
+        >
+          <Button
+            onClick={handleClose}
+            disabled={isCollectingStartNew || isCollectingApplyNotice}
+            sx={(theme: Theme) => ({
+              backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
+              color: '#ffffff',
+              px: 3,
+              py: 1.5,
+              borderRadius: '30px',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              textTransform: 'none',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#4b5563',
+              },
+              '&:disabled': {
+                opacity: 0.5,
+              }
+            })}
+          >
+            Cancel
+          </Button>
+          <Button
             onClick={handleCollectAndStartNew}
-            disabled={isCollectingStartNew || isCollectingApplyNotice || amount <= 0 }
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"
-          >
-            {isCollectingStartNew && <CircularProgress size={16} color="inherit" />}
-            {rentRecord?.paymentStatus === "PARTIALLY_PAID" ? "Collect" : "Collect - Start New"}
-          </button>
-          {/*  show only if the amount user paid + amount is >= rentRecord?.totalAmount */}
-          {rentRecord?.totalAmount <= amount + (rentRecord?.paymentTransactions?.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0) || 0) && <button 
-            onClick={handleCollectAndApplyNotice}
             disabled={isCollectingStartNew || isCollectingApplyNotice || amount <= 0}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"
+            sx={(theme: Theme) => ({
+              backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
+              color: '#ffffff',
+              px: 3,
+              py: 1.5,
+              borderRadius: '30px',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              textTransform: 'none',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              '&:hover': {
+                backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#4b5563',
+              },
+              '&:disabled': {
+                opacity: 0.5,
+              }
+            })}
           >
-            {isCollectingApplyNotice && <CircularProgress size={16} color="inherit" />}
-            Collect - Apply Notice
-              </button>}
+            {isCollectingStartNew ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                {rentRecord?.paymentStatus === "PARTIALLY_PAID" ? "Collecting..." : "Collecting..."}
+              </>
+            ) : (
+              rentRecord?.paymentStatus === "PARTIALLY_PAID" ? "Collect" : "Collect - Start New"
+            )}
+          </Button>
+          {/*  show only if the amount user paid + amount is >= rentRecord?.totalAmount */}
+          {rentRecord?.totalAmount <= amount + (rentRecord?.paymentTransactions?.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0) || 0) && (
+            <Button
+              onClick={handleCollectAndApplyNotice}
+              disabled={isCollectingStartNew || isCollectingApplyNotice || amount <= 0}
+              sx={(theme: Theme) => ({
+                backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
+                color: '#ffffff',
+                px: 3,
+                py: 1.5,
+                borderRadius: '30px',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                textTransform: 'none',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                '&:hover': {
+                  backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#4b5563',
+                },
+                '&:disabled': {
+                  opacity: 0.5,
+                }
+              })}
+            >
+              {isCollectingApplyNotice ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Collecting...
+                </>
+              ) : (
+                'Collect - Apply Notice'
+              )}
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
 

@@ -335,7 +335,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
       {/* Due Date and notice period status */}
       <div className="flex items-center gap-6">
         {/* Show Due Date only if not in notice period */}
-        {(record.paymentStatus === "NOT_PAID" || record.paymentStatus === "PARTIALLY_PAID") && (
+        {(!record.notice || record.notice.status !== 'active') && (record.paymentStatus === "NOT_PAID" || record.paymentStatus === "PARTIALLY_PAID") && (
           <div className="flex items-center gap-2">
             <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
               Due Date:

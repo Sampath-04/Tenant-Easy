@@ -360,9 +360,9 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
                         <ListItemText
                           primary={
                             <div className="flex items-center gap-2">
-                              <span className="font-medium text-gray-900 dark:text-gray-100">
-                                {tenant.tenantName}
-                              </span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100">
+                              {tenant.tenantName}
+                            </span>
                               <Chip 
                                 label="Upcoming" 
                                 size="small" 
@@ -513,42 +513,42 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
             <p className="mb-4">Room Information</p>
             <div className="space-y-4 grid grid-cols-2 gap-4">
-              <TextField
-                label="Room Number"
-                value={editForm.roomNo}
-                onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, roomNo: e.target.value }))
-                }
-                fullWidth
-              />
+        <TextField
+          label="Room Number"
+          value={editForm.roomNo}
+          onChange={(e) =>
+            setEditForm((prev) => ({ ...prev, roomNo: e.target.value }))
+          }
+          fullWidth
+        />
 
               <FormControl fullWidth>  
                 <InputLabel>Room Type</InputLabel>
-                <Select
-                  value={editForm.roomType}
-                  onChange={(e) =>
-                    setEditForm((prev) => ({ ...prev, roomType: e.target.value as string }))
-                  }
+          <Select
+            value={editForm.roomType}
+            onChange={(e) =>
+              setEditForm((prev) => ({ ...prev, roomType: e.target.value as string }))
+            }
                   label="Room Type"
-                >
-                  {ROOM_TYPE_OPTIONS.map((type) => (
-                    <MenuItem key={type.value} value={type.value}>
-                      {type.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <TextField
-                label="Max Capacity"
-                type="number"
-                value={editForm.maxCapacity}
-                onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, maxCapacity: Number(e.target.value) }))
-                }
-                fullWidth
-                inputProps={{ min: 1, max: 10 }}
-              />
+          >
+            {ROOM_TYPE_OPTIONS.map((type) => (
+              <MenuItem key={type.value} value={type.value}>
+                {type.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        
+        <TextField
+          label="Max Capacity"
+          type="number"
+          value={editForm.maxCapacity}
+          onChange={(e) =>
+            setEditForm((prev) => ({ ...prev, maxCapacity: Number(e.target.value) }))
+          }
+          fullWidth
+          inputProps={{ min: 1, max: 10 }}
+        />
             </div>
           </div>
 
@@ -556,36 +556,36 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
             <p className="mb-4">Amenities</p>
             <FormControl fullWidth>
-              <InputLabel>Amenities</InputLabel>
-              <Select
-                multiple
-                value={editForm.amenities}
-                onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, amenities: e.target.value as string[] }))
-                }
-                input={<OutlinedInput label="Amenities" />}
-                renderValue={(selected) => (
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                    {selected.map((value: string) => (
-                      <Chip
-                        key={value}
-                        label={value.replace("_", " ").toUpperCase()}
-                        size="small"
-                        sx={{ borderRadius: "8px" }}
-                      />
-                    ))}
-                  </Box>
-                )}
-              >
-                {AMENITY_OPTIONS.map((amenity) => (
-                  <MenuItem key={amenity.value} value={amenity.value}>
-                    <Checkbox checked={editForm.amenities.indexOf(amenity.value) > -1} />
-                    {amenity.icon}
-                    <span style={{ marginLeft: 8 }}>{amenity.label}</span>
-                  </MenuItem>
+          <InputLabel>Amenities</InputLabel>
+          <Select
+            multiple
+            value={editForm.amenities}
+            onChange={(e) =>
+              setEditForm((prev) => ({ ...prev, amenities: e.target.value as string[] }))
+            }
+            input={<OutlinedInput label="Amenities" />}
+            renderValue={(selected) => (
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                {selected.map((value: string) => (
+                  <Chip
+                    key={value}
+                    label={value.replace("_", " ").toUpperCase()}
+                    size="small"
+                    sx={{ borderRadius: "8px" }}
+                  />
                 ))}
-              </Select>
-            </FormControl>
+              </Box>
+            )}
+          >
+            {AMENITY_OPTIONS.map((amenity) => (
+              <MenuItem key={amenity.value} value={amenity.value}>
+                <Checkbox checked={editForm.amenities.indexOf(amenity.value) > -1} />
+                {amenity.icon}
+                <span style={{ marginLeft: 8 }}>{amenity.label}</span>
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
           </div>
         </div>
       </DialogContent>

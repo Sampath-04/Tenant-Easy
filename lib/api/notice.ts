@@ -5,6 +5,7 @@ export interface CompleteNoticeData {
   electricityUnit: number;
   tenantQrCode?: File;
   comments?: string;
+  otherDeduction: number;
 }
 
 export const completeNotice = async (data: CompleteNoticeData): Promise<{ success: boolean; message: string }> => {
@@ -16,7 +17,7 @@ export const completeNotice = async (data: CompleteNoticeData): Promise<{ succes
     formData.append('tenantQrCode', data.tenantQrCode, data.tenantQrCode.name);
   }
   formData.append('comments', data.comments || '');
-
+  formData.append('otherDeduction', data.otherDeduction.toString());
   const response = await apiClient.post(`/notices/${data.noticeId}/complete`, formData);
   return response as { success: boolean; message: string };
 };

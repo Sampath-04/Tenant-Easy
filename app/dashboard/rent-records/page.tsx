@@ -15,6 +15,7 @@ import {
   MenuItem,
   Tooltip,
   Skeleton,
+  TablePagination,
 } from '@mui/material';
 import { Theme } from '@mui/material/styles';
 import {
@@ -57,7 +58,7 @@ export default function RentRecordsPage() {
   const router = useRouter();
   
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [filters, setFilters] = useState({
     search: '',
     tenant: '',
@@ -87,6 +88,7 @@ export default function RentRecordsPage() {
       rentStatus: searchParams.get("rentStatus") || "",
     });
     setPage(parseInt(searchParams.get("page") || "1"));
+    setLimit(parseInt(searchParams.get("limit") || "10"));
     
     const startDateParam = searchParams.get("startDate");
     const endDateParam = searchParams.get("endDate");
@@ -100,6 +102,7 @@ export default function RentRecordsPage() {
 
     // Add pagination
     params.set("page", page.toString());
+    params.set("limit", limit.toString());
 
     // Add filters
     Object.entries(filters).forEach(([key, value]) => {
@@ -116,7 +119,7 @@ export default function RentRecordsPage() {
 
     // Update the URL (shallow = true to avoid full reload)
     router.push(`/dashboard/rent-records?${params.toString()}`);
-  }, [filters, page, startDate, endDate, router]);
+  }, [filters, page, limit, startDate, endDate, router]);
 
   // Get rent records with filters
   const { data: rentRecordsResponse, isLoading: recordsLoading, error: recordsError } = useRentRecords({
@@ -184,9 +187,6 @@ export default function RentRecordsPage() {
     );
   }, [rentRecords, debouncedSearch]);
 
-  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
-  };
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({ ...prev, [field]: value }));
@@ -598,17 +598,35 @@ export default function RentRecordsPage() {
             )}
 
             {/* Pagination */}
-            {!recordsLoading && rentRecordsResponse && rentRecordsResponse.pagination.totalPages > 1 && (
-              <Box className="flex justify-center mt-6">
-                <Pagination
-                  count={rentRecordsResponse.pagination.totalPages}
-                  page={page}
-                  onChange={handlePageChange}
-                  color="primary"
-                  showFirstButton
-                  showLastButton
+            {!recordsLoading && rentRecordsResponse && rentRecordsResponse.pagination.totalPages > 0 && (
+              <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50 mt-6">
+                <TablePagination
+                  component="div"
+                  count={rentRecordsResponse.total || 0}
+                  page={page - 1} // MUI uses 0-based indexing
+                  onPageChange={(_, newPage) => setPage(newPage + 1)} // Convert back to 1-based
+                  rowsPerPage={limit}
+                  onRowsPerPageChange={(e) => {
+                    const newPageSize = parseInt(e.target.value, 10);
+                    setLimit(newPageSize);
+                    setPage(1); // Reset to first page when changing page size
+                  }}
+                  rowsPerPageOptions={[10, 25, 50, 100]}
+                  labelRowsPerPage="Rows per page:"
+                  labelDisplayedRows={({ from, to, count }) =>
+                    `${from}-${to} of ${count !== -1 ? count : `more than ${to}`}`
+                  }
+                  sx={{
+                    backgroundColor: 'transparent',
+                    '& .MuiTablePagination-toolbar': {
+                      padding: '8px',
+                    },
+                    '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                      color: 'inherit',
+                    },
+                  }}
                 />
-              </Box>
+              </div>
             )}
 
           </div>
@@ -629,7 +647,7 @@ export default function RentRecordsPage() {
         })}
       >
         <DialogTitle className="flex items-center justify-between">
-          <Typography variant="h6" className="font-semibold">Export Rent Records</Typography>
+          <p className="font-semibold text-lg">Export Rent Records</p>
           <IconButton onClick={() => setExportDialogOpen(false)} disabled={isExporting}>
             <CloseIcon />
           </IconButton>

@@ -111,6 +111,7 @@ function TenantsContent() {
       sortOrder: (sortOrderParam as 'asc' | 'desc') || 'desc',
     });
     setCurrentPage(parseInt(searchParams.get("page") || "1"));
+    setPageSize(parseInt(searchParams.get("pageSize") || "10"));
     setSearchTerm(searchParams.get("search") || '');
   }, []);
 
@@ -120,6 +121,7 @@ function TenantsContent() {
 
     // Add pagination
     params.set("page", currentPage.toString());
+    params.set("pageSize", pageSize.toString());
 
     // Add filters
     Object.entries(filters).forEach(([key, value]) => {
@@ -140,7 +142,7 @@ function TenantsContent() {
 
     // Update the URL (shallow = true to avoid full reload)
     router.push(`/dashboard/tenants?${params.toString()}`);
-  }, [filters, currentPage, router, selectedProperty?.id]);
+  }, [filters, currentPage, pageSize, router, selectedProperty?.id]);
 
   // Fetch data
   const { data: tenantsData, isLoading, error } = useTenants({

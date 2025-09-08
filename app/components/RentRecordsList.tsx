@@ -15,9 +15,11 @@ import RentInfoCard from '@/components/RentInfoCard';
 import PaymentCollectionForm from '@/components/PaymentCollectionForm';
 import EvictionForm from '@/components/EvictionForm';
 import NoticeForm from '@/components/NoticeForm';
+import CancelNoticeDialog from '@/components/CancelNoticeDialog';
 import { useState } from 'react';
 import { useCancelNotice, useCompleteNotice } from '@/hooks/useNotice';
 import { RentHistoryItem } from '@/lib/api/rentHistory';
+import { CompleteNoticeData } from '@/lib/api/notice';
 
 export default function RentRecordsList({
     filteredRents,
@@ -32,6 +34,8 @@ export default function RentRecordsList({
     const [noticeFormOpen, setNoticeFormOpen] = useState(false);
     const [selectedRentForNotice, setSelectedRentForNotice] = useState<any>(null);
     const [cancellingNoticeId, setCancellingNoticeId] = useState<string | null>(null);
+    const [cancelNoticeDialogOpen, setCancelNoticeDialogOpen] = useState(false);
+    const [noticeToCancel, setNoticeToCancel] = useState<any>(null);
 
     // Complete notice mutation
     const completeNoticeMutation = useCompleteNotice();
@@ -97,18 +101,27 @@ Thank you!`;
         setNoticeFormOpen(true);
     };
 
-    const handleCancelNotice = async (rent: any) => {
-        if (!rent.notice?._id) {
+    const handleCancelNotice = (rent: any) => {
+        setNoticeToCancel(rent);
+        setCancelNoticeDialogOpen(true);
+    };
+
+    const handleConfirmCancelNotice = async () => {
+        if (!noticeToCancel?.notice?._id) {
             console.error('No notice ID found for cancellation');
             return;
         }
 
         try {
             // Set the cancelling notice ID to show loading for this specific record
-            setCancellingNoticeId(rent.notice._id);
+            setCancellingNoticeId(noticeToCancel.notice._id);
 
             // Call the cancelNotice API
-            await cancelNoticeMutation.mutateAsync(rent.notice._id);
+            await cancelNoticeMutation.mutateAsync(noticeToCancel.notice._id);
+            
+            // Close the dialog
+            setCancelNoticeDialogOpen(false);
+            setNoticeToCancel(null);
         } catch (error) {
             console.error('Failed to cancel notice:', error);
             // Error handling is done in the mutation
@@ -116,6 +129,11 @@ Thank you!`;
             // Clear the cancelling notice ID
             setCancellingNoticeId(null);
         }
+    };
+
+    const handleCancelNoticeDialog = () => {
+        setCancelNoticeDialogOpen(false);
+        setNoticeToCancel(null);
     };
 
     const handlePaymentSubmit = (data: any) => {
@@ -138,7 +156,10 @@ Thank you!`;
             electricityUnit: data.currentElectricityReading,
             tenantQrCode: data.tenantQrCode,
             comments: data.comments,
-        };
+            otherDeduction: data.otherDeduction,
+        } as CompleteNoticeData;
+
+        console.log("payload",payload);
 
         try {
             // Call the completeNotice API
@@ -483,6 +504,15 @@ Thank you!`;
                 monthlyRent={selectedRentForNotice?.rent || 0}
                 tenantId={selectedRentForNotice?.tenant?._id || ''}
                 existingNotice={selectedRentForNotice?.notice || null}
+            />
+
+            {/* Cancel Notice Confirmation Dialog */}
+            <CancelNoticeDialog
+                open={cancelNoticeDialogOpen}
+                onClose={handleCancelNoticeDialog}
+                onConfirm={handleConfirmCancelNotice}
+                noticeToCancel={noticeToCancel}
+                isCancelling={cancellingNoticeId === noticeToCancel?.notice?._id}
             />
         </div>
     )

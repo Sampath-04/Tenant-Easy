@@ -873,22 +873,32 @@ function TenantViewContent() {
         <DialogActions sx={(theme) => ({
           backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#f8fafc',
           borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
-          padding: '16px 24px'
+          padding: '16px 24px',
+          gap: '12px'
         })}>
           <Button
             onClick={() => setShowEditDialog(false)}
-            sx={{
-              color: '#F5F5F5',
+            disabled={updatePaymentMutation.isPending}
+            sx={(theme) => ({
+              color: theme.palette.mode === 'dark' ? '#f9fafb' : '#374151',
+              backgroundColor: 'transparent',
+              border: `1px solid ${theme.palette.mode === 'dark' ? '#4b5563' : '#d1d5db'}`,
               '&:hover': {
-                backgroundColor: 'rgba(107, 114, 128, 0.1)',
+                backgroundColor: theme.palette.mode === 'dark' ? 'rgba(75, 85, 99, 0.1)' : 'rgba(107, 114, 128, 0.04)',
+                borderColor: theme.palette.mode === 'dark' ? '#6b7280' : '#9ca3af',
+              },
+              '&:disabled': {
+                opacity: 0.5,
+                color: theme.palette.mode === 'dark' ? '#6b7280' : '#9ca3af',
+                borderColor: theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb',
               },
               textTransform: 'none',
               fontWeight: 500,
               fontSize: '14px',
-              padding: '10px 16px',
-              borderRadius: '12px',
-              border: `1px solid ${theme.palette.mode === 'dark' ? '#C2C2C2' : '#e5e7eb'}`
-            }}
+              padding: '10px 20px',
+              borderRadius: '8px',
+              transition: 'all 0.2s ease',
+            })}
           >
             Cancel
           </Button>
@@ -896,23 +906,40 @@ function TenantViewContent() {
             onClick={handleSavePaymentEdit}
             disabled={updatePaymentMutation.isPending}
             variant="contained"
-            sx={{
-              backgroundColor: '#10b981',
+            sx={(theme) => ({
+              backgroundColor: theme.palette.mode === 'dark' ? '#10b981' : '#059669',
+              color: '#ffffff',
+              border: 'none',
               '&:hover': {
-                backgroundColor: '#059669',
+                backgroundColor: theme.palette.mode === 'dark' ? '#059669' : '#047857',
+                boxShadow: theme.palette.mode === 'dark' 
+                  ? '0 4px 12px rgba(16, 185, 129, 0.3)' 
+                  : '0 4px 12px rgba(5, 150, 105, 0.3)',
               },
               '&:disabled': {
-                backgroundColor: '#9ca3af',
+                backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#9ca3af',
+                color: theme.palette.mode === 'dark' ? '#6b7280' : '#ffffff',
+                boxShadow: 'none',
               },
               textTransform: 'none',
               fontWeight: 500,
               fontSize: '14px',
-              padding: '10px 16px',
-              borderRadius: '12px',
-              border: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`
-            }}
+              padding: '10px 20px',
+              borderRadius: '8px',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            })}
           >
-            {updatePaymentMutation.isPending ? 'Saving...' : 'Save Changes'}
+            {updatePaymentMutation.isPending ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Saving...
+              </>
+            ) : (
+              'Save Changes'
+            )}
           </Button>
         </DialogActions>
       </Dialog>

@@ -27,6 +27,7 @@ interface EvictionFormProps {
     currentElectricityReading: number;
     refundableAmount: number;
     comments?: string;
+    otherDeduction?: number;
     tenantQrCode?: File;
     rentRecord: any;
   }) => void;
@@ -42,6 +43,7 @@ export default function EvictionForm({
   const [currentElectricityReading, setCurrentElectricityReading] = useState<number>(rentRecord?.room?.currentMeterReading || 0);
   const [refundableAmount, setRefundableAmount] = useState<number>(0);
   const [comments, setComments] = useState('');
+  const [otherDeduction, setOtherDeduction] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tenantQrCode, setTenantQrCode] = useState<File | null>(null);
   const [qrCodePreviewUrl, setQrCodePreviewUrl] = useState<string | null>(null);
@@ -65,11 +67,11 @@ export default function EvictionForm({
     const perTenantElectricityCost = totalCurrentElectricityCost / numberOfTenants;
 
     // Calculate refundable amount
-    const totalCharges = totalElectricityPaid + perTenantElectricityCost;
-    const refundable = Math.max(0, securityDeposit - totalCharges);
+    const totalCharges = totalElectricityPaid + perTenantElectricityCost + otherDeduction;
+    const refundable = securityDeposit - totalCharges;
     
     setRefundableAmount(refundable);
-  }, [currentElectricityReading, rentRecord]);
+  }, [currentElectricityReading, rentRecord, otherDeduction]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -114,6 +116,7 @@ export default function EvictionForm({
           currentElectricityReading,
           refundableAmount,
           comments: comments.trim() || undefined,
+          otherDeduction: otherDeduction > 0 ? otherDeduction : undefined,
           tenantQrCode: tenantQrCode || undefined,
           rentRecord: rentRecord,
         });
@@ -172,9 +175,13 @@ export default function EvictionForm({
         '& .MuiDialog-paper': {
           borderRadius: '20px',
           backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+          maxHeight: '90vh',
+          display: 'flex',
+          flexDirection: 'column',
           '@media (max-width: 600px)': {
             margin: '16px',
             width: '100%',
+            maxHeight: '95vh',
           }
         }
       })}
@@ -189,7 +196,26 @@ export default function EvictionForm({
         </IconButton>
       </DialogTitle>
       
-      <DialogContent>
+      <DialogContent sx={(theme: Theme) => ({
+        flex: 1,
+        overflow: 'auto',
+        padding: '24px',
+        backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+        '&::-webkit-scrollbar': {
+          width: '6px',
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f1f5f9',
+          borderRadius: '3px',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: theme.palette.mode === 'dark' ? '#6b7280' : '#cbd5e1',
+          borderRadius: '3px',
+          '&:hover': {
+            backgroundColor: theme.palette.mode === 'dark' ? '#9ca3af' : '#94a3b8',
+          },
+        },
+      })}>
         {/* Tenant Details */}
         <Box className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
           <p className="text-gray-800 dark:text-gray-300 mb-3 text-md font-bold">
@@ -257,10 +283,10 @@ export default function EvictionForm({
         </Box>
 
         {/* Current Electricity Reading */}
-        <Box className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
-          <Typography variant="subtitle2" className="text-gray-800 dark:text-gray-300 mb-4 font-bold">
+          <Box className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
+            <p className="text-gray-800 dark:text-gray-300 mb-4 font-bold">
             Final Electricity Reading
-          </Typography>
+          </p>
           
           <Box className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column - Input Section */}
@@ -327,24 +353,67 @@ export default function EvictionForm({
           </Box>
         </Box>
 
-                 {/* Refundable Amount */}
+        {/* Other Deduction */}
+        <Box className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
+          <p className="text-gray-800 dark:text-gray-300 mb-4 font-bold">
+            Other Deduction
+          </p>
+          
+          <Box className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column - Input Section */}
+            <Box className="flex flex-col space-y-4">
+              <TextField
+                fullWidth
+                label="Other Deduction (₹)"
+                type="number"
+                value={otherDeduction}
+                onChange={(e) => setOtherDeduction(Number(e.target.value))}
+                placeholder="Enter any other deduction amount"
+                variant="outlined"
+                helperText="Any additional deductions (e.g., damages, penalties, etc.)"
+                sx={(theme: Theme) => ({
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
+                    },
+                  },
+                })}
+              />
+            </Box>
+
+            {/* Right Column - Display Section */}
+            <Box className="flex flex-col space-y-3">
+              
+              <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+                  Impact on Refund:
+                </span>
+                <span className={`font-semibold ${otherDeduction > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                  {otherDeduction > 0 ? `-${formatCurrency(otherDeduction)}` : 'No impact'}
+                </span>
+              </div>
+            </Box>
+          </Box>
+        </Box>
+
+          {/* Refundable Amount */}
          <Box className="mb-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-           <Typography variant="subtitle2" className="text-purple-800 dark:text-purple-300 mb-3">
+           <p className="text-purple-800 dark:text-purple-300">
              Refund Calculation
-           </Typography>
+           </p>
            <Box className="text-center">
-             <Typography variant="h4" className="font-bold text-purple-600 dark:text-purple-400 mb-2">
+             <p className="font-bold text-purple-600 dark:text-purple-400 mb-2 text-lg">
                {formatCurrency(refundableAmount)}
-             </Typography>
+             </p>
              <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-4">
                Refundable Amount
              </Typography>
              
              {/* Calculation Breakdown */}
              <Box className="text-left bg-white dark:bg-gray-800 rounded-lg p-4 mt-4">
-               <Typography variant="body2" className="font-medium text-gray-700 dark:text-gray-300 mb-2">
+               <p className="font-medium text-gray-700 dark:text-gray-300 mb-2">
                  Calculation Breakdown:
-               </Typography>
+               </p>
                <div className="space-y-1 text-sm">
                  <div className="flex justify-between">
                    <span className="text-gray-600 dark:text-gray-400">Security Deposit:</span>
@@ -362,6 +431,12 @@ export default function EvictionForm({
                    <span className="text-gray-600 dark:text-gray-400">Final Reading Cost (Per Tenant):</span>
                    <span className="font-medium">-{formatCurrency(Math.max(0, (currentElectricityReading - lastReading) * perUnitCost / numberOfTenants))}</span>
                  </div>
+                 {otherDeduction > 0 && (
+                   <div className="flex justify-between">
+                     <span className="text-gray-600 dark:text-gray-400">Other Deduction:</span>
+                     <span className="font-medium">-{formatCurrency(otherDeduction)}</span>
+                   </div>
+                 )}
                  <hr className="my-2 border-gray-300 dark:border-gray-600" />
                  <div className="flex justify-between font-bold">
                    <span className="text-gray-700 dark:text-gray-300">Refundable Amount:</span>
@@ -382,9 +457,9 @@ export default function EvictionForm({
 
         {/* Tenant QR Code Upload */}
         <Box className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
-          <Typography variant="subtitle2" className="text-gray-800 dark:text-gray-300 mb-3">
+          <p className="text-gray-800 dark:text-gray-300 mb-3">
             Upload Tenant QR Code (Optional)
-          </Typography>
+          </p>
           
           {/* Dropzone */}
           <div
@@ -396,8 +471,16 @@ export default function EvictionForm({
                 ? 'border-gray-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600 cursor-not-allowed'
                 : 'border-gray-300 hover:border-gray-400 dark:border-gray-400 dark:hover:border-gray-500'
             }`}
+            style={{ 
+              minHeight: '120px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              overflow: 'hidden'
+            }}
           >
-            <input {...getInputProps()} />
+            <input {...getInputProps()} style={{ display: 'none' }} />
             <CloudUploadIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
             {isDragActive ? (
               <p className="text-blue-600 dark:text-blue-400">Drop the QR code image here...</p>
@@ -483,21 +566,40 @@ export default function EvictionForm({
         />
       </DialogContent>
 
-      <DialogActions sx={{
-        padding: '20px',
-        paddingTop: '16px',
-        borderTop: '1px solid #e0e0e0',
-        gap: '10px',
+      <DialogActions sx={(theme: Theme) => ({
+        padding: '20px 24px',
+        borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+        backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+        gap: '12px',
         '@media (max-width: 600px)': {
           justifyContent: 'center',
           gap: '8px',
+          padding: '16px',
         }
-      }}>
+      })}>
         <Button 
           onClick={handleClose} 
           disabled={isSubmitting}
-          variant="outlined"
-          className="border-2 border-gray-300 text-gray-600 px-4 py-2 rounded-[30px] cursor-pointer dark:border-gray-400 dark:text-gray-200"
+          sx={(theme: Theme) => ({
+            color: theme.palette.mode === 'dark' ? '#f9fafb' : '#374151',
+            backgroundColor: 'transparent',
+            border: `1px solid ${theme.palette.mode === 'dark' ? '#4b5563' : '#d1d5db'}`,
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(75, 85, 99, 0.1)' : 'rgba(107, 114, 128, 0.04)',
+              borderColor: theme.palette.mode === 'dark' ? '#6b7280' : '#9ca3af',
+            },
+            '&:disabled': {
+              opacity: 0.5,
+              color: theme.palette.mode === 'dark' ? '#6b7280' : '#9ca3af',
+              borderColor: theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb',
+            },
+            textTransform: 'none',
+            fontWeight: 500,
+            fontSize: '14px',
+            padding: '10px 20px',
+            borderRadius: '8px',
+            transition: 'all 0.2s ease',
+          })}
         >
           Cancel
         </Button>
@@ -506,23 +608,40 @@ export default function EvictionForm({
           disabled={isSubmitting || currentElectricityReading <= 0 || currentElectricityReading < lastReading}
           variant="contained"
           startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : <PersonOffIcon />}
-          sx={{
-            backgroundColor: '#dc2626',
-            borderRadius: '12px',
-            color: '#fff',
-            textTransform: 'none',
-            fontWeight: 600,
-            padding: '12px 24px',
+          sx={(theme: Theme) => ({
+            backgroundColor: theme.palette.mode === 'dark' ? '#dc2626' : '#ef4444',
+            color: '#ffffff',
+            border: 'none',
             '&:hover': {
-              backgroundColor: '#b91c1c',
+              backgroundColor: theme.palette.mode === 'dark' ? '#b91c1c' : '#dc2626',
+              boxShadow: theme.palette.mode === 'dark' 
+                ? '0 4px 12px rgba(220, 38, 38, 0.3)' 
+                : '0 4px 12px rgba(239, 68, 68, 0.3)',
             },
             '&:disabled': {
-              backgroundColor: '#9ca3af',
+              backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#9ca3af',
+              color: theme.palette.mode === 'dark' ? '#6b7280' : '#ffffff',
+              boxShadow: 'none',
             },
+            textTransform: 'none',
+            fontWeight: 500,
+            fontSize: '14px',
+            padding: '10px 20px',
+            borderRadius: '8px',
             transition: 'all 0.2s ease',
-          }}
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          })}
         >
-          {isSubmitting ? 'Processing...' : 'Complete Eviction'}
+          {isSubmitting ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Processing...
+            </>
+          ) : (
+            'Complete Eviction'
+          )}
         </Button>
       </DialogActions>
     </Dialog>

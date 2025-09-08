@@ -17,6 +17,7 @@ import {
   TextField,
   IconButton,
   Tooltip,
+  TablePagination,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -34,7 +35,7 @@ function RoomsContent() {
   const { selectedProperty } = useProperty();
   const [addRoomDialogOpen, setAddRoomDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(9); // Show 8 rooms per page (4 per row * 2 rows)
+  const [pageSize, setPageSize] = useState(9); // Show 9 rooms per page
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     roomType: 'all',
@@ -64,6 +65,7 @@ function RoomsContent() {
       roomId: searchParams.get("roomId") || "all",
     });
     setCurrentPage(parseInt(searchParams.get("page") || "1"));
+    setPageSize(parseInt(searchParams.get("pageSize") || "9"));
   }, []);
 
   // Write to URL params when state changes
@@ -72,6 +74,7 @@ function RoomsContent() {
 
     // Add pagination
     params.set("page", currentPage.toString());
+    params.set("pageSize", pageSize.toString());
 
     // Add filters
     Object.entries(filters).forEach(([key, value]) => {
@@ -80,7 +83,7 @@ function RoomsContent() {
 
     // Update the URL (shallow = true to avoid full reload)
     router.push(`/dashboard/rooms?${params.toString()}`);
-  }, [filters, currentPage, router]);
+  }, [filters, currentPage, pageSize, router]);
 
   const handleRoomUpdate = (roomId: string, updatedData: any) => {
     updateRoomMutation.mutate(
@@ -97,9 +100,6 @@ function RoomsContent() {
     setAddRoomDialogOpen(true);
   };
 
-  const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
-    setCurrentPage(page);
-  };
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({ ...prev, [field]: value }));
@@ -294,40 +294,35 @@ function RoomsContent() {
               </div>
 
               {/* Pagination */}
-              {roomsData?.pagination && roomsData.pagination.totalPages > 1 && (
-                <Box className="flex flex-col items-center mt-8 gap-4">
-                  {/* Page Info */}
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Showing {roomsData.count} of {roomsData.total} rooms
-                    {roomsData.pagination.totalPages > 1 && (
-                      <span> • Page {currentPage} of {roomsData.pagination.totalPages}</span>
-                    )}
-                  </div>
-                  
-                  {/* Pagination Controls */}
-                  <Pagination
-                    count={roomsData.pagination.totalPages}
-                    page={currentPage}
-                    onChange={handlePageChange}
-                    color="primary"
-                    size="large"
-                    showFirstButton
-                    showLastButton
+              {roomsData?.pagination && roomsData.pagination.totalPages > 0 && (
+                <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50 mt-8">
+                  <TablePagination
+                    component="div"
+                    count={roomsData.total || 0}
+                    page={currentPage - 1} // MUI uses 0-based indexing
+                    onPageChange={(_, newPage) => setCurrentPage(newPage + 1)} // Convert back to 1-based
+                    rowsPerPage={pageSize}
+                    onRowsPerPageChange={(e) => {
+                      const newPageSize = parseInt(e.target.value, 10);
+                      setPageSize(newPageSize);
+                      setCurrentPage(1); // Reset to first page when changing page size
+                    }}
+                    rowsPerPageOptions={[9, 18, 36, 72]}
+                    labelRowsPerPage="Rooms per page:"
+                    labelDisplayedRows={({ from, to, count }) =>
+                      `${from}-${to} of ${count !== -1 ? count : `more than ${to}`}`
+                    }
                     sx={{
-                      '& .MuiPaginationItem-root': {
-                        borderRadius: '12px',
-                        fontWeight: 500,
+                      backgroundColor: 'transparent',
+                      '& .MuiTablePagination-toolbar': {
+                        padding: '8px',
                       },
-                      '& .Mui-selected': {
-                        backgroundColor: '#2563eb',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: '#1d4ed8',
-                        },
+                      '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                        color: 'inherit',
                       },
                     }}
                   />
-                </Box>
+                </div>
               )}
 
               {/* Empty State */}

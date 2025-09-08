@@ -13,14 +13,11 @@ import {
   IconButton,
   Chip,
   Alert,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { Close as CloseIcon, CloudUpload as CloudUploadIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
+import { Close as CloseIcon, CloudUpload as CloudUploadIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { CircularProgress } from '@mui/material';
 import { useCreateNotice, useUpdateNotice } from '@/hooks/useRentRecords';
 import { getCurrentDate } from '@/lib/utils/formatters';
@@ -134,23 +131,32 @@ export default function NoticeForm({
      const cycleEnd = new Date(cycleEndDate);
      const today = getCurrentDate(); // Notice application date
      
-     // Calculate default notice end date (30 days from today - notice application date)
-     const defaultNoticeEndDate = new Date(today);
-     defaultNoticeEndDate.setDate(defaultNoticeEndDate.getDate() + 30);
+    // Calculate default notice end date (30th day from today - notice application date)
+    // Counting: Day 1 = today, Day 2 = today+1, ..., Day 30 = today+29
+    // Example: If today is Oct 28, then 30th day = Oct 28 + 29 days = Nov 26
+    const defaultNoticeEndDate = new Date(today);
+    defaultNoticeEndDate.setDate(defaultNoticeEndDate.getDate() + 29);
      
      // Set the notice end date if not already set
      if (!noticeEndDate) {
        setNoticeEndDate(defaultNoticeEndDate);
      }
      
-     // Calculate extra days based on selected notice end date
-     const calculateExtraDays = () => {
-       if (!noticeEndDate) return 0;
-       
-       const diffTime = noticeEndDate.getTime() - cycleEnd.getTime();
-       const extraDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-       return Math.max(0, extraDays);
-     };
+    // Calculate extra days based on selected notice end date
+    const calculateExtraDays = () => {
+      if (!noticeEndDate) return 0;
+      
+      // Normalize both dates to midnight to avoid time-based calculation issues
+      const noticeEndNormalized = new Date(noticeEndDate);
+      noticeEndNormalized.setHours(0, 0, 0, 0);
+      
+      const cycleEndNormalized = new Date(cycleEnd);
+      cycleEndNormalized.setHours(0, 0, 0, 0);
+      
+      const diffTime = noticeEndNormalized.getTime() - cycleEndNormalized.getTime();
+      const extraDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      return Math.max(0, extraDays);
+    };
      
      const calculatedExtraDays = calculateExtraDays();
      setExtraDays(calculatedExtraDays);
@@ -247,23 +253,79 @@ export default function NoticeForm({
       onClose={handleClose}
       maxWidth="sm"
       fullWidth
-      sx={{
+      sx={(theme) => ({
         '& .MuiDialog-paper': {
-          height: '680px',
-        },
-      }}
+          borderRadius: '20px',
+          backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+          maxHeight: '90vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          '@media (max-width: 600px)': {
+            margin: '16px',
+            width: '100%',
+            maxHeight: '95vh',
+          }
+        }
+      })}
     >
-      <DialogTitle className="flex items-center justify-between">
-        <Typography variant="h6">
+      <DialogTitle
+        sx={(theme) => ({
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+          pb: 2,
+          backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+        })}
+      >
+        <Typography
+          sx={(theme) => ({
+            fontWeight: 600,
+            fontSize: '1.25rem',
+            color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+          })}
+        >
           {existingNotice ? 'Update Notice Period' : 'Apply Notice Period'}
         </Typography>
-        <IconButton onClick={handleClose} disabled={isSubmitting}>
+        <IconButton 
+          onClick={handleClose} 
+          disabled={isSubmitting}
+          sx={(theme) => ({
+            color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f3f4f6',
+            }
+          })}
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       
-      <DialogContent>
-        <Box className="mb-4 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+      <DialogContent
+        sx={(theme) => ({
+          flex: 1,
+          overflow: 'auto',
+          padding: '24px',
+          backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+          minHeight: 0, // Important for flex child to shrink
+          '&::-webkit-scrollbar': {
+            width: '6px',
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f1f5f9',
+            borderRadius: '3px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: theme.palette.mode === 'dark' ? '#6b7280' : '#cbd5e1',
+            borderRadius: '3px',
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#9ca3af' : '#94a3b8',
+            },
+          },
+        })}
+      >
+        <Box className="mb-4 p-4 mt-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
           <p className="text-orange-800 dark:text-orange-300 mb-3">
             Notice Details
           </p>
@@ -299,6 +361,17 @@ export default function NoticeForm({
                     {extraDays > 1 ? `${extraDays} days` : `${extraDays} day`}
                 </Typography>
                 </div>
+            </div>
+            {/* notice applied date */}
+            <div className='flex items-center gap-2'>
+                <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Current Date:</Typography>
+                <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
+                    {getCurrentDate().toLocaleDateString('en-IN', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    })}
+                </Typography>
             </div>
           </Box>
         </Box>
@@ -399,29 +472,24 @@ export default function NoticeForm({
 
          {/* Payment Section */}
          {cost > 0 && (
-           <Accordion className="mt-6" sx={{ 
-             '&:before': { display: 'none' },
-             boxShadow: 'none',
-             border: '1px solid #e5e7eb',
-             borderRadius: '8px',
-             '&.Mui-expanded': {
-               margin: '24px 0',
-             }
-           }}>
-             <AccordionSummary
-               expandIcon={<ExpandMoreIcon />}
-               sx= {theme  => ({
-                 '&.Mui-expanded': {
-                  //  minHeight: '48px',
-                 }
+           <Box 
+             className="mt-6 p-4" 
+             sx={(theme) => ({ 
+               border: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+               borderRadius: '8px',
+               backgroundColor: theme.palette.mode === 'dark' ? '#111827' : '#ffffff',
+             })}
+           >
+             <Typography
+               variant="subtitle1"
+               sx={(theme) => ({
+                 fontWeight: 500,
+                 color: theme.palette.mode === 'dark' ? '#3b82f6' : '#1d4ed8',
+                 mb: 3,
                })}
-               className="dark:bg-blue-900/20 dark:border-gray-700"
              >
-               <p className="font-medium text-blue-900 dark:text-blue-100">
-                 {existingNotice ? 'Additional Payment Details (Optional)' : 'Payment Details (Optional)'}
-               </p>
-             </AccordionSummary>
-             <AccordionDetails className="p-4">
+               {existingNotice ? 'Additional Payment Details (Optional)' : 'Payment Details (Optional)'}
+             </Typography>
              <div className="space-y-4">
                  <TextField
                    fullWidth
@@ -538,23 +606,75 @@ export default function NoticeForm({
                    </Alert>
                  )}
                </div>
-             </AccordionDetails>
-           </Accordion>
+           </Box>
          )}
       </DialogContent>
 
-      <DialogActions className="flex justify-center gap-4 !p-4 !pt-0">
-        <button onClick={handleClose} disabled={isSubmitting} className='border-2 border-gray-300 text-gray-600 px-4 py-2 rounded-[30px] cursor-pointer dark:border-gray-400 dark:text-gray-200'>
+      <DialogActions
+        sx={(theme) => ({
+          px: 3,
+          py: 2,
+          gap: 2,
+          backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+          borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+        })}
+      >
+        <Button
+          onClick={handleClose}
+          disabled={isSubmitting}
+          sx={(theme) => ({
+            backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
+            color: '#ffffff',
+            px: 3,
+            py: 1.5,
+            borderRadius: '30px',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            textTransform: 'none',
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#4b5563',
+            },
+            '&:disabled': {
+              opacity: 0.5,
+            }
+          })}
+        >
           Cancel
-        </button>
-        <button 
+        </Button>
+        <Button
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"
+          sx={(theme) => ({
+            backgroundColor: theme.palette.mode === 'dark' ? '#f59e0b' : '#f59e0b',
+            color: '#ffffff',
+            px: 3,
+            py: 1.5,
+            borderRadius: '30px',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            textTransform: 'none',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#d97706' : '#d97706',
+            },
+            '&:disabled': {
+              opacity: 0.5,
+            }
+          })}
         >
-          {isSubmitting && <CircularProgress size={16} color="inherit" />}
-          {isSubmitting ? (existingNotice ? 'Updating...' : 'Applying...') : (existingNotice ? 'Update Notice' : 'Apply Notice')}
-        </button>
+          {isSubmitting ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              {existingNotice ? 'Updating...' : 'Applying...'}
+            </>
+          ) : (
+            existingNotice ? 'Update Notice' : 'Apply Notice'
+          )}
+        </Button>
       </DialogActions>
     </Dialog>
   );

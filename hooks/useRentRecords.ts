@@ -98,6 +98,7 @@ export function usePropertyRentSummary(
 interface MarkRentAsPaidData {
   amount: number;
   paidDate: string;
+  paymentMethod: string;
   paymentProofs?: File[];
   paidTo: string;
   comments?: string;
