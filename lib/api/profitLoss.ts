@@ -1,22 +1,17 @@
 import { apiClient } from './client';
 
 export interface IncomeData {
-  totalRent?: number;
-  totalElectricity?: number;
   totalAmount: number;
-  collectedAmount?: number;
-  pendingAmount?: number;
-  categoryBreakdown?: {
+  categoryBreakdown: {
     rent: number;
-    securityDeposits: number;
     other: number;
   };
-  methodBreakdown?: {
+  methodBreakdown: {
     cash: number;
     bankTransfer: number;
     online: number;
   };
-  dailyBreakdown?: Array<{
+  dailyBreakdown: Array<{
     date: string;
     amount: number;
     paymentType: string;
@@ -24,19 +19,9 @@ export interface IncomeData {
   }>;
 }
 
-export interface ExpenseCategoryBreakdown {
-  propertyFacility: number;
-  utilities: number;
-  foodKitchen: number;
-  staffSalaries: number;
-  miscellaneous: number;
-}
-
-export interface ExpensesData {
+export interface ExpenseData {
   totalAmount: number;
-  paidAmount: number;
-  pendingAmount: number;
-  categoryBreakdown: ExpenseCategoryBreakdown;
+  categoryBreakdown: Record<string, number>;
 }
 
 export interface FinancialSummary {
@@ -51,15 +36,13 @@ export interface ProfitLossRecord {
   month: string;
   year: number;
   income: IncomeData;
-  expenses: ExpensesData;
+  expense: ExpenseData;
   financialSummary: FinancialSummary;
   status: string;
-  isLocked: boolean;
   calculatedAt: string;
   createdAt: string;
   updatedAt: string;
   calculatedBy: any;
-  lockedBy: any;
 }
 
 export interface ProfitLossResponse {

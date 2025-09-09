@@ -30,6 +30,7 @@ import { RoomDetail } from '@/lib/api/types';
 import NumberInput from '@/components/ui/NumberInput';
 import CustomSelect from '@/components/ui/CustomSelect';
 import FileUploadField from '@/components/ui/FileUploadField';
+import { DEFAULT_PAYMENT_METHOD, PAYMENT_METHOD_OPTIONS } from '@/lib/constants/paymentConstants';
 
 // Form data interface that allows undefined for number fields
 interface CreateTenantFormData {
@@ -84,7 +85,7 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
       relation: ''
     },
     rentPaid: undefined,
-    paymentMethod: 'UPI',
+    paymentMethod: DEFAULT_PAYMENT_METHOD,
     paymentProofs: []
   });
 
@@ -115,7 +116,7 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
           relation: ''
         },
         rentPaid: undefined,
-        paymentMethod: 'UPI',
+        paymentMethod: DEFAULT_PAYMENT_METHOD,
         paymentProofs: []
       });
     }
@@ -476,13 +477,7 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
                   <CustomSelect
                     value={formData.paymentMethod}
                     onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
-                    options={[
-                      { value: 'UPI', label: 'UPI' },
-                      { value: 'CASH', label: 'Cash' },
-                      { value: 'BANK_TRANSFER', label: 'Bank Transfer' },
-                      { value: 'CHEQUE', label: 'Cheque' },
-                      { value: 'CARD', label: 'Card' },
-                    ]}
+                    options={PAYMENT_METHOD_OPTIONS}
                     sx={{
                       borderRadius: "8px",
                       "& .MuiSelect-select": {

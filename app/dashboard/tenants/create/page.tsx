@@ -6,6 +6,7 @@ import { AuthGuard } from '@/contexts/AuthContext';
 import { useProperty } from '@/contexts/PropertyContext';
 import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
+import { PAYMENT_METHOD_OPTIONS } from '@/lib/constants/paymentConstants';
 import { useCreateTenant } from '@/hooks/useTenants';
 import { useRooms } from '@/hooks/useRooms';
 import { showErrorToast, showSuccessToast } from '@/lib/toast-config';
@@ -452,13 +453,7 @@ function CreateTenantContent() {
                      <CustomSelect
                        value={formData.paymentMethod}
                        onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
-                       options={[
-                         { value: 'CASH', label: 'Cash' },
-                         { value: 'BANK_TRANSFER', label: 'Bank Transfer' },
-                         { value: 'UPI', label: 'UPI' },
-                         { value: 'CHEQUE', label: 'Cheque' },
-                         { value: 'CARD', label: 'Card' },
-                       ]}
+                       options={PAYMENT_METHOD_OPTIONS}
                        sx={{
                          borderRadius: "8px",
                          width: "160px",

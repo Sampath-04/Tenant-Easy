@@ -254,7 +254,7 @@ function RoomsContent() {
                      { value: 'all', label: 'All Rooms' },
                      ...(allRoomsData?.data?.map((room) => ({
                        value: room._id,
-                       label: room.roomNo
+                       label: `Room ${room.roomNo}`
                      })) || [])
                    ]}
                    disabled={isLoadingAllRooms}

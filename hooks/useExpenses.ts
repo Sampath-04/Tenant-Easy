@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createExpense, getExpensesByProperty, getExpense, updateExpense, deleteExpense, CreateExpenseData, UpdateExpenseData, Expense, ExpenseFilters, ExpensesResponse } from '@/lib/api/expenses';
+import { toast } from 'react-toastify';
+import { showErrorToast, showSuccessToast } from '@/lib/toast-config';
 
 // Query keys
 export const expenseKeys = {
@@ -63,6 +65,12 @@ export const useUpdateExpense = () => {
       
       // Invalidate and refetch expenses list
       queryClient.invalidateQueries({ queryKey: expenseKeys.lists() });
+      const successToast = showSuccessToast('Expense updated successfully');
+      toast.success(successToast.message, successToast.config); 
+    },
+    onError: (error: any) => {
+      const errorToast = showErrorToast(error.message);
+      toast.error(errorToast.message, errorToast.config);
     },
   });
 };
@@ -79,6 +87,12 @@ export const useDeleteExpense = () => {
       
       // Invalidate and refetch expenses list
       queryClient.invalidateQueries({ queryKey: expenseKeys.lists() });
+      const successToast = showSuccessToast('Expense deleted successfully');
+      toast.success(successToast.message, successToast.config);
+    },
+    onError: (error: any) => {
+      const errorToast = showErrorToast(error.message);
+      toast.error(errorToast.message, errorToast.config);
     },
   });
 };

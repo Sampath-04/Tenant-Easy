@@ -10,6 +10,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   AreaChart, Area
 } from 'recharts';
+import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 
 const COLORS = {
   income: '#10b981', expenses: '#ef4444', profit: '#3b82f6',
@@ -59,7 +60,7 @@ export default function ProfitLossPage() {
       month: formatMonth(record.month),
       monthKey: record.month,
       income: record.income.totalAmount,
-      expenses: record.expenses.totalAmount,
+      expenses: record.expense.totalAmount,
       netProfit: record.financialSummary.netProfit,
       profitMargin: record.financialSummary.profitMargin,
     }));
@@ -69,7 +70,7 @@ export default function ProfitLossPage() {
     if (!filteredData.length) return null;
     
     const totalIncome = filteredData.reduce((sum, record) => sum + record.income.totalAmount, 0);
-    const totalExpenses = filteredData.reduce((sum, record) => sum + record.expenses.totalAmount, 0);
+    const totalExpenses = filteredData.reduce((sum, record) => sum + record.expense.totalAmount, 0);
     const totalNetProfit = filteredData.reduce((sum, record) => sum + record.financialSummary.netProfit, 0);
     
     return { totalIncome, totalExpenses, totalNetProfit, recordCount: filteredData.length };
@@ -106,19 +107,19 @@ export default function ProfitLossPage() {
           
           {/* Year Filter */}
           <div className="flex items-center space-x-3 mt-4 sm:mt-0">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Filter by Year:
-            </label>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
-              className="px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">All Years</option>
-              {availableYears.map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
-            </select>
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>Filter by Year</InputLabel>
+              <Select
+                value={selectedYear === 'all' ? 'all' : selectedYear.toString()}
+                onChange={(e) => setSelectedYear(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
+                label="Filter by Year"
+              >
+                <MenuItem value="all">All Years</MenuItem>
+                {availableYears.map(year => (
+                  <MenuItem key={year} value={year.toString()}>{year}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </div>
         </div>
 
@@ -251,7 +252,7 @@ export default function ProfitLossPage() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                                        {formatCurrency(record.expenses.totalAmount)}
+                                        {formatCurrency(record.expense.totalAmount)}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
@@ -281,11 +282,6 @@ export default function ProfitLossPage() {
                                         }`}>
                                             {record.status}
                                         </span>
-                                        {record.isLocked && (
-                                            <svg className="w-4 h-4 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                            </svg>
-                                        )}
                                         <svg className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-150" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                         </svg>

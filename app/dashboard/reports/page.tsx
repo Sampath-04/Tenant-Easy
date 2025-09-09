@@ -23,7 +23,7 @@ import BreadCrumbs from '@/components/ui/BreadCrumbs';
 import { formatDateForAPI } from '@/lib/utils/formatters';
 import { showErrorToast, showSuccessToast } from '@/lib/toast-config';
 import { toast } from 'react-toastify';
-import * as XLSX from 'xlsx';
+import { generateRefundsExcel, generateProfitLossExcel } from '@/lib/utils/excelExport';
 
 // Import existing export functions
 import { getRentRecordsForExport } from '@/lib/api/rentHistory';
@@ -152,125 +152,22 @@ export default function ReportsPage() {
   };
 
   const generateExcelReport = async (reportType: string, data: any, startDate?: Date | null, endDate?: Date | null) => {
-    const workbook = XLSX.utils.book_new();
-    let worksheet: XLSX.WorkSheet;
-    let filename: string;
-
     switch (reportType) {
       case 'rent-history':
-        // Use the reusable rent history export function
-        filename = generateRentHistoryExcel(data.data, data.summary, startDate, endDate);
-        return; // Early return since the function handles file generation
+        await generateRentHistoryExcel(data.data, data.summary, startDate, endDate);
+        return; 
 
       case 'refunds':
-        const refundsData = data.data.map((refund: any) => ({
-          'Tenant Name': refund.tenant.tenantName,
-          'Phone Number': refund.tenant.tenantNumber,
-          'Room Number': refund.room.roomNo,
-          'Security Deposit': refund.securityDepositPaid,
-          'Refund Amount': refund.refundAmount,
-          'Electricity Bill': refund.deductions?.electricityBill || 0,
-          'Other Deductions': refund.deductions?.otherDeductions || 0,
-          'Status': refund.status === 'processed' ? 'Processed' : 'Not Processed',
-          'Notice End Date': new Date(refund.noticeEndsOn).toLocaleDateString('en-IN'),
-          'Processed Date': refund.processedAt ? new Date(refund.processedAt).toLocaleDateString('en-IN') : '-',
-          'Transaction ID': refund.processingProof?.transactionId || '-',
-          'Payment Method': refund.processingProof?.paymentMethod || '-',
-          'Receipt URL': refund.processingProof?.receiptUrl || '-',
-          'Notes': refund.processingProof?.notes || '-',
-          'Electricity Units': refund.deductions?.electricityUnits || 0,
-          'Processed By': refund.processedBy?.name || '-',
-          'Created Date': new Date(refund.createdAt).toLocaleDateString('en-IN'),
-        }));
-
-        // Calculate totals
-        const totalRefundAmount = data.data.reduce((sum: number, refund: any) => sum + refund.refundAmount, 0);
-        const totalSecurityDeposit = data.data.reduce((sum: number, refund: any) => sum + refund.securityDepositPaid, 0);
-        const totalDeductions = data.data.reduce((sum: number, refund: any) => 
-          sum + (refund.deductions?.electricityBill || 0) + (refund.deductions?.otherDeductions || 0), 0);
-
-        // Add summary row
-        refundsData.push({} as any);
-        refundsData.push({
-          'Tenant Name': 'SUMMARY',
-          'Phone Number': '',
-          'Room Number': '',
-          'Security Deposit': totalSecurityDeposit,
-          'Refund Amount': totalRefundAmount,
-          'Electricity Bill': totalDeductions,
-          'Other Deductions': 0,
-          'Status': '',
-          'Notice End Date': '',
-          'Processed Date': '',
-          'Transaction ID': '',
-          'Payment Method': '',
-          'Receipt URL': '',
-          'Notes': '',
-          'Electricity Units': 0,
-          'Processed By': '',
-          'Created Date': '',
-        });
-
-        worksheet = XLSX.utils.json_to_sheet(refundsData);
-        filename = `refunds-report-${startDate?.toISOString().split('T')[0] || 'N/A'}-to-${endDate?.toISOString().split('T')[0] || 'N/A'}.xlsx`;
-        break;
+        await generateRefundsExcel(data.data, data.statistics, startDate, endDate);
+        return; 
 
       case 'profit-loss':
-        const profitLossData = data.data.map((record: any) => ({
-          'Month': record.month,
-          'Year': record.year,
-          'Total Income': record.income.totalAmount,
-          'Total Rent': record.income.totalRent || 0,
-          'Total Electricity': record.income.totalElectricity || 0,
-          'Collected Amount': record.income.collectedAmount || 0,
-          'Pending Amount': record.income.pendingAmount || 0,
-          'Total Expenses': record.expenses.totalAmount,
-          'Paid Expenses': record.expenses.paidAmount,
-          'Pending Expenses': record.expenses.pendingAmount,
-          'Property Facility': record.expenses.categoryBreakdown.propertyFacility,
-          'Utilities': record.expenses.categoryBreakdown.utilities,
-          'Food Kitchen': record.expenses.categoryBreakdown.foodKitchen,
-          'Staff Salaries': record.expenses.categoryBreakdown.staffSalaries,
-          'Miscellaneous': record.expenses.categoryBreakdown.miscellaneous,
-          'Gross Profit': record.financialSummary.grossProfit,
-          'Net Profit': record.financialSummary.netProfit,
-          'Profit Margin (%)': record.financialSummary.profitMargin,
-          'Expense Ratio (%)': record.financialSummary.expenseRatio,
-          'Status': record.status,
-          'Is Locked': record.isLocked ? 'Yes' : 'No',
-          'Calculated At': new Date(record.calculatedAt).toLocaleDateString('en-IN'),
-        }));
-
-        worksheet = XLSX.utils.json_to_sheet(profitLossData);
-        filename = `profit-loss-report-${new Date().toISOString().split('T')[0]}.xlsx`;
-        break;
+        await generateProfitLossExcel(data.data);
+        return; 
 
       default:
         throw new Error('Unknown report type');
     }
-
-    // Style the headers with bold font and yellow background
-    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
-    for (let col = range.s.c; col <= range.e.c; col++) {
-      const headerCell = XLSX.utils.encode_cell({ r: 0, c: col });
-      if (worksheet[headerCell]) {
-        worksheet[headerCell].s = {
-          font: { bold: true },
-          fill: { fgColor: { rgb: 'FFFF00' } },
-          alignment: { horizontal: 'center', vertical: 'center' }
-        };
-      }
-    }
-
-    // Set column widths
-    const columnWidths = Object.keys(worksheet).filter(key => key.startsWith('!') === false).map(key => {
-      const cell = worksheet[key];
-      return { wch: Math.max(15, cell.v ? cell.v.toString().length : 10) };
-    });
-    worksheet['!cols'] = columnWidths;
-
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Report');
-    XLSX.writeFile(workbook, filename);
   };
 
   const handleClose = () => {

@@ -38,7 +38,7 @@ import {
   IconButton,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import * as XLSX from 'xlsx';
+// import * as XLSX from 'xlsx';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
@@ -79,66 +79,66 @@ export default function UpcomingTenantsPage() {
   
 
   // Handle export functionality
-  const handleExport = async () => {
-    if (!upcomingTenants || upcomingTenants.length === 0) {
-      alert('No records to export');
-      return;
-    }
+  // const handleExport = async () => {
+  //   if (!upcomingTenants || upcomingTenants.length === 0) {
+  //     alert('No records to export');
+  //     return;
+  //   }
 
-    try {
-      setIsExporting(true);
+  //   try {
+  //     setIsExporting(true);
       
-      // Convert upcoming tenants data to Excel format
-      const excelData = upcomingTenants.map((tenant: any) => {
-        return {
-          'Tenant Name': tenant.tenantName,
-          'Phone Number': tenant.tenantNumber,
-          'Email': tenant.tenantEmail || '',
-          'Room Number': tenant.room.roomNo,
-          'Room Type': tenant.room.roomType,
-          'Check-in Date': formatDate(tenant.checkInDate),
-          'Monthly Rent': formatCurrency(tenant.monthlyRent),
-          'Security Deposit Total': formatCurrency(tenant.securityDepositTotal),
-          'Security Deposit Paid': formatCurrency(tenant.securityDepositPaid),
-          'Security Deposit Pending': formatCurrency(tenant.pendingSecurityAmount),
-          'Onboarding Rent Paid': formatCurrency(tenant.totalOnboardingRentPaid),
-          'Onboarding Rent Pending': formatCurrency(tenant.pendingOnboardingRentAmount),
-          'Total Pending Amount': formatCurrency(tenant.totalPendingAmount),
-          'Status': tenant.status,
-        };
-      });
+  //     // Convert upcoming tenants data to Excel format
+  //     const excelData = upcomingTenants.map((tenant: any) => {
+  //       return {
+  //         'Tenant Name': tenant.tenantName,
+  //         'Phone Number': tenant.tenantNumber,
+  //         'Email': tenant.tenantEmail || '',
+  //         'Room Number': tenant.room.roomNo,
+  //         'Room Type': tenant.room.roomType,
+  //         'Check-in Date': formatDate(tenant.checkInDate),
+  //         'Monthly Rent': formatCurrency(tenant.monthlyRent),
+  //         'Security Deposit Total': formatCurrency(tenant.securityDepositTotal),
+  //         'Security Deposit Paid': formatCurrency(tenant.securityDepositPaid),
+  //         'Security Deposit Pending': formatCurrency(tenant.pendingSecurityAmount),
+  //         'Onboarding Rent Paid': formatCurrency(tenant.totalOnboardingRentPaid),
+  //         'Onboarding Rent Pending': formatCurrency(tenant.pendingOnboardingRentAmount),
+  //         'Total Pending Amount': formatCurrency(tenant.totalPendingAmount),
+  //         'Status': tenant.status,
+  //       };
+  //     });
 
-      // Create and download Excel file
-      const worksheet = XLSX.utils.json_to_sheet(excelData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Upcoming Tenants');
+  //     // Create and download Excel file
+  //     const worksheet = XLSX.utils.json_to_sheet(excelData);
+  //     const workbook = XLSX.utils.book_new();
+  //     XLSX.utils.book_append_sheet(workbook, worksheet, 'Upcoming Tenants');
       
-      // Add summary section
-      if (summary) {
-        const summaryData = [
-          { 'Metric': 'SUMMARY', 'Value': '' },
-          { 'Metric': 'Total Tenants', 'Value': summary.totalUpcomingTenants },
-          { 'Metric': 'Total Pending Amount', 'Value': formatCurrency(summary.totalPendingAmount) },
-          { 'Metric': 'Total Security Pending', 'Value': formatCurrency(summary.totalSecurityPending) },
-          { 'Metric': 'Total Rent Pending', 'Value': formatCurrency(summary.totalRentPending) },
-        ];
+  //     // Add summary section
+  //     if (summary) {
+  //       const summaryData = [
+  //         { 'Metric': 'SUMMARY', 'Value': '' },
+  //         { 'Metric': 'Total Tenants', 'Value': summary.totalUpcomingTenants },
+  //         { 'Metric': 'Total Pending Amount', 'Value': formatCurrency(summary.totalPendingAmount) },
+  //         { 'Metric': 'Total Security Pending', 'Value': formatCurrency(summary.totalSecurityPending) },
+  //         { 'Metric': 'Total Rent Pending', 'Value': formatCurrency(summary.totalRentPending) },
+  //       ];
         
-        const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
-        XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
-      }
+  //       const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
+  //       XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
+  //     }
       
-      const fileName = `upcoming-tenants-${new Date().toISOString().split('T')[0]}.xlsx`;
-      XLSX.writeFile(workbook, fileName);
+  //     const fileName = `upcoming-tenants-${new Date().toISOString().split('T')[0]}.xlsx`;
+  //     XLSX.writeFile(workbook, fileName);
       
-      // Reset states
-      setExportDialogOpen(false);
-      setIsExporting(false);
-    } catch (error) {
-      console.error('Excel generation error:', error);
-      alert('Failed to generate Excel file');
-      setIsExporting(false);
-    }
-  };
+  //     // Reset states
+  //     setExportDialogOpen(false);
+  //     setIsExporting(false);
+  //   } catch (error) {
+  //     console.error('Excel generation error:', error);
+  //     alert('Failed to generate Excel file');
+  //     setIsExporting(false);
+  //   }
+  // };
 
   // Filter tenants based on search term and room
   const filteredTenants = useMemo(() => {
@@ -500,7 +500,7 @@ export default function UpcomingTenantsPage() {
             Cancel
           </Button>
           <Button
-            onClick={handleExport}
+            // onClick={handleExport}
             disabled={isExporting || !filteredTenants || filteredTenants.length === 0}
             variant="contained"
             startIcon={isExporting ? <CircularProgress size={16} color="inherit" /> : <DownloadIcon />}

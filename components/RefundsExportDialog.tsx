@@ -21,7 +21,6 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useRefundsExport } from '@/hooks/useRefunds';
 import { formatDate } from '@/lib/utils/formatters';
-import * as XLSX from 'xlsx';
 import { showErrorToast, showSuccessToast } from '@/lib/toast-config';
 import { toast } from 'react-toastify';
 
@@ -42,130 +41,130 @@ export default function RefundsExportDialog({
 
   const exportMutation = useRefundsExport();
 
-  const handleExport = async () => {
-    if (!startDate || !endDate) {
-      return;
-    }
+  // const handleExport = async () => {
+  //   if (!startDate || !endDate) {
+  //     return;
+  //   }
 
-    // Check if date range is more than 2 months
-    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  //   // Check if date range is more than 2 months
+  //   const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+  //   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays > 60) {
-      alert('Please select a date range of maximum 2 months (60 days)');
-      return;
-    }
+  //   if (diffDays > 60) {
+  //     alert('Please select a date range of maximum 2 months (60 days)');
+  //     return;
+  //   }
 
-    setIsExporting(true);
+  //   setIsExporting(true);
 
-    try {
-      const response = await exportMutation.mutateAsync({
-        propertyId,
-        params: {
-          processedAtFrom: startDate.toISOString().split('T')[0],
-          processedAtTo: endDate.toISOString().split('T')[0],
-        },
-      });
+  //   try {
+  //     const response = await exportMutation.mutateAsync({
+  //       propertyId,
+  //       params: {
+  //         processedAtFrom: startDate.toISOString().split('T')[0],
+  //         processedAtTo: endDate.toISOString().split('T')[0],
+  //       },
+  //     });
 
-      if (response.data && response.data.length > 0) {
-        // Prepare data for Excel export
-        const excelData = response.data.map((refund: any) => ({
-          'Tenant Name': refund.tenant.tenantName,
-          'Phone Number': refund.tenant.tenantNumber,
-          'Room Number': refund.room.roomNo,
-          'Security Deposit': refund.securityDepositPaid,
-          'Refund Amount': refund.refundAmount,
-          'Electricity Bill': refund.deductions?.electricityBill || 0,
-          'Other Deductions': refund.deductions?.otherDeductions || 0,
-          'Status': refund.status === 'processed' ? 'Processed' : 'Not Processed',
-          'Notice End Date': formatDate(refund.noticeEndsOn),
-          'Processed Date': refund.processedAt ? formatDate(refund.processedAt) : '-',
-          'Transaction ID': refund.processingProof?.transactionId || '-',
-          'Payment Method': refund.processingProof?.paymentMethod || '-',
-          'Receipt URL': refund.processingProof?.receiptUrl || '-',
-          'Notes': refund.processingProof?.notes || '-',
-          'Electricity Units': refund.deductions?.electricityUnits || 0,
-          'Processed By': refund.processedBy?.name || '-',
-          'Created Date': formatDate(refund.createdAt),
-        }));
+  //     if (response.data && response.data.length > 0) {
+  //       // Prepare data for Excel export
+  //       const excelData = response.data.map((refund: any) => ({
+  //         'Tenant Name': refund.tenant.tenantName,
+  //         'Phone Number': refund.tenant.tenantNumber,
+  //         'Room Number': refund.room.roomNo,
+  //         'Security Deposit': refund.securityDepositPaid,
+  //         'Refund Amount': refund.refundAmount,
+  //         'Electricity Bill': refund.deductions?.electricityBill || 0,
+  //         'Other Deductions': refund.deductions?.otherDeductions || 0,
+  //         'Status': refund.status === 'processed' ? 'Processed' : 'Not Processed',
+  //         'Notice End Date': formatDate(refund.noticeEndsOn),
+  //         'Processed Date': refund.processedAt ? formatDate(refund.processedAt) : '-',
+  //         'Transaction ID': refund.processingProof?.transactionId || '-',
+  //         'Payment Method': refund.processingProof?.paymentMethod || '-',
+  //         'Receipt URL': refund.processingProof?.receiptUrl || '-',
+  //         'Notes': refund.processingProof?.notes || '-',
+  //         'Electricity Units': refund.deductions?.electricityUnits || 0,
+  //         'Processed By': refund.processedBy?.name || '-',
+  //         'Created Date': formatDate(refund.createdAt),
+  //       }));
 
-        // Calculate totals
-        const totalRefundAmount = response.data.reduce((sum: number, refund: any) => sum + refund.refundAmount, 0);
-        const totalSecurityDeposit = response.data.reduce((sum: number, refund: any) => sum + refund.securityDepositPaid, 0);
-        const totalDeductions = response.data.reduce((sum: number, refund: any) => 
-          sum + (refund.deductions?.electricityBill || 0) + (refund.deductions?.otherDeductions || 0), 0);
+  //       // Calculate totals
+  //       const totalRefundAmount = response.data.reduce((sum: number, refund: any) => sum + refund.refundAmount, 0);
+  //       const totalSecurityDeposit = response.data.reduce((sum: number, refund: any) => sum + refund.securityDepositPaid, 0);
+  //       const totalDeductions = response.data.reduce((sum: number, refund: any) => 
+  //         sum + (refund.deductions?.electricityBill || 0) + (refund.deductions?.otherDeductions || 0), 0);
 
-        // Add summary row
-        excelData.push({} as any);
-        excelData.push({
-          'Tenant Name': 'SUMMARY',
-          'Phone Number': '',
-          'Room Number': '',
-          'Security Deposit': totalSecurityDeposit,
-          'Refund Amount': totalRefundAmount,
-          'Electricity Bill': totalDeductions,
-          'Other Deductions': 0,
-          'Status': '',
-          'Notice End Date': '',
-          'Processed Date': '',
-          'Transaction ID': '',
-          'Payment Method': '',
-          'Receipt URL': '',
-          'Notes': '',
-          'Electricity Units': 0,
-          'Processed By': '',
-          'Created Date': '',
-        });
+  //       // Add summary row
+  //       excelData.push({} as any);
+  //       excelData.push({
+  //         'Tenant Name': 'SUMMARY',
+  //         'Phone Number': '',
+  //         'Room Number': '',
+  //         'Security Deposit': totalSecurityDeposit,
+  //         'Refund Amount': totalRefundAmount,
+  //         'Electricity Bill': totalDeductions,
+  //         'Other Deductions': 0,
+  //         'Status': '',
+  //         'Notice End Date': '',
+  //         'Processed Date': '',
+  //         'Transaction ID': '',
+  //         'Payment Method': '',
+  //         'Receipt URL': '',
+  //         'Notes': '',
+  //         'Electricity Units': 0,
+  //         'Processed By': '',
+  //         'Created Date': '',
+  //       });
 
-        // Create workbook and worksheet
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet(excelData);
+  //       // Create workbook and worksheet
+  //       const wb = XLSX.utils.book_new();
+  //       const ws = XLSX.utils.json_to_sheet(excelData);
 
-        // Set column widths
-        const columnWidths = [
-          { wch: 15 }, // Tenant Name
-          { wch: 15 }, // Phone Number
-          { wch: 12 }, // Room Number
-          { wch: 15 }, // Security Deposit
-          { wch: 15 }, // Refund Amount
-          { wch: 15 }, // Electricity Bill
-          { wch: 15 }, // Other Deductions
-          { wch: 12 }, // Status
-          { wch: 15 }, // Notice End Date
-          { wch: 15 }, // Processed Date
-          { wch: 20 }, // Transaction ID
-          { wch: 15 }, // Payment Method
-          { wch: 50 }, // Receipt URL
-          { wch: 30 }, // Notes
-          { wch: 15 }, // Electricity Units
-          { wch: 15 }, // Processed By
-          { wch: 15 }, // Created Date
-        ];
-        ws['!cols'] = columnWidths;
+  //       // Set column widths
+  //       const columnWidths = [
+  //         { wch: 15 }, // Tenant Name
+  //         { wch: 15 }, // Phone Number
+  //         { wch: 12 }, // Room Number
+  //         { wch: 15 }, // Security Deposit
+  //         { wch: 15 }, // Refund Amount
+  //         { wch: 15 }, // Electricity Bill
+  //         { wch: 15 }, // Other Deductions
+  //         { wch: 12 }, // Status
+  //         { wch: 15 }, // Notice End Date
+  //         { wch: 15 }, // Processed Date
+  //         { wch: 20 }, // Transaction ID
+  //         { wch: 15 }, // Payment Method
+  //         { wch: 50 }, // Receipt URL
+  //         { wch: 30 }, // Notes
+  //         { wch: 15 }, // Electricity Units
+  //         { wch: 15 }, // Processed By
+  //         { wch: 15 }, // Created Date
+  //       ];
+  //       ws['!cols'] = columnWidths;
 
-        XLSX.utils.book_append_sheet(wb, ws, 'Refunds Export');
+  //       XLSX.utils.book_append_sheet(wb, ws, 'Refunds Export');
 
-        // Generate filename
-        const startDateStr = startDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
-        const endDateStr = endDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
-        const filename = `refunds_export_${startDateStr}_to_${endDateStr}.xlsx`;
+  //       // Generate filename
+  //       const startDateStr = startDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+  //       const endDateStr = endDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+  //       const filename = `refunds_export_${startDateStr}_to_${endDateStr}.xlsx`;
 
-        // Download file
-        XLSX.writeFile(wb, filename);
+  //       // Download file
+  //       XLSX.writeFile(wb, filename);
 
-        // Show success message
-        const {message, config} = showSuccessToast(`Export completed! Total refunds: ${response.data.length}, Total amount: ₹${totalRefundAmount.toLocaleString()}`);
-        toast.success(message, config);
-      } else {
-        const {message, config} = showErrorToast('No refunds found for the selected date range');
-        toast.error(message, config);
-      }
-    } catch (error) {
-      console.error('Export failed:', error);
-    } finally {
-      setIsExporting(false);
-    }
-  };
+  //       // Show success message
+  //       const {message, config} = showSuccessToast(`Export completed! Total refunds: ${response.data.length}, Total amount: ₹${totalRefundAmount.toLocaleString()}`);
+  //       toast.success(message, config);
+  //     } else {
+  //       const {message, config} = showErrorToast('No refunds found for the selected date range');
+  //       toast.error(message, config);
+  //     }
+  //   } catch (error) {
+  //     console.error('Export failed:', error);
+  //   } finally {
+  //     setIsExporting(false);
+  //   }
+  // };
 
   const handleClose = () => {
     setStartDate(null);
@@ -272,7 +271,7 @@ export default function RefundsExportDialog({
           Cancel
         </Button>
         <Button
-          onClick={handleExport}
+          // onClick={handleExport}
           variant="contained"
           disabled={isExportDisabled}
           startIcon={isExporting ? <CircularProgress size={16} /> : <DownloadIcon />}

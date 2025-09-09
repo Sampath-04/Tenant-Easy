@@ -342,7 +342,7 @@ function TenantsContent() {
                     { value: '', label: 'All Rooms' },
                     ...(Array.isArray(roomsData?.data) ? roomsData.data.map((room: any) => ({
                       value: room._id,
-                      label: `${room.roomNo} (${room.roomType})`
+                      label: `Room ${room.roomNo} (${room.roomType})`
                     })) : [])
                   ]}
                 />
@@ -549,7 +549,7 @@ function TenantsContent() {
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2" className="font-medium text-gray-900 dark:text-white">
-                              {tenant.room.roomNo}
+                              Room {tenant.room.roomNo}
                             </Typography>
                           </TableCell>
                           <TableCell>

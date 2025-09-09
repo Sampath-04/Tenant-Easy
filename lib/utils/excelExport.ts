@@ -1,5 +1,5 @@
-import * as XLSX from 'xlsx';
-import { formatDate, formatCurrency } from './formatters';
+import ExcelJS from 'exceljs';
+import { formatDate, formatCurrency, formatDateToYYYYMMDD } from './formatters';
 
 export interface RentRecord {
   tenant: {
@@ -54,14 +54,73 @@ export interface RentSummary {
   overdueAmount?: number;
 }
 
-export const generateRentHistoryExcel = (
+export const generateRentHistoryExcel = async (
   rentRecords: RentRecord[],
   summary?: RentSummary,
   startDate?: Date | null,
   endDate?: Date | null
 ) => {
-  // Convert rent records data to Excel format
-  const excelData = rentRecords.map((record) => {
+  // Create a new workbook and worksheet
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Rent Records');
+
+  // Define columns with proper headers and widths
+  worksheet.columns = [
+    { header: 'Tenant Name', key: 'tenantName', width: 25 },
+    { header: 'Phone Number', key: 'phoneNumber', width: 20 },
+    { header: 'Room Number', key: 'roomNumber', width: 15 },
+    { header: 'Room Type', key: 'roomType', width: 18 },
+    { header: 'Start Date', key: 'startDate', width: 15 },
+    { header: 'End Date', key: 'endDate', width: 15 },
+    { header: 'Month', key: 'month', width: 18 },
+    { header: 'Rent Amount', key: 'rentAmount', width: 15 },
+    { header: 'Electricity Bill', key: 'electricityBill', width: 18 },
+    { header: 'Electricity Units', key: 'electricityUnits', width: 18 },
+    { header: 'Total Amount', key: 'totalAmount', width: 15 },
+    { header: 'Payment Status', key: 'paymentStatus', width: 18 },
+    { header: 'Due Date', key: 'dueDate', width: 15 },
+    { header: 'Total Paid Amount', key: 'totalPaidAmount', width: 20 },
+    { header: 'Remaining Amount', key: 'remainingAmount', width: 20 },
+    { header: 'Is Overdue', key: 'isOverdue', width: 15 },
+    { header: 'Days Overdue', key: 'daysOverdue', width: 15 },
+    { header: 'Last Payment Date', key: 'lastPaymentDate', width: 20 },
+    { header: 'Previous Cycle Payment Status', key: 'previousCyclePaymentStatus', width: 30 },
+    { header: 'Previous Cycle Month', key: 'previousCycleMonth', width: 25 },
+    { header: 'Has Notice', key: 'hasNotice', width: 15 },
+    { header: 'Notice Status', key: 'noticeStatus', width: 18 },
+    { header: 'Notice End Date', key: 'noticeEndDate', width: 20 },
+    { header: 'Paid To', key: 'paidTo', width: 25 },
+    { header: 'Payment Amount', key: 'paymentAmount', width: 18 },
+    { header: 'Payment Method', key: 'paymentMethod', width: 18 },
+    { header: 'Payment Date', key: 'paymentDate', width: 18 },
+    { header: 'Recorded By', key: 'recordedBy', width: 20 },
+    { header: 'Payment History', key: 'paymentHistory', width: 60 },
+  ];
+
+  // Style the header row
+  const headerRow = worksheet.getRow(1);
+  headerRow.eachCell((cell, colNumber) => {
+    cell.font = { bold: true, color: { argb: 'FF000000' }, size: 12 };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFFFF00' } // Yellow background
+    };
+    cell.alignment = { 
+      horizontal: 'center', 
+      vertical: 'middle',
+      wrapText: false, // Disable text wrapping for headers
+    };
+    cell.border = {
+      top: { style: 'thin', color: { argb: 'FF000000' } },
+      left: { style: 'thin', color: { argb: 'FF000000' } },
+      bottom: { style: 'thin', color: { argb: 'FF000000' } },
+      right: { style: 'thin', color: { argb: 'FF000000' } }
+    };
+  });
+
+  // Add data rows
+  rentRecords.forEach((record) => {
     // Process payment history
     let paymentHistoryText = '';
     let paidToText = '';
@@ -84,93 +143,423 @@ export const generateRentHistoryExcel = (
       amountText = amountValues.join('; ');
     }
 
-    return {
-      'Tenant Name': record.tenant.tenantName,
-      'Phone Number': record.tenant.tenantNumber,
-      'Room Number': record.room.roomNo,
-      'Room Type': record.room.roomType,
-      'Start Date': formatDate(record.startDate),
-      'End Date': formatDate(record.endDate),
-      'Month': record.month,
-      'Rent Amount': record.rent,
-      'Electricity Bill': record.electricityBill,
-      'Electricity Units': record.electricityUnits,
-      'Total Amount': record.totalAmount,
-      'Payment Status': record.paymentStatus,
-      'Due Date': formatDate(record.dueDate),
-      'Total Paid Amount': record.totalPaidAmount || 0,
-      'Remaining Amount': record.remainingAmount || 0,
-      'Is Overdue': record.isOverdue ? 'Yes' : 'No',
-      'Days Overdue': record.daysOverdue,
-      'Last Payment Date': record.lastPaymentDate ? formatDate(record.lastPaymentDate) : '',
-      'Previous Cycle Payment Status': record.previousCyclePaymentStatus,
-      'Previous Cycle Month': record.previousCycleMonth || '',
-      'Has Notice': record.notice ? 'Yes' : 'No',
-      'Notice Status': record.notice ? record.notice.status : '',
-      'Notice End Date': record.notice ? formatDate(record.notice.noticeEndsOn) : '',
-      'Paid To': paidToText,
-      'Payment Amount': amountText,
-      'Payment Method': record.paymentTransactions && record.paymentTransactions.length > 0 
+    const row = worksheet.addRow({
+      tenantName: record.tenant.tenantName,
+      phoneNumber: record.tenant.tenantNumber,
+      roomNumber: record.room.roomNo,
+      roomType: record.room.roomType,
+      startDate: formatDate(record.startDate),
+      endDate: formatDate(record.endDate),
+      month: record.month,
+      rentAmount: record.rent,
+      electricityBill: record.electricityBill,
+      electricityUnits: record.electricityUnits,
+      totalAmount: record.totalAmount,
+      paymentStatus: record.paymentStatus,
+      dueDate: formatDate(record.dueDate),
+      totalPaidAmount: record.totalPaidAmount || 0,
+      remainingAmount: record.remainingAmount || 0,
+      isOverdue: record.isOverdue ? 'Yes' : 'No',
+      daysOverdue: record.daysOverdue,
+      lastPaymentDate: record.lastPaymentDate ? formatDate(record.lastPaymentDate) : '',
+      previousCyclePaymentStatus: record.previousCyclePaymentStatus,
+      previousCycleMonth: record.previousCycleMonth || '',
+      hasNotice: record.notice ? 'Yes' : 'No',
+      noticeStatus: record.notice ? record.notice.status : '',
+      noticeEndDate: record.notice ? formatDate(record.notice.noticeEndsOn) : '',
+      paidTo: paidToText,
+      paymentAmount: amountText,
+      paymentMethod: record.paymentTransactions && record.paymentTransactions.length > 0 
         ? record.paymentTransactions.map(p => p.method).join('; ') 
         : '',
-      'Payment Date': record.paymentTransactions && record.paymentTransactions.length > 0 
+      paymentDate: record.paymentTransactions && record.paymentTransactions.length > 0 
         ? record.paymentTransactions.map(p => formatDate(p.paidAt)).join('; ') 
         : '',
-      'Recorded By': record.paymentTransactions && record.paymentTransactions.length > 0 
+      recordedBy: record.paymentTransactions && record.paymentTransactions.length > 0 
         ? record.paymentTransactions.map(p => p.recordedBy?.name || 'N/A').join('; ') 
         : '',
-      'Payment History (PaidTo - Amount - Proof)': paymentHistoryText,
+      paymentHistory: paymentHistoryText,
+    });
+
+    // Style data cells
+    row.eachCell((cell, colNumber) => {
+      // Special handling for payment history column (last column)
+      const isPaymentHistory = colNumber === 29; // Payment History is the 29th column
+      
+      cell.alignment = { 
+        horizontal: 'left', 
+        vertical: 'middle',
+        wrapText: false,
+      };
+      
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        left: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        right: { style: 'thin', color: { argb: 'FFCCCCCC' } }
+      };
+    });
+  });
+
+  // Add summary worksheet if provided
+  if (summary) {
+    const summaryWorksheet = workbook.addWorksheet('Summary');
+    
+    summaryWorksheet.columns = [
+      { header: 'Metric', key: 'metric', width: 20 },
+      { header: 'Value', key: 'value', width: 20 }
+    ];
+
+    // Style summary header
+    const summaryHeaderRow = summaryWorksheet.getRow(1);
+    summaryHeaderRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FF000000' }, size: 12 };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFFFFF00' }
+      };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FF000000' } },
+        left: { style: 'thin', color: { argb: 'FF000000' } },
+        bottom: { style: 'thin', color: { argb: 'FF000000' } },
+        right: { style: 'thin', color: { argb: 'FF000000' } }
     };
   });
 
-  // Create and download Excel file
-  const worksheet = XLSX.utils.json_to_sheet(excelData);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Rent Records');
-
-  // Add summary section at the end
-  if (summary) {
+    // Add summary data
     const summaryData = [
-      { 'Metric': 'SUMMARY', 'Value': '' },
-      { 'Metric': 'Total Amount', 'Value': formatCurrency(summary.totalAmount || 0) },
-      { 'Metric': 'Paid Count', 'Value': summary.paidCount || 0 },
-      { 'Metric': 'Pending Count', 'Value': summary.pendingCount || 0 },
-      { 'Metric': 'Overdue Count', 'Value': summary.overdueCount || 0 },
-      { 'Metric': 'Paid Amount', 'Value': formatCurrency(summary.paidAmount || 0) },
-      { 'Metric': 'Pending Amount', 'Value': formatCurrency(summary.pendingAmount || 0) },
-      { 'Metric': 'Overdue Amount', 'Value': formatCurrency(summary.overdueAmount || 0) },
+      { metric: 'SUMMARY', value: '' },
+      { metric: 'Total Amount', value: formatCurrency(summary.totalAmount || 0) },
+      { metric: 'Paid Count', value: summary.paidCount || 0 },
+      { metric: 'Pending Count', value: summary.pendingCount || 0 },
+      { metric: 'Overdue Count', value: summary.overdueCount || 0 },
+      { metric: 'Paid Amount', value: formatCurrency(summary.paidAmount || 0) },
+      { metric: 'Pending Amount', value: formatCurrency(summary.pendingAmount || 0) },
+      { metric: 'Overdue Amount', value: formatCurrency(summary.overdueAmount || 0) },
     ];
 
-    const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
-    XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
+    summaryData.forEach((item) => {
+      const row = summaryWorksheet.addRow(item);
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+          left: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+          bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+          right: { style: 'thin', color: { argb: 'FFCCCCCC' } }
+        };
+      });
+    });
   }
-
-  // Style the headers with bold font and yellow background
-  const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
-  for (let col = range.s.c; col <= range.e.c; col++) {
-    const headerCell = XLSX.utils.encode_cell({ r: 0, c: col });
-    if (worksheet[headerCell]) {
-      worksheet[headerCell].s = {
-        font: { bold: true },
-        fill: { fgColor: { rgb: 'FFFF00' } },
-        alignment: { horizontal: 'center', vertical: 'center' }
-      };
-    }
-  }
-
-  // Set column widths
-  const columnWidths = Object.keys(worksheet).filter(key => key.startsWith('!') === false).map(key => {
-    const cell = worksheet[key];
-    return { wch: Math.max(15, cell.v ? cell.v.toString().length : 10) };
-  });
-  worksheet['!cols'] = columnWidths;
 
   // Generate filename with current date range
-  const startDateStr = startDate ? startDate.toISOString().split('T')[0] : 'N/A';
-  const endDateStr = endDate ? endDate.toISOString().split('T')[0] : 'N/A';
-  const fileName = `rent-records-${startDateStr}-to-${endDateStr}.xlsx`;
+  const currentDate = formatDateToYYYYMMDD(new Date()); // Use existing formatter
   
-  XLSX.writeFile(workbook, fileName);
+  let fileName: string;
+  if (startDate && endDate) {
+    // Both dates are selected - use existing formatDate function
+    const startDateStr = formatDate(startDate.toISOString());
+    const endDateStr = formatDate(endDate.toISOString());
+    fileName = `rent-records-(${startDateStr} to ${endDateStr})_${currentDate}.xlsx`;
+  } else {
+    // No date range selected, use current date only
+    fileName = `rent-records-${currentDate}.xlsx`;
+  }
+  
+  // Write the file
+  await workbook.xlsx.writeBuffer().then((buffer) => {
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  });
+  
+  return fileName;
+};
+
+// Refunds Export Function
+export const generateRefundsExcel = async (
+  refundsData: any[],
+  statistics: any,
+  startDate?: Date | null,
+  endDate?: Date | null
+) => {
+  // Create a new workbook and worksheet
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Refunds Report');
+
+  // Define columns with proper headers and widths
+  worksheet.columns = [
+    { header: 'Tenant Name', key: 'tenantName', width: 25 },
+    { header: 'Phone Number', key: 'phoneNumber', width: 20 },
+    { header: 'Room Number', key: 'roomNumber', width: 15 },
+    { header: 'Security Deposit', key: 'securityDeposit', width: 18 },
+    { header: 'Refund Amount', key: 'refundAmount', width: 18 },
+    { header: 'Electricity Bill', key: 'electricityBill', width: 18 },
+    { header: 'Other Deductions', key: 'otherDeductions', width: 18 },
+    { header: 'Status', key: 'status', width: 15 },
+    { header: 'Notice End Date', key: 'noticeEndDate', width: 18 },
+    { header: 'Processed Date', key: 'processedDate', width: 18 },
+    { header: 'Transaction Ref', key: 'transactionRef', width: 20 },
+    { header: 'Payment Method', key: 'paymentMethod', width: 18 },
+    { header: 'Payment Status', key: 'paymentStatus', width: 18 },
+    { header: 'Paid At', key: 'paidAt', width: 18 },
+    { header: 'Receipt URL', key: 'receiptUrl', width: 40 },
+    { header: 'Comments', key: 'comments', width: 30 },
+    { header: 'Electricity Units', key: 'electricityUnits', width: 18 },
+    { header: 'Processed By', key: 'processedBy', width: 20 },
+    { header: 'Created Date', key: 'createdDate', width: 18 },
+  ];
+
+  // Style the header row
+  const headerRow = worksheet.getRow(1);
+  headerRow.eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: 'FF000000' }, size: 12 };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFFFF00' } // Yellow background
+    };
+    cell.alignment = { 
+      horizontal: 'center', 
+      vertical: 'middle',
+      wrapText: false
+    };
+    cell.border = {
+      top: { style: 'thin', color: { argb: 'FF000000' } },
+      left: { style: 'thin', color: { argb: 'FF000000' } },
+      bottom: { style: 'thin', color: { argb: 'FF000000' } },
+      right: { style: 'thin', color: { argb: 'FF000000' } }
+    };
+  });
+
+  // Add data rows
+  refundsData.forEach((refund) => {
+    const row = worksheet.addRow({
+      tenantName: refund.tenant.tenantName,
+      phoneNumber: refund.tenant.tenantNumber,
+      roomNumber: refund.room.roomNo,
+      securityDeposit: refund.securityDepositPaid,
+      refundAmount: refund.refundAmount,
+      electricityBill: refund.deductions?.electricityBill || 0,
+      otherDeductions: refund.deductions?.otherDeductions || 0,
+      status: refund.status === 'processed' ? 'Processed' : 'Not Processed',
+      noticeEndDate: formatDate(refund.noticeEndsOn),
+      processedDate: refund.processedAt ? formatDate(refund.processedAt) : '-',
+      transactionRef: refund.paymentTransaction?.transactionRef || '-',
+      paymentMethod: refund.paymentTransaction?.method || '-',
+      paymentStatus: refund.paymentTransaction?.status || '-',
+      paidAt: refund.paymentTransaction?.paidAt ? formatDate(refund.paymentTransaction.paidAt) : '-',
+      receiptUrl: refund.paymentTransaction?.paymentProofs?.[0] || '-',
+      comments: refund.comments || '-',
+      electricityUnits: refund.deductions?.electricityUnits || 0,
+      processedBy: refund.processedBy?.name || '-',
+      createdDate: formatDate(refund.createdAt),
+    });
+
+    // Style data cells
+    row.eachCell((cell) => {
+      cell.alignment = { 
+        horizontal: 'left', 
+        vertical: 'middle',
+        wrapText: false
+      };
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        left: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        right: { style: 'thin', color: { argb: 'FFCCCCCC' } }
+      };
+    });
+  });
+
+
+
+  // Add empty row for spacing
+  worksheet.addRow([]);
+
+  // Add statistics section as a separate table
+  const statisticsStartRow = worksheet.rowCount + 1;
+  
+  // Add statistics header
+  const statisticsHeaderRow = worksheet.addRow(['STATISTICS', '']);
+  statisticsHeaderRow.eachCell((cell) => {
+    cell.font = { bold: true, size: 14 };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF4472C4' } // Blue background
+    };
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    cell.border = {
+      top: { style: 'thin', color: { argb: 'FF000000' } },
+      left: { style: 'thin', color: { argb: 'FF000000' } },
+      bottom: { style: 'thin', color: { argb: 'FF000000' } },
+      right: { style: 'thin', color: { argb: 'FF000000' } }
+    };
+  });
+
+  // Add statistics data rows
+  const statisticsData = [
+    { metric: 'Total Refunds', value: statistics?.totalRefunds || 0 },
+    { metric: 'Total Amount', value: statistics?.totalAmount || 0 },
+    { metric: 'Processed Count', value: statistics?.processedCount || 0 },
+    { metric: 'Pending Count', value: statistics?.pendingCount || 0 },
+    { metric: 'Processed Amount', value: statistics?.processedAmount || 0 },
+    { metric: 'Pending Amount', value: statistics?.pendingAmount || 0 },
+  ];
+
+  statisticsData.forEach((item) => {
+    const row = worksheet.addRow([item.metric, item.value]);
+    
+    // Style statistics data rows
+    row.eachCell((cell, colNumber) => {
+      cell.font = { bold: colNumber === 1 }; // Bold only for metric names
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: colNumber === 1 ? 'FFE6F3FF' : 'FFFFFFFF' } // Light blue for metrics, white for values
+      };
+      cell.alignment = { 
+        horizontal: colNumber === 1 ? 'left' : 'right', 
+        vertical: 'middle' 
+      };
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        left: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        right: { style: 'thin', color: { argb: 'FFCCCCCC' } }
+      };
+    });
+  });
+
+  // Set column widths for statistics table
+  worksheet.getColumn(1).width = 20; // Metric column
+  worksheet.getColumn(2).width = 15; // Value column
+
+  // Generate filename with current date range
+  const currentDate = formatDateToYYYYMMDD(new Date());
+  
+  let fileName: string;
+  if (startDate && endDate) {
+    const startDateStr = formatDate(startDate.toISOString());
+    const endDateStr = formatDate(endDate.toISOString());
+    fileName = `refunds-report-(${startDateStr} to ${endDateStr})_${currentDate}.xlsx`;
+  } else {
+    fileName = `refunds-report-${currentDate}.xlsx`;
+  }
+  
+  // Write the file
+  await workbook.xlsx.writeBuffer().then((buffer) => {
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  });
+  
+  return fileName;
+};
+
+// Profit-Loss Export Function
+export const generateProfitLossExcel = async (
+  profitLossData: any[]
+) => {
+  // Create a new workbook and worksheet
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Profit-Loss Report');
+
+  // Define columns with proper headers and widths
+  worksheet.columns = [
+    { header: 'Month', key: 'month', width: 15 },
+    { header: 'Year', key: 'year', width: 12 },
+    { header: 'Total Income', key: 'totalIncome', width: 18 },
+    { header: 'Rent Income', key: 'rentIncome', width: 15 },
+    { header: 'Other Income', key: 'otherIncome', width: 15 },
+    { header: 'Total Expenses', key: 'totalExpenses', width: 18 },
+    { header: 'Gross Profit', key: 'grossProfit', width: 18 },
+    { header: 'Net Profit', key: 'netProfit', width: 18 },
+    { header: 'Profit Margin (%)', key: 'profitMargin', width: 20 },
+    { header: 'Expense Ratio (%)', key: 'expenseRatio', width: 20 },
+    { header: 'Status', key: 'status', width: 15 },
+    { header: 'Calculated At', key: 'calculatedAt', width: 18 },
+  ];
+
+  // Style the header row
+  const headerRow = worksheet.getRow(1);
+  headerRow.eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: 'FF000000' }, size: 12 };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFFFF00' } // Yellow background
+    };
+    cell.alignment = { 
+      horizontal: 'center', 
+      vertical: 'middle',
+      wrapText: false
+    };
+    cell.border = {
+      top: { style: 'thin', color: { argb: 'FF000000' } },
+      left: { style: 'thin', color: { argb: 'FF000000' } },
+      bottom: { style: 'thin', color: { argb: 'FF000000' } },
+      right: { style: 'thin', color: { argb: 'FF000000' } }
+    };
+  });
+
+  // Add data rows
+  profitLossData.forEach((record) => {
+    const row = worksheet.addRow({
+      month: record.month,
+      year: record.year,
+      totalIncome: record.income.totalAmount,
+      rentIncome: record.income.categoryBreakdown.rent,
+      otherIncome: record.income.categoryBreakdown.other,
+      totalExpenses: record.expenses.totalAmount,
+      grossProfit: record.financialSummary.grossProfit,
+      netProfit: record.financialSummary.netProfit,
+      profitMargin: record.financialSummary.profitMargin,
+      expenseRatio: record.financialSummary.expenseRatio,
+      status: record.status,
+      calculatedAt: formatDate(record.calculatedAt),
+    });
+
+    // Style data cells
+    row.eachCell((cell) => {
+      cell.alignment = { 
+        horizontal: 'left', 
+        vertical: 'middle',
+        wrapText: false
+      };
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        left: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        right: { style: 'thin', color: { argb: 'FFCCCCCC' } }
+      };
+    });
+  });
+
+  // Generate filename with current date
+  const currentDate = formatDateToYYYYMMDD(new Date());
+  const fileName = `profit-loss-report-${currentDate}.xlsx`;
+  
+  // Write the file
+  await workbook.xlsx.writeBuffer().then((buffer) => {
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  });
   
   return fileName;
 };

@@ -159,8 +159,6 @@ Thank you!`;
             otherDeduction: data.otherDeduction,
         } as CompleteNoticeData;
 
-        console.log("payload",payload);
-
         try {
             // Call the completeNotice API
             await completeNoticeMutation.mutateAsync(payload);

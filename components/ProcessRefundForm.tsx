@@ -286,7 +286,7 @@ export default function ProcessRefundForm({
                 variant="outlined"
               />
 
-                             {/* Receipt Upload */}
+              {/* Receipt Upload */}
                <div>
                  <Typography variant="subtitle2" className="font-medium mb-2 text-gray-900 dark:text-white">
                    Receipt Upload (Optional)

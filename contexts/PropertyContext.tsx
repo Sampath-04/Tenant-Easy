@@ -9,6 +9,7 @@ export interface Property {
   id: string;
   name: string;
   address: string;
+  profile: string;
   totalRooms: number;
   occupiedRooms: number;
   totalTenants: number;
@@ -33,10 +34,11 @@ interface PropertyContextType {
 const PropertyContext = createContext<PropertyContextType | undefined>(undefined);
 
 // Helper function to convert PropertyData to Property using real API data
-const convertToProperty = (propertyData: PropertyData): Property => ({
+const convertToProperty = (propertyData: PropertyData, profileId: string): Property => ({
   id: propertyData._id,
   name: propertyData.propertyName,
   address: propertyData.propertyAddress,
+  profile: profileId,
   // Use actual data from API summary
   totalRooms: propertyData.summary.totalRooms,
   occupiedRooms: propertyData.summary.occupiedRooms,
@@ -71,7 +73,9 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
       const propertiesData = firstProfile.properties.filter((p: any) => p.isActive);
       
       // Convert to Property format
-      const convertedProperties = propertiesData.map(convertToProperty);
+      const convertedProperties = propertiesData.map((propertyData: PropertyData) => 
+        convertToProperty(propertyData, firstProfile._id)
+      );
       setProperties(convertedProperties);
 
       // Set initial property from localStorage or first property

@@ -7,6 +7,12 @@ export interface Refund {
     tenantName: string;
     tenantNumber: string;
     tenantEmail: string;
+    securityDepositTotal: number;
+    securityDepositPaid: number;
+    remainingSecurityDeposit: number | null;
+    isSecurityDepositFullyPaid: boolean;
+    isSecurityDepositPartiallyPaid: boolean;
+    id: string;
   };
   room: {
     _id: string;
@@ -39,6 +45,27 @@ export interface Refund {
   };
   createdAt: string;
   updatedAt: string;
+  __v: number;
+  paymentTransaction?: {
+    _id: string;
+    amount: number;
+    status: string;
+    method: string;
+    transactionRef: string;
+    paidAt: string;
+    paymentProofs: string[];
+    isSuccessful: boolean;
+    isPending: boolean;
+    id: string;
+  };
+  processedAt?: string;
+  processedBy?: {
+    _id: string;
+    name: string;
+    email: string;
+    id: string;
+  };
+  updatedBy: string;
 }
 
 export interface RefundsResponse {
@@ -52,6 +79,15 @@ export interface RefundsResponse {
     hasPrev: boolean;
   };
   data: Refund[];
+  statistics: {
+    _id: string | null;
+    totalRefunds: number;
+    totalAmount: number;
+    processedCount: number;
+    pendingCount: number;
+    processedAmount: number;
+    pendingAmount: number;
+  };
 }
 
 export interface ProcessRefundData {
@@ -96,7 +132,7 @@ export const getRefundsForExport = async (propertyId: string, params: {
     queryParams.append('processedAtTo', params.processedAtTo);
   }
 
-  const response = await apiClient.get(`/refunds/property/${propertyId}?${queryParams.toString()}`);
+  const response = await apiClient.get(`/refunds/property/${propertyId}?includeStatistics=true&${queryParams.toString()}`);
   return response as RefundsResponse;
 };
 

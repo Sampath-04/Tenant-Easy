@@ -232,6 +232,7 @@ export async function markRentAsPaid(
     amount: number;
     paidDate: string;
     paymentProofs?: File[];
+    paymentMethod: string;
     paidTo: string;
     comments?: string;
   }
@@ -240,6 +241,7 @@ export async function markRentAsPaid(
   
   formData.append('amount', data.amount.toString());
   formData.append('paidDate', data.paidDate);
+  formData.append('paymentMethod', data.paymentMethod);
   formData.append('paidTo', data.paidTo);
   
   if (data.comments) {

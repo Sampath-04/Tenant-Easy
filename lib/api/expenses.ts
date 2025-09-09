@@ -4,8 +4,10 @@ export interface CreateExpenseData {
   propertyId: string;
   title: string;
   amount: number;
-  category: string;
+  category: string; // This will be the category object ID
+  categoryName: string; // This will be the category name
   subcategory: string;
+  paymentMethod: string;
   expenseDate: string;
 }
 
@@ -13,10 +15,9 @@ export interface UpdateExpenseData {
   title: string;
   description?: string;
   amount: number;
-  category: string;
+  category: string; // category ID for update
   subcategory: string;
   expenseDate: string;
-  paymentStatus?: string;
   taxAmount?: number;
   isRecurring?: boolean;
   recurrenceFrequency?: string;
@@ -26,33 +27,40 @@ export interface Expense {
   _id: string;
   title: string;
   description?: string;
-  category: string;
+  category: {
+    _id: string;
+    name: string;
+  } | {}; // Can be empty object for legacy data
   subcategory: string;
   amount: number;
   currency: string;
-  taxAmount: number;
-  totalAmount: number;
+  taxAmount?: number;
+  totalAmount?: number;
   paymentMethod: string;
-  paymentStatus: string;
-  paidAmount: number;
+  paidAmount?: number;
   expenseDate: string;
   isRecurring: boolean;
   recurrenceFrequency?: string;
-  status: string;
-  isApproved: boolean;
+  status?: string;
+  isApproved?: boolean;
   recordedBy: {
     _id: string;
     name: string;
     email: string;
     role: string;
   };
-  affectsProfitLoss: boolean;
-  expenseType: string;
-  receipts: any[];
+  affectsProfitLoss?: boolean;
+  expenseType?: string;
+  receipts?: any[];
   createdAt: string;
   updatedAt: string;
-  approvedBy: any;
+  approvedBy?: any;
   nextDueDate?: string;
+  property: {
+    _id: string;
+    propertyName: string;
+    propertyAddress: string;
+  };
 }
 
 export interface ExpenseFilters {
@@ -60,7 +68,6 @@ export interface ExpenseFilters {
   subcategory?: string;
   startDate?: string;
   endDate?: string;
-  paymentStatus?: string;
   minAmount?: number;
   maxAmount?: number;
   isRecurring?: boolean;
@@ -84,6 +91,7 @@ export interface ExpensesResponse {
 }
 
 export const createExpense = async (data: CreateExpenseData): Promise<Expense> => {
+
   return await apiClient.post('/expenses', data);
 };
 
@@ -112,6 +120,7 @@ export const getExpense = async (id: string): Promise<Expense> => {
 };
 
 export const updateExpense = async (id: string, data: UpdateExpenseData): Promise<Expense> => {
+  console.log('Updating expense with data:', data);
   return await apiClient.put(`/expenses/${id}`, data);
 };
 

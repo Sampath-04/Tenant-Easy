@@ -145,7 +145,7 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
                 <RoomIcon className="text-gray-500 dark:text-gray-400 mr-3 text-3xl" />
                 <div>
                   <Typography variant="h6" className="font-bold text-gray-900 dark:text-white">
-                    {room.roomNo}
+                    Room {room.roomNo}
                   </Typography>
                   <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                     {room.roomType.charAt(0).toUpperCase() + room.roomType.slice(1)} Room

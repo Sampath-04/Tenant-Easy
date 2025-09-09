@@ -10,25 +10,48 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   AreaChart, Area
 } from 'recharts';
+import { formatCategory } from '@/lib/utils/formatters';
+import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 
-const COLORS = {
-  // Expense categories
-  propertyFacility: '#8b5cf6',
-  utilities: '#06b6d4',
-  foodKitchen: '#f97316',
-  staffSalaries: '#ec4899',
-  miscellaneous: '#6b7280',
+// Dynamic color palette with highly distinct colors
+const COLOR_PALETTE = [
+  '#8b5cf6', // Purple
+  '#06b6d4', // Cyan
+  '#f97316', // Orange
+  '#ec4899', // Pink
+  '#10b981', // Green
+  '#ef4444', // Red
+  '#f59e0b', // Amber
+  '#3b82f6', // Blue
+  '#84cc16', // Lime
+  '#6b7280', // Gray
+  '#a855f7', // Violet
+  '#14b8a6', // Teal
+  '#f43f5e', // Rose
+  '#eab308', // Yellow
+  '#8b5cf6', // Purple (repeat)
+  '#06b6d4', // Cyan (repeat)
+  '#f97316', // Orange (repeat)
+  '#ec4899', // Pink (repeat)
+  '#10b981', // Green (repeat)
+  '#ef4444'  // Red (repeat)
+];
+
+// Function to generate consistent color for a category
+const getCategoryColor = (categoryName: string): string => {
+  // Create a more robust hash from the category name
+  let hash = 0;
+  const str = categoryName.toLowerCase();
   
-  // Income categories
-  rent: '#10b981',
-  securityDeposits: '#3b82f6',
-  other: '#f59e0b',
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
   
-  // Payment methods
-  cash: '#84cc16',
-  bankTransfer: '#06b6d4',
-  online: '#8b5cf6',
-  upi: '#ec4899'
+  // Use absolute value and modulo to get index
+  const index = Math.abs(hash) % COLOR_PALETTE.length;
+  return COLOR_PALETTE[index];
 };
 
 const formatCurrency = (amount: number) => {
@@ -96,19 +119,12 @@ export default function ProfitLossBreakdownPage() {
   const expenseCategoryData = useMemo(() => {
     if (!filteredData.length) return [];
     
-    const categoryTotals = {
-      propertyFacility: 0,
-      utilities: 0,
-      foodKitchen: 0,
-      staffSalaries: 0,
-      miscellaneous: 0
-    };
+    const categoryTotals: Record<string, number> = {};
 
     filteredData.forEach(record => {
-      if (record.expenses?.categoryBreakdown) {
-        Object.keys(categoryTotals).forEach(category => {
-          categoryTotals[category as keyof typeof categoryTotals] += 
-            record.expenses.categoryBreakdown[category as keyof typeof categoryTotals] || 0;
+      if (record.expense?.categoryBreakdown) {
+        Object.entries(record.expense.categoryBreakdown).forEach(([category, amount]) => {
+          categoryTotals[category] = (categoryTotals[category] || 0) + (amount || 0);
         });
       }
     });
@@ -116,7 +132,7 @@ export default function ProfitLossBreakdownPage() {
     return Object.entries(categoryTotals)
       .filter(([_, value]) => value > 0)
       .map(([category, value]) => ({
-        name: category.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()),
+        name: category.replace(/_/g, ''),
         value,
         category
       }));
@@ -128,11 +144,10 @@ export default function ProfitLossBreakdownPage() {
     
     const categoryTotals = {
       rent: 0,
-      securityDeposits: 0,
       other: 0
     };
 
-         filteredData.forEach(record => {
+     filteredData.forEach(record => {
        if (record.income?.categoryBreakdown) {
          Object.keys(categoryTotals).forEach(category => {
            categoryTotals[category as keyof typeof categoryTotals] += 
@@ -144,7 +159,7 @@ export default function ProfitLossBreakdownPage() {
     return Object.entries(categoryTotals)
       .filter(([_, value]) => value > 0)
       .map(([category, value]) => ({
-        name: category.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()),
+        name: category.replace(/_/g, ''),
         value,
         category
       }));
@@ -196,12 +211,12 @@ export default function ProfitLossBreakdownPage() {
       }
       
       // For expenses, we'll use the total amount for the month
-      if (record.expenses?.totalAmount) {
+      if (record.expense?.totalAmount) {
         const date = record.month + '-01'; // Use first day of month for expenses
         if (!dailyData[date]) {
           dailyData[date] = { income: 0, expenses: 0, date };
         }
-        dailyData[date].expenses += record.expenses.totalAmount;
+        dailyData[date].expenses += record.expense.totalAmount;
       }
     });
 
@@ -243,7 +258,7 @@ export default function ProfitLossBreakdownPage() {
           </div>
           
             {/* Filters and Navigation */}
-           <div className="flex items-center space-x-3 mt-4 sm:mt-0">
+           <div className="flex items-center gap-4 mt-4 sm:mt-0">
              <button
                onClick={() => router.push('/dashboard/profit-loss')}
                className="px-4 py-2 bg-slate-100 cursor-pointer dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-150 flex items-center space-x-2"
@@ -254,27 +269,33 @@ export default function ProfitLossBreakdownPage() {
                <span>Back to Overview</span>
              </button>
              
-             <select
-               value={selectedYear}
-               onChange={(e) => setSelectedYear(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
-               className="px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-             >
-               <option value="all">All Years</option>
-               {availableYears.map(year => (
-                 <option key={year} value={year}>{year}</option>
-               ))}
-             </select>
+             <FormControl size="small" sx={{ minWidth: 120 }}>
+               <InputLabel>Year</InputLabel>
+               <Select
+                 value={selectedYear === 'all' ? 'all' : selectedYear.toString()}
+                 onChange={(e) => setSelectedYear(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
+                 label="Year"
+               >
+                 <MenuItem value="all">All Years</MenuItem>
+                 {availableYears.map(year => (
+                   <MenuItem key={year} value={year.toString()}>{year}</MenuItem>
+                 ))}
+               </Select>
+             </FormControl>
              
-             <select
-               value={selectedMonth}
-               onChange={(e) => setSelectedMonth(e.target.value)}
-               className="px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-             >
-               <option value="all">All Months</option>
-               {availableMonths.map(month => (
-                 <option key={month} value={month}>{formatMonth(month)}</option>
-               ))}
-             </select>
+             <FormControl size="small" sx={{ minWidth: 140 }}>
+               <InputLabel>Month</InputLabel>
+               <Select
+                 value={selectedMonth}
+                 onChange={(e) => setSelectedMonth(e.target.value)}
+                 label="Month"
+               >
+                 <MenuItem value="all">All Months</MenuItem>
+                 {availableMonths.map(month => (
+                   <MenuItem key={month} value={month}>{formatMonth(month)}</MenuItem>
+                 ))}
+               </Select>
+             </FormControl>
            </div>
         </div>
 
@@ -324,7 +345,7 @@ export default function ProfitLossBreakdownPage() {
                   <div>
                     <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Expenses</p>
                     <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                      {formatCurrency(filteredData.reduce((sum, record) => sum + (record.expenses?.totalAmount || 0), 0))}
+                      {formatCurrency(filteredData.reduce((sum, record) => sum + (record.expense?.totalAmount || 0), 0))}
                     </p>
                   </div>
                   <div className="p-3 bg-red-100 dark:bg-red-900/20 rounded-full">
@@ -339,12 +360,12 @@ export default function ProfitLossBreakdownPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Net Profit</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                    <p className={`text-2xl font-bold ${filteredData.reduce((sum, record) => sum + (record.financialSummary?.netProfit || 0), 0) >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>
                       {formatCurrency(filteredData.reduce((sum, record) => sum + (record.financialSummary?.netProfit || 0), 0))}
                     </p>
                   </div>
-                  <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-full">
-                    <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className={`p-3 rounded-full ${filteredData.reduce((sum, record) => sum + (record.financialSummary?.netProfit || 0), 0) >= 0 ? 'bg-blue-100 dark:bg-blue-900/20' : 'bg-orange-100 dark:bg-orange-900/20'}`}>
+                    <svg className={`w-6 h-6 ${filteredData.reduce((sum, record) => sum + (record.financialSummary?.netProfit || 0), 0) >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
                   </div>
@@ -392,7 +413,7 @@ export default function ProfitLossBreakdownPage() {
                              dataKey="value"
                            >
                             {expenseCategoryData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[entry.category as keyof typeof COLORS] || '#8884d8'} />
+                              <Cell key={`cell-${index}`} fill={getCategoryColor(entry.category)} />
                             ))}
                           </Pie>
                           <Tooltip formatter={(value: number) => [formatCurrency(value), 'Amount']} />
@@ -401,16 +422,16 @@ export default function ProfitLossBreakdownPage() {
                     </div>
 
                     {/* Category Labels */}
-                    <div className="flex-1 space-y-3">
+                    <div className="flex-1 space-y-3 overflow-y-auto h-[185px]">
                     {expenseCategoryData.map((entry, index) => (
                       <div key={entry.category} className="flex items-center gap-3">
                         <div 
                           className="w-4 h-4 rounded-full" 
-                          style={{ backgroundColor: COLORS[entry.category as keyof typeof COLORS] || '#8884d8' }}
+                          style={{ backgroundColor: getCategoryColor(entry.category) }}
                         />
                         <div className="flex-1">
                           <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                            {entry.category.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                            {formatCategory(entry.category)}
                           </div>
                           <div className="text-xs text-slate-500 dark:text-slate-400">
                             {formatCurrency(entry.value)} ({((entry.value / expenseCategoryData.reduce((sum, item) => sum + item.value, 0)) * 100).toFixed(1)}%)
@@ -453,7 +474,7 @@ export default function ProfitLossBreakdownPage() {
                              dataKey="value"
                            >
                             {incomeCategoryData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[entry.category as keyof typeof COLORS] || '#8884d8'} />
+                              <Cell key={`cell-${index}`} fill={getCategoryColor(entry.category)} />
                             ))}
                           </Pie>
                           <Tooltip formatter={(value: number) => [formatCurrency(value), 'Amount']} />
@@ -466,7 +487,7 @@ export default function ProfitLossBreakdownPage() {
                         <div key={index} className="flex items-center gap-3">
                           <div 
                             className="w-4 h-4 rounded-full" 
-                            style={{ backgroundColor: COLORS[entry.category as keyof typeof COLORS] || '#8884d8' }}
+                            style={{ backgroundColor: getCategoryColor(entry.category) }}
                           />
                           <div>
                             <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -534,8 +555,8 @@ export default function ProfitLossBreakdownPage() {
                         labelFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                       />
                       <Legend />
-                      <Area type="monotone" dataKey="income" stackId="1" stroke={COLORS.rent} fill={COLORS.rent} fillOpacity={0.6} name="Income" />
-                      <Area type="monotone" dataKey="expenses" stackId="1" stroke={COLORS.staffSalaries} fill={COLORS.staffSalaries} fillOpacity={0.6} name="Expenses" />
+                      <Area type="monotone" dataKey="income" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.6} name="Income" />
+                      <Area type="monotone" dataKey="expenses" stackId="1" stroke="#ef4444" fill="#ef4444" fillOpacity={0.6} name="Expenses" />
                     </AreaChart>
                   </ResponsiveContainer>
                 ) : (

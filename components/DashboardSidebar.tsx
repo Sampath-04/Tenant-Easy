@@ -83,6 +83,12 @@ const menuItems: MenuItem[] = [
     href: '/dashboard/reports',
   },
   {
+    id: 'profit-loss',
+    label: 'Profit Loss',
+    icon: <PieChartIcon />,
+    href: '/dashboard/profit-loss',
+  },
+  {
     id: 'payment-requests',
     label: 'Payment Requests',
     icon: <RequestPageIcon />,
@@ -123,12 +129,6 @@ const menuItems: MenuItem[] = [
         label: 'Expenses List',
         icon: <ReceiptIcon />,
         href: '/dashboard/expenses/list',
-      },
-      {
-        id: 'profit-loss',
-        label: 'Profit Loss',
-        icon: <PieChartIcon />,
-        href: '/dashboard/profit-loss',
       },
     ],
   },
