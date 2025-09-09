@@ -97,8 +97,29 @@ export interface ProcessRefundData {
   notes?: string;
 }
 
-export const getRefundsForProperty = async (propertyId: string): Promise<RefundsResponse> => {
-  const response = await apiClient.get(`/refunds/property/${propertyId}`);
+export const getRefundsForProperty = async (propertyId: string, filters: {
+  search?: string;
+  status?: string;
+  processedAtFrom?: string;
+  processedAtTo?: string;
+} = {}): Promise<RefundsResponse> => {
+  const queryParams = new URLSearchParams();
+  queryParams.append('includeStatistics', 'true');
+  
+  if (filters.search) {
+    queryParams.append('search', filters.search);
+  }
+  if (filters.status) {
+    queryParams.append('status', filters.status);
+  }
+  if (filters.processedAtFrom) {
+    queryParams.append('processedAtFrom', filters.processedAtFrom);
+  }
+  if (filters.processedAtTo) {
+    queryParams.append('processedAtTo', filters.processedAtTo);
+  }
+
+  const response = await apiClient.get(`/refunds/property/${propertyId}?${queryParams.toString()}`);
   return response as RefundsResponse;
 };
 

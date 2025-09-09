@@ -27,7 +27,7 @@ export default function ExpensesListPage() {
 
   // Fetch categories from backend
   const { data: categoriesData } = useCategories(selectedProperty?.profile || '');
-
+  
   const [filters, setFilters] = useState<ExpenseFilters>({
     page: 1,
     limit: 10,
@@ -100,13 +100,13 @@ export default function ExpensesListPage() {
   const handleAmountRangeChange = (field: 'minAmount' | 'maxAmount', value: string) => {
     const newAmountRange = { ...amountRange, [field]: value };
     setAmountRange(newAmountRange);
-
+    
     if (newAmountRange.minAmount) {
       handleFilterChange('minAmount', parseFloat(newAmountRange.minAmount));
     } else {
       handleFilterChange('minAmount', undefined);
     }
-
+    
     if (newAmountRange.maxAmount) {
       handleFilterChange('maxAmount', parseFloat(newAmountRange.maxAmount));
     } else {
@@ -199,7 +199,7 @@ export default function ExpensesListPage() {
 
   const handleEditInputChange = (field: string, value: any) => {
     setEditFormData(prev => ({ ...prev, [field]: value }));
-
+    
     // Clear error when field is updated
     if (editErrors[field]) {
       setEditErrors(prev => ({ ...prev, [field]: '' }));
@@ -236,7 +236,7 @@ export default function ExpensesListPage() {
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     if (!validateEditForm() || !editingExpense) {
       return;
     }
@@ -246,7 +246,7 @@ export default function ExpensesListPage() {
         id: editingExpense.id,
         data: editFormData
       });
-
+      
       handleEditCancel();
     } catch (error) {
       console.error('Error updating expense:', error);
@@ -290,7 +290,7 @@ export default function ExpensesListPage() {
   if (!selectedProperty) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-        <AppHeader
+        <AppHeader 
           title="Expenses"
           subtitle="Select a property to view expenses"
         />
@@ -310,12 +310,12 @@ export default function ExpensesListPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <AppHeader
+      <AppHeader 
         title="Property Expenses"
         subtitle={`Managing expenses for ${selectedProperty.name}`}
       />
-
-      <div>
+      
+          <div>
         <div className='px-6 pt-6 flex flex-row justify-between items-center'>
           <BreadCrumbs items={breadcrumbs} />
           <div className="flex items-center gap-2">
@@ -329,7 +329,7 @@ export default function ExpensesListPage() {
                 </IconButton>
               </Tooltip>
             )}
-            <button 
+            <button
               onClick={() => router.push('/dashboard/expenses')}
               className="text-sm border border-gray-300 dark:border-gray-700 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-[30px] cursor-pointer font-medium transition-colors flex items-center space-x-1 w-fit"
             >
@@ -341,7 +341,7 @@ export default function ExpensesListPage() {
 
         {/* Main Content */}
         <main className="mx-auto px-4 md:px-6 pt-4">
-          {/* Filters Section */}
+        {/* Filters Section */}
           <div className={`overflow-hidden transition-all duration-300 ${
             showFilters ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
           }`}>
@@ -359,18 +359,18 @@ export default function ExpensesListPage() {
                   <span className="hidden md:block">Clear All Filters</span>
                   <span className="md:hidden">Clear Filters</span>
                 </button>
-              </div>
-
+          </div>
+          
               {/* Filter Controls */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
-                {/* Category Filter */}
+              {/* Category Filter */}
                 <div className="space-y-2">
                   <TextField
                     select
                     fullWidth
                     label="Category"
-                    value={selectedCategory}
-                    onChange={(e) => handleCategoryChange(e.target.value)}
+                  value={selectedCategory}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
                     size="small"
                   >
                     <MenuItem value="">
@@ -382,17 +382,17 @@ export default function ExpensesListPage() {
                       </MenuItem>
                     ))}
                   </TextField>
-                </div>
+              </div>
 
-                {/* Subcategory Filter */}
+              {/* Subcategory Filter */}
                 <div className="space-y-2">
                   <TextField
                     select
                     fullWidth
                     label="Subcategory"
-                    value={selectedSubcategory}
-                    onChange={(e) => handleSubcategoryChange(e.target.value)}
-                    disabled={!selectedCategory}
+                  value={selectedSubcategory}
+                  onChange={(e) => handleSubcategoryChange(e.target.value)}
+                  disabled={!selectedCategory}
                     size="small"
                   >
                     <MenuItem value="">
@@ -400,27 +400,27 @@ export default function ExpensesListPage() {
                     </MenuItem>
                     {selectedCategory && categoriesData?.data?.find(cat => cat._id === selectedCategory)?.subcategories?.map((subcategory) => (
                       <MenuItem key={subcategory} value={subcategory}>
-                        {subcategory.replace(/_/g, ' ')}
+                      {subcategory.replace(/_/g, ' ')}
                       </MenuItem>
-                    ))}
+                  ))}
                   </TextField>
-                </div>
+              </div>
 
                 {/* Amount Range */}
                   <Box display="flex" gap={2}>
                     <TextField
-                      type="number"
+                    type="number"
                       placeholder="Min Amount"
-                      value={amountRange.minAmount}
-                      onChange={(e) => handleAmountRangeChange('minAmount', e.target.value)}
+                    value={amountRange.minAmount}
+                    onChange={(e) => handleAmountRangeChange('minAmount', e.target.value)}
                       size="small"
                       sx={{ minWidth: '120px' }}
-                    />
+                  />
                     <TextField
-                      type="number"
+                    type="number"
                       placeholder="Max Amount"
-                      value={amountRange.maxAmount}
-                      onChange={(e) => handleAmountRangeChange('maxAmount', e.target.value)}
+                    value={amountRange.maxAmount}
+                    onChange={(e) => handleAmountRangeChange('maxAmount', e.target.value)}
                       size="small"
                       sx={{ minWidth: '120px' }}
                     />
@@ -455,11 +455,11 @@ export default function ExpensesListPage() {
                       />
                     </Box>
                   </LocalizationProvider>
-              </div>
             </div>
           </div>
+        </div>
 
-          {/* Expenses Table */}
+        {/* Expenses Table */}
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-lg border border-white/30 dark:border-gray-700/50 overflow-hidden mb-5">
 
 
@@ -527,11 +527,11 @@ export default function ExpensesListPage() {
                         <td className="px-6 py-4">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full w-fit ${getCategoryColor((expense.category && 'name' in expense.category) ? expense.category.name : 'UNKNOWN')}`}>
                             {(expense.category && 'name' in expense.category) ? expense.category.name.replace(/_/g, ' ') : 'Unknown Category'}
-                          </span>
+                            </span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm text-slate-600 dark:text-slate-400">
-                            {expense.subcategory.replace(/_/g, ' ')}
+                              {expense.subcategory.replace(/_/g, ' ')}
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -547,7 +547,7 @@ export default function ExpensesListPage() {
                         <td className="px-6 py-4">
                           <div className="text-sm text-slate-900 dark:text-slate-100">
                             {formatDate(expense.expenseDate)}
-                          </div>
+                            </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm text-slate-900 dark:text-slate-100">
@@ -556,30 +556,30 @@ export default function ExpensesListPage() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex gap-2">
-                            <button
-                              onClick={() => handleEditClick(expense)}
+                             <button
+                               onClick={() => handleEditClick(expense)}
                               className="text-green-600 dark:text-green-400 p-2 cursor-pointer hover:text-green-800 dark:hover:text-green-300 transition-colors duration-200"
-                              title="Edit Expense"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => handleDeleteClick(expense._id, expense.title)}
+                               title="Edit Expense"
+                             >
+                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                               </svg>
+                             </button>
+                             <button
+                               onClick={() => handleDeleteClick(expense._id, expense.title)}
                               className="text-red-600 p-2 cursor-pointer dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-200"
-                              title="Delete Expense"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                               title="Delete Expense"
+                             >
+                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                               </svg>
+                             </button>
+                           </div>
+                           </td>
+                       </tr>
+                        ))}
+                   </tbody>
+                 </table>
               </div>
 
               {/* MUI Pagination */}
@@ -615,7 +615,7 @@ export default function ExpensesListPage() {
               )}
             </>
           )}
-          </div>
+        </div>
         </main>
       </div>
 
@@ -648,7 +648,7 @@ export default function ExpensesListPage() {
             justifyContent: 'space-between',
           })}
         >
-          Delete Expense
+                Delete Expense
           <IconButton 
             onClick={handleDeleteCancel} 
             disabled={deleteExpenseMutation.isPending}
@@ -689,7 +689,7 @@ export default function ExpensesListPage() {
           })}
         >
           <Button
-            onClick={handleDeleteCancel}
+                  onClick={handleDeleteCancel}
             disabled={deleteExpenseMutation.isPending}
             sx={(theme) => ({
               backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
@@ -707,12 +707,12 @@ export default function ExpensesListPage() {
                 opacity: 0.5,
               }
             })}
-          >
-            Cancel
+                >
+                  Cancel
           </Button>
           <Button
-            onClick={handleDeleteConfirm}
-            disabled={deleteExpenseMutation.isPending}
+                  onClick={handleDeleteConfirm}
+                  disabled={deleteExpenseMutation.isPending}
             sx={(theme) => ({
               backgroundColor: theme.palette.mode === 'dark' ? '#dc2626' : '#ef4444',
               color: '#ffffff',
@@ -764,207 +764,207 @@ export default function ExpensesListPage() {
         }}
       >
         <div className="bg-white dark:bg-slate-800 shadow-2xl max-h-[90vh] overflow-y-auto">
-          {/* Header */}
+            {/* Header */}
           <div className="bg-slate-50 dark:bg-slate-700 px-6 py-4 border-b border-slate-200 dark:border-slate-600">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 flex items-center">
-                <svg className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                Edit Expense
-              </h3>
-              <button
-                onClick={handleEditCancel}
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 flex items-center">
+                  <svg className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit Expense
+                </h3>
+                <button
+                  onClick={handleEditCancel}
                 className="text-slate-400 cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors duration-200"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleEditSubmit} className="p-6 space-y-6">
-            {/* Basic Information */}
-            <div className="space-y-4">
-              <h4 className="text-lg font-medium text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-600 pb-2">
-                Basic Information
-              </h4>
-
-              {/* Title */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Expense Title <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={editFormData.title}
-                  onChange={(e) => handleEditInputChange('title', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${editErrors.title
-                      ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
-                      : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700'
-                    }`}
-                  placeholder="Enter expense title"
-                />
-                {editErrors.title && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.title}</p>
-                )}
-              </div>
-
-              {/* Amount */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Amount <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2 text-slate-500 dark:text-slate-400">₹</span>
-                  <input
-                    type="number"
-                    value={editFormData.amount}
-                    onChange={(e) => handleEditInputChange('amount', parseFloat(e.target.value) || 0)}
-                    className={`w-full pl-8 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${editErrors.amount
-                        ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
-                        : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700'
-                      }`}
-                    placeholder="0.00"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-                {editErrors.amount && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.amount}</p>
-                )}
-              </div>
-
-              {/* Date */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Expense Date <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  value={editFormData.expenseDate}
-                  onChange={(e) => handleEditInputChange('expenseDate', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${editErrors.expenseDate
-                      ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
-                      : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700'
-                    }`}
-                />
-                {editErrors.expenseDate && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.expenseDate}</p>
-                )}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
             </div>
 
-            {/* Category and Subcategory */}
-            <div className="space-y-4">
-              <h4 className="text-lg font-medium text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-600 pb-2">
-                Classification
-              </h4>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Form */}
+            <form onSubmit={handleEditSubmit} className="p-6 space-y-6">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-medium text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-600 pb-2">
+                  Basic Information
+                </h4>
+                
+                {/* Title */}
                 <div>
-                  <FormControl fullWidth error={!!editErrors.category}>
-                    <InputLabel id="category-label">Category *</InputLabel>
-                    <Select
-                      labelId="category-label"
-                      value={editFormData.category}
-                      onChange={(e) => handleEditInputChange('category', e.target.value)}
-                      label="Category *"
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          '& fieldset': {
-                            borderColor: editErrors.category ? '#ef4444' : '#cbd5e1',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: editErrors.category ? '#ef4444' : '#94a3b8',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#3b82f6',
-                          },
-                        },
-                      }}
-                    >
-                      <MenuItem value="">Select Category</MenuItem>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Expense Title <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.title}
+                    onChange={(e) => handleEditInputChange('title', e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${editErrors.title
+                        ? 'border-red-500 bg-red-50 dark:bg-red-900/20' 
+                        : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700'
+                    }`}
+                    placeholder="Enter expense title"
+                  />
+                  {editErrors.title && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.title}</p>
+                  )}
+                </div>
+
+                {/* Amount */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Amount <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-slate-500 dark:text-slate-400">₹</span>
+                    <input
+                      type="number"
+                      value={editFormData.amount}
+                      onChange={(e) => handleEditInputChange('amount', parseFloat(e.target.value) || 0)}
+                    className={`w-full pl-8 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${editErrors.amount
+                          ? 'border-red-500 bg-red-50 dark:bg-red-900/20' 
+                          : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700'
+                      }`}
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  {editErrors.amount && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.amount}</p>
+                  )}
+                </div>
+
+                {/* Date */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Expense Date <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={editFormData.expenseDate}
+                    onChange={(e) => handleEditInputChange('expenseDate', e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${editErrors.expenseDate
+                        ? 'border-red-500 bg-red-50 dark:bg-red-900/20' 
+                        : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700'
+                    }`}
+                  />
+                  {editErrors.expenseDate && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.expenseDate}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Category and Subcategory */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-medium text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-600 pb-2">
+                  Classification
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                     <FormControl fullWidth error={!!editErrors.category}>
+                       <InputLabel id="category-label">Category *</InputLabel>
+                       <Select
+                         labelId="category-label"
+                         value={editFormData.category}
+                         onChange={(e) => handleEditInputChange('category', e.target.value)}
+                         label="Category *"
+                         sx={{
+                           '& .MuiOutlinedInput-root': {
+                             '& fieldset': {
+                               borderColor: editErrors.category ? '#ef4444' : '#cbd5e1',
+                             },
+                             '&:hover fieldset': {
+                               borderColor: editErrors.category ? '#ef4444' : '#94a3b8',
+                             },
+                             '&.Mui-focused fieldset': {
+                               borderColor: '#3b82f6',
+                             },
+                           },
+                         }}
+                       >
+                         <MenuItem value="">Select Category</MenuItem>
                       {categoriesData?.data?.map((category) => (
                         <MenuItem key={category._id} value={category._id}>
                           {category.name.replace(/_/g, ' ')}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  {editErrors.category && (
-                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.category}</p>
-                  )}
-                </div>
+                           </MenuItem>
+                         ))}
+                       </Select>
+                     </FormControl>
+                     {editErrors.category && (
+                       <p className="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.category}</p>
+                     )}
+                   </div>
 
-                <div>
-                  <FormControl fullWidth error={!!editErrors.subcategory} disabled={!editFormData.category}>
-                    <InputLabel id="subcategory-label">Subcategory *</InputLabel>
-                    <Select
-                      labelId="subcategory-label"
-                      value={editFormData.subcategory}
-                      onChange={(e) => handleEditInputChange('subcategory', e.target.value)}
-                      label="Subcategory *"
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          '& fieldset': {
-                            borderColor: editErrors.subcategory ? '#ef4444' : '#cbd5e1',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: editErrors.subcategory ? '#ef4444' : '#94a3b8',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#3b82f6',
-                          },
-                        },
-                      }}
-                    >
-                      <MenuItem value="">Select Subcategory</MenuItem>
+                                     <div>
+                     <FormControl fullWidth error={!!editErrors.subcategory} disabled={!editFormData.category}>
+                       <InputLabel id="subcategory-label">Subcategory *</InputLabel>
+                       <Select
+                         labelId="subcategory-label"
+                         value={editFormData.subcategory}
+                         onChange={(e) => handleEditInputChange('subcategory', e.target.value)}
+                         label="Subcategory *"
+                         sx={{
+                           '& .MuiOutlinedInput-root': {
+                             '& fieldset': {
+                               borderColor: editErrors.subcategory ? '#ef4444' : '#cbd5e1',
+                             },
+                             '&:hover fieldset': {
+                               borderColor: editErrors.subcategory ? '#ef4444' : '#94a3b8',
+                             },
+                             '&.Mui-focused fieldset': {
+                               borderColor: '#3b82f6',
+                             },
+                           },
+                         }}
+                       >
+                         <MenuItem value="">Select Subcategory</MenuItem>
                       {editFormData.category && categoriesData?.data?.find(cat => cat._id === editFormData.category)?.subcategories?.map((subcategory) => (
-                        <MenuItem key={subcategory} value={subcategory}>
-                          {subcategory.replace(/_/g, ' ')}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  {editErrors.subcategory && (
-                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.subcategory}</p>
-                  )}
+                           <MenuItem key={subcategory} value={subcategory}>
+                             {subcategory.replace(/_/g, ' ')}
+                           </MenuItem>
+                         ))}
+                       </Select>
+                     </FormControl>
+                     {editErrors.subcategory && (
+                       <p className="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.subcategory}</p>
+                     )}
+                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-600">
-              <button
-                type="button"
-                onClick={handleEditCancel}
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-600">
+                <button
+                  type="button"
+                  onClick={handleEditCancel}
                 className="px-6 py-2 cursor-pointer border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 rounded-lg transition-colors duration-200 font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={updateExpenseMutation.isPending}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updateExpenseMutation.isPending}
                 className="px-6 py-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center"
-              >
-                {updateExpenseMutation.isPending ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Updating...
-                  </>
-                ) : (
-                  'Update Expense'
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
+                >
+                  {updateExpenseMutation.isPending ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Updating...
+                    </>
+                  ) : (
+                    'Update Expense'
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
       </Dialog>
     </div>
   );

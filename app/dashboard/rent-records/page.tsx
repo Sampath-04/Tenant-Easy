@@ -781,7 +781,7 @@ export default function RentRecordsPage() {
                       color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
                     })}
                   >
-                    {filters.paymentStatus || 'All statuses'}
+                    {filters.paymentStatus || 'All status'}
                   </Typography>
                   </Box>
                 </Box>
@@ -830,7 +830,7 @@ export default function RentRecordsPage() {
                       mb: 2,
                     })}
                   >
-                    {filters.rentStatus || 'All statuses'}
+                    {filters.rentStatus || 'All status'}
                   </Typography>
                   </Box>
                   

@@ -3,10 +3,15 @@ import { getRefundsForProperty, getRefundsForExport, processRefund, ProcessRefun
 import { toast } from 'react-toastify';
 import { showSuccessToast, showErrorToast } from '@/lib/toast-config';
 
-export function useRefunds(propertyId: string) {
+export function useRefunds(propertyId: string, filters: {
+  search?: string;
+  status?: string;
+  processedAtFrom?: string;
+  processedAtTo?: string;
+} = {}) {
   return useQuery({
-    queryKey: ['refunds', propertyId],
-    queryFn: () => getRefundsForProperty(propertyId),
+    queryKey: ['refunds', propertyId, filters],
+    queryFn: () => getRefundsForProperty(propertyId, filters),
     enabled: !!propertyId && propertyId !== '',
     staleTime: 0,
     gcTime: 0,

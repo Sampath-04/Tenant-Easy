@@ -10,17 +10,15 @@ import {
   Box,
   CircularProgress,
   Alert,
+  IconButton,
 } from '@mui/material';
 import {
   Close as CloseIcon,
   Download as DownloadIcon,
   CalendarToday as CalendarIcon,
 } from '@mui/icons-material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { useRefundsExport } from '@/hooks/useRefunds';
 import { formatDate } from '@/lib/utils/formatters';
+import { generateRefundsExcel } from '@/lib/utils/excelExport';
 import { showErrorToast, showSuccessToast } from '@/lib/toast-config';
 import { toast } from 'react-toastify';
 
@@ -28,18 +26,30 @@ interface RefundsExportDialogProps {
   isOpen: boolean;
   onClose: () => void;
   propertyId: string;
+  startDate: Date | null;
+  endDate: Date | null;
+  filters: {
+    search: string;
+    status: string;
+  };
+  recordCount: number;
+  refundsData: any[];
+  statistics: any;
 }
 
 export default function RefundsExportDialog({
   isOpen,
   onClose,
   propertyId,
+  startDate,
+  endDate,
+  filters,
+  recordCount,
+  refundsData,
+  statistics,
 }: RefundsExportDialogProps) {
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  const [isExporting, setIsExporting] = useState(false);
 
-  const exportMutation = useRefundsExport();
+  const [isExporting, setIsExporting] = useState(false);
 
   // const handleExport = async () => {
   //   if (!startDate || !endDate) {
@@ -166,13 +176,44 @@ export default function RefundsExportDialog({
   //   }
   // };
 
+  const handleExport = async () => {
+    if (!refundsData || refundsData.length === 0) {
+      const showToasError = showErrorToast('No refunds data available for export');
+      toast.error(showToasError.message, showToasError.config);
+      return;
+    }
+
+
+    try {
+      setIsExporting(true);
+      
+      // Use the reusable refunds export function
+      await generateRefundsExcel(
+        refundsData,
+        statistics,
+        startDate,
+        endDate
+      );
+      
+      const showToasSuccess = showSuccessToast('Refunds exported successfully!');
+      toast.success(showToasSuccess.message, showToasSuccess.config);
+      
+      // Reset states
+      handleClose();
+      setIsExporting(false);
+    } catch (error) {
+      console.error('Excel generation error:', error);
+      const showToasError = showErrorToast('Failed to generate Excel file');
+      toast.error(showToasError.message, showToasError.config);
+      setIsExporting(false);
+    }
+  };
+
   const handleClose = () => {
-    setStartDate(null);
-    setEndDate(null);
     onClose();
   };
 
-  const isExportDisabled = !startDate || !endDate || isExporting;
+  const isExportDisabled = !refundsData || refundsData.length === 0 || isExporting;
 
   return (
     <Dialog
@@ -180,103 +221,250 @@ export default function RefundsExportDialog({
       onClose={handleClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: '12px',
-        },
-      }}
+      sx={(theme) => ({
+        '& .MuiDialog-paper': {
+          borderRadius: '16px',
+          backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
+          boxShadow: theme.palette.mode === 'dark'
+            ? '0 10px 40px rgba(0, 0, 0, 0.3)'
+            : '0 10px 40px rgba(0, 0, 0, 0.1)',
+        }
+      })}
     >
-      <DialogTitle className="flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700">
-        <div className="flex items-center gap-3">
-          <DownloadIcon className="text-blue-600 dark:text-blue-400" />
-          <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
-            Export Refunds
-          </Typography>
-        </div>
-        <Button onClick={handleClose} size="small">
+      <DialogTitle
+        sx={(theme) => ({
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+          pb: 2,
+          backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
+        })}
+      >
+        <Typography
+          sx={(theme) => ({
+            fontWeight: 600,
+            fontSize: '1.25rem',
+            color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+          })}
+        >
+          Export Refunds
+        </Typography>
+        <IconButton
+          onClick={handleClose}
+          disabled={isExporting}
+          sx={(theme) => ({
+            color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f3f4f6',
+            }
+          })}
+        >
           <CloseIcon />
-        </Button>
+        </IconButton>
       </DialogTitle>
 
-      <DialogContent className="p-6">
-        <div className="space-y-6">
-          <div>
-            <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-4">
-              Select a date range to export refunds. Maximum range is 2 months (60 days).
+      <DialogContent
+        sx={(theme) => ({
+          paddingTop: "24px !important",
+          backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
+        })}
+      >
+        <Box sx={{ mb: 2 }}>
+          <Typography
+            variant="body1"
+            sx={(theme) => ({
+              mb: 2,
+              color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+            })}
+          >
+            Export the currently filtered refunds to Excel. The export will include all refunds matching your current filters.
+          </Typography>
+
+
+          <Box
+            sx={(theme) => ({
+              backgroundColor: theme.palette.mode === 'dark' ? '#111827' : '#f9fafb',
+              borderRadius: '8px',
+              p: 2.5,
+              border: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+            })}
+          >
+            <Typography
+              variant="body2"
+              sx={(theme) => ({
+                color: theme.palette.mode === 'dark' ? '#d1d5db' : '#6b7280',
+                fontWeight: 600,
+                mb: 2,
+              })}
+            >
+              Export Summary:
             </Typography>
-          </div>
+            
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+              <Box>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                  <Typography
+                    variant="body2"
+                    sx={(theme) => ({
+                      color: theme.palette.mode === 'dark' ? '#d1d5db' : '#6b7280',
+                      mb: 1,
+                      fontWeight: 500,
+                    })}
+                  >
+                    Date Range
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={(theme) => ({
+                      color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+                      mb: 2,
+                    })}
+                  >
+                    {startDate && endDate ? `${formatDate(startDate.toISOString())} to ${formatDate(endDate.toISOString())}` : 'All dates'}
+                  </Typography>
+                </Box>
+              
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                  <Typography
+                    variant="body2"
+                    sx={(theme) => ({
+                      color: theme.palette.mode === 'dark' ? '#d1d5db' : '#6b7280',
+                      mb: 1,
+                      fontWeight: 500,
+                    })}
+                  >
+                    Search
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={(theme) => ({
+                      color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+                      mb: 2,
+                    })}
+                  >
+                    {filters.search || 'None'}
+                  </Typography>
+                </Box>
 
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Typography variant="subtitle2" className="font-medium mb-2 text-gray-900 dark:text-white">
-                  Start Date *
-                </Typography>
-                <DatePicker
-                  value={startDate}
-                  onChange={(newValue) => setStartDate(newValue)}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      size: 'small',
-                      placeholder: 'Select start date',
-                    },
-                  }}
-                />
-              </div>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                  <Typography
+                    variant="body2"
+                    sx={(theme) => ({
+                      color: theme.palette.mode === 'dark' ? '#d1d5db' : '#6b7280',
+                      mb: 1,
+                      fontWeight: 500,
+                    })}
+                  >
+                    Status
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={(theme) => ({
+                      color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+                    })}
+                  >
+                    {filters.status || 'All status'}
+                  </Typography>
+                </Box>
+              </Box>
 
-              <div>
-                <Typography variant="subtitle2" className="font-medium mb-2 text-gray-900 dark:text-white">
-                  End Date *
-                </Typography>
-                <DatePicker
-                  value={endDate}
-                  onChange={(newValue) => setEndDate(newValue)}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      size: 'small',
-                      placeholder: 'Select end date',
-                    },
-                  }}
-                />
-              </div>
-            </div>
-          </LocalizationProvider>
-
-          {exportMutation.isError && (
-            <Alert severity="error" className="mt-4">
-              {exportMutation.error?.message || 'Failed to export refunds'}
-            </Alert>
-          )}
-
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-            <Typography variant="subtitle2" className="font-medium text-blue-900 dark:text-blue-100 mb-2">
-              Export includes:
-            </Typography>
-            <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-              <li>• Tenant details (name, phone, room)</li>
-              <li>• Financial information (security deposit, refund amount)</li>
-              <li>• Processing details (transaction ID, payment method, receipt URL)</li>
-              <li>• Deductions (electricity bill, units, other deductions)</li>
-              <li>• Dates (notice end, processed, created)</li>
-              <li>• Summary with totals</li>
-            </ul>
-          </div>
-        </div>
+              {/* vertical divider */}
+              <div className="h-full w-px bg-gray-200 dark:bg-gray-700"></div>
+              
+              <Box>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                  <Typography
+                    variant="body2"
+                    sx={(theme) => ({
+                      color: theme.palette.mode === 'dark' ? '#d1d5db' : '#6b7280',
+                      mb: 1,
+                      fontWeight: 500,
+                    })}
+                  >
+                    Records Count
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={(theme) => ({
+                      color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+                      mb: 2,
+                    })}
+                  >
+                    {recordCount} records
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
       </DialogContent>
 
-      <DialogActions className="p-6 bg-gray-50 dark:bg-gray-800">
-        <Button onClick={handleClose} variant="outlined">
+      <DialogActions
+        sx={(theme) => ({
+          px: 3,
+          py: 2,
+          gap: 2,
+          backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
+          borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+        })}
+      >
+          <Button
+            onClick={handleClose}
+            disabled={isExporting}
+          sx={(theme) => ({
+            backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
+            color: '#ffffff',
+            px: 3,
+            borderRadius: '30px',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            textTransform: 'none',
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#4b5563',
+            },
+            '&:disabled': {
+              opacity: 0.5,
+            }
+          })}
+        >
           Cancel
         </Button>
         <Button
-          // onClick={handleExport}
-          variant="contained"
+          onClick={handleExport}
           disabled={isExportDisabled}
-          startIcon={isExporting ? <CircularProgress size={16} /> : <DownloadIcon />}
+          sx={(theme) => ({
+            backgroundColor: theme.palette.mode === 'dark' ? '#3b82f6' : '#3b82f6',
+            color: '#ffffff',
+            px: 3,
+            borderRadius: '30px',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            textTransform: 'none',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#2563eb' : '#2563eb',
+            },
+            '&:disabled': {
+              opacity: 0.5,
+            }
+          })}
         >
-          {isExporting ? 'Exporting...' : 'Export to Excel'}
+            {isExporting ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Exporting...
+            </>
+          ) : (
+            <>
+              <DownloadIcon fontSize="small" />
+              Export to Excel
+            </>
+          )}
         </Button>
       </DialogActions>
     </Dialog>

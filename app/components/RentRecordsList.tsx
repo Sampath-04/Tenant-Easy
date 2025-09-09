@@ -156,7 +156,7 @@ Thank you!`;
             electricityUnit: data.currentElectricityReading,
             tenantQrCode: data.tenantQrCode,
             comments: data.comments,
-            otherDeduction: data.otherDeduction,
+            otherDeduction: data.otherDeduction || 0,
         } as CompleteNoticeData;
 
         try {

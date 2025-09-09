@@ -6,9 +6,8 @@ import { AppHeader } from '@/components/AppHeader';
 import { useProfitLossByProperty } from '@/hooks/useProfitLoss';
 import { useProperty } from '@/contexts/PropertyContext';
 import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  LineChart, Line, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  AreaChart, Area
 } from 'recharts';
 import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 
