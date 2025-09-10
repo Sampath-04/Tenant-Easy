@@ -32,12 +32,12 @@ import {
   Save as SaveIcon,
   Cancel as CancelIcon,
 } from '@mui/icons-material';
+import DeleteConfirmationDialog from './DeleteConfirmationDialog';
 import { useTheme } from '@mui/material/styles';
 import {
   useCategories,
   useCreateCategory,
   useUpdateCategory,
-  useDeleteCategory,
   useAddSubcategory,
   useUpdateSubcategory,
   useRemoveSubcategory,
@@ -60,19 +60,23 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
   open,
   onClose,
   profileId,
-  onCategoriesUpdated,
 }) => {
   const theme = useTheme();
   const [editing, setEditing] = useState<EditingState>({ categoryId: null, subcategoryName: null, type: null });
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubcategoryName, setNewSubcategoryName] = useState('');
   const [editingValue, setEditingValue] = useState('');
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    type: 'subcategory';
+    categoryId: string;
+    itemName: string;
+  }>({ open: false, type: 'subcategory', categoryId: '', itemName: '' });
 
   // React Query hooks
   const { data: categoriesResponse, isLoading, error } = useCategories(profileId);
   const createCategoryMutation = useCreateCategory(profileId);
   const updateCategoryMutation = useUpdateCategory(profileId);
-  const deleteCategoryMutation = useDeleteCategory(profileId);
   const addSubcategoryMutation = useAddSubcategory(profileId);
   const updateSubcategoryMutation = useUpdateSubcategory(profileId);
   const removeSubcategoryMutation = useRemoveSubcategory(profileId);
@@ -80,7 +84,6 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
   const categories = categoriesResponse?.data || [];
   const submitting = createCategoryMutation.isPending || 
                     updateCategoryMutation.isPending || 
-                    deleteCategoryMutation.isPending ||
                     addSubcategoryMutation.isPending ||
                     updateSubcategoryMutation.isPending ||
                     removeSubcategoryMutation.isPending;
@@ -98,7 +101,6 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
     createCategoryMutation.mutate(categoryData, {
       onSuccess: () => {
         setNewCategoryName('');
-        onCategoriesUpdated?.();
       },
     });
   };
@@ -116,22 +118,10 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
       onSuccess: () => {
         setEditing({ categoryId: null, subcategoryName: null, type: null });
         setEditingValue('');
-        onCategoriesUpdated?.();
       },
     });
   };
 
-  const handleDeleteCategory = async (categoryId: string, categoryName: string) => {
-    if (!confirm(`Are you sure you want to delete the category "${categoryName}"? This action cannot be undone.`)) {
-      return;
-    }
-
-    deleteCategoryMutation.mutate(categoryId, {
-      onSuccess: () => {
-        onCategoriesUpdated?.();
-      },
-    });
-  };
 
   const handleAddSubcategory = async (categoryId: string) => {
     if (!newSubcategoryName.trim()) {
@@ -145,7 +135,6 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
     addSubcategoryMutation.mutate({ categoryId, subcategoryData }, {
       onSuccess: () => {
         setNewSubcategoryName('');
-        onCategoriesUpdated?.();
       },
     });
   };
@@ -163,20 +152,16 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
       onSuccess: () => {
         setEditing({ categoryId: null, subcategoryName: null, type: null });
         setEditingValue('');
-        onCategoriesUpdated?.();
       },
     });
   };
 
   const handleDeleteSubcategory = async (categoryId: string, subcategoryName: string) => {
-    if (!confirm(`Are you sure you want to delete the subcategory "${subcategoryName}"?`)) {
-      return;
-    }
-
-    removeSubcategoryMutation.mutate({ categoryId, subcategoryName }, {
-      onSuccess: () => {
-        onCategoriesUpdated?.();
-      },
+    setDeleteDialog({
+      open: true,
+      type: 'subcategory',
+      categoryId,
+      itemName: subcategoryName,
     });
   };
 
@@ -189,6 +174,18 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
       setEditing({ categoryId, subcategoryName, type });
       setEditingValue(subcategoryName.replace(/_/g, ' '));
     }
+  };
+
+  const handleConfirmDelete = () => {
+    removeSubcategoryMutation.mutate({ 
+      categoryId: deleteDialog.categoryId, 
+      subcategoryName: deleteDialog.itemName 
+    });
+    setDeleteDialog({ open: false, type: 'subcategory', categoryId: '', itemName: '' });
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialog({ open: false, type: 'subcategory', categoryId: '', itemName: '' });
   };
 
   const cancelEditing = () => {
@@ -226,7 +223,7 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
           py: 2,
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
+        <Typography sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
           Manage Categories
         </Typography>
         <IconButton onClick={onClose} size="small">
@@ -292,26 +289,24 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
                         color="primary"
                         sx={{ mr: 2 }}
                       />
-                      <IconButton
-                        size="small"
+                      <Box
+                        component="div"
                         onClick={(e) => {
                           e.stopPropagation();
                           startEditing(category._id, 'category');
                         }}
-                        sx={{ mr: 1 }}
+                        sx={{ 
+                          p: 0.5, 
+                          cursor: 'pointer',
+                          borderRadius: '50%',
+                          '&:hover': { backgroundColor: 'action.hover' },
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
                       >
                         <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteCategory(category._id, category.name);
-                        }}
-                        color="error"
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
+                      </Box>
                     </Box>
                   </AccordionSummary>
                   <AccordionDetails>
@@ -442,6 +437,17 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
           Close
         </Button>
       </DialogActions>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialog.open}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="Delete Subcategory"
+        message="This will permanently delete the subcategory. This action cannot be undone."
+        itemName={deleteDialog.itemName}
+        isDeleting={removeSubcategoryMutation.isPending}
+      />
     </Dialog>
   );
 };

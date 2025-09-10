@@ -47,7 +47,8 @@ export const useCreateCategory = (profileId: string) => {
     },
     onError: (error: any) => {
       console.error('Error creating category:', error);
-      toast.error('Failed to create category');
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to create category';
+      toast.error(errorMessage);
     },
   });
 };
@@ -69,7 +70,8 @@ export const useUpdateCategory = (profileId: string) => {
     },
     onError: (error: any) => {
       console.error('Error updating category:', error);
-      toast.error('Failed to update category');
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to update category';
+      toast.error(errorMessage);
     },
   });
 };
@@ -88,7 +90,8 @@ export const useDeleteCategory = (profileId: string) => {
     },
     onError: (error: any) => {
       console.error('Error deleting category:', error);
-      toast.error('Failed to delete category');
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to delete category';
+      toast.error(errorMessage);
     },
   });
 };
@@ -110,7 +113,8 @@ export const useAddSubcategory = (profileId: string) => {
     },
     onError: (error: any) => {
       console.error('Error adding subcategory:', error);
-      toast.error('Failed to add subcategory');
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to add subcategory';
+      toast.error(errorMessage);
     },
   });
 };
@@ -133,7 +137,8 @@ export const useUpdateSubcategory = (profileId: string) => {
     },
     onError: (error: any) => {
       console.error('Error updating subcategory:', error);
-      toast.error('Failed to update subcategory');
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to update subcategory';
+      toast.error(errorMessage);
     },
   });
 };
@@ -155,7 +160,8 @@ export const useRemoveSubcategory = (profileId: string) => {
     },
     onError: (error: any) => {
       console.error('Error deleting subcategory:', error);
-      toast.error('Failed to delete subcategory');
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to delete subcategory';
+      toast.error(errorMessage);
     },
   });
 };

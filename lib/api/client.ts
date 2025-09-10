@@ -211,16 +211,26 @@ export const apiClient = {
     }
   },
 
-  async delete<T>(endpoint: string): Promise<T> {
+  async delete<T>(endpoint: string, body?: any): Promise<T> {
     try {
+      // Handle FormData differently from JSON
+      const isFormData = body instanceof FormData;
+      
+      const headers: Record<string, string> = {
+        'Accept': 'application/json',
+      };
+      
+      // Don't set Content-Type for FormData (browser will set it with boundary)
+      if (!isFormData && body) {
+        headers['Content-Type'] = 'application/json';
+      }
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        headers,
         credentials: 'include',
         mode: 'cors',
+        body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
       });
 
       const data = await response.json();

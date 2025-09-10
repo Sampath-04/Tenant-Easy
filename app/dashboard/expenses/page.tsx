@@ -10,6 +10,8 @@ import { toast } from 'react-toastify';
 import { useProperty } from '@/contexts/PropertyContext';
 import CategoryManagementDialog from '@/components/CategoryManagementDialog';
 import { PAYMENT_METHOD_OPTIONS, DEFAULT_PAYMENT_METHOD } from '@/lib/constants/paymentConstants';
+import BreadCrumbs from '@/components/ui/BreadCrumbs';
+import { FormControl, InputLabel, Select, MenuItem, Theme } from '@mui/material';
 
 
 interface ExpenseFormData {
@@ -110,10 +112,6 @@ export default function ExpensesPage() {
     }
   };
 
-  const handleCancel = () => {
-    router.push('/dashboard');
-  };
-
     
   // Show loading state if no property is selected
   if (!selectedProperty) {
@@ -127,24 +125,25 @@ export default function ExpensesPage() {
     );
   }
 
+  const breadcrumbs = [
+    { label: 'Dashboard', url: '/dashboard' },
+    { label: 'Expenses', url: '/dashboard/expenses' },
+  ];
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <AppHeader 
         title="Record New Expense"
         subtitle="Track and manage your property expenses"
       />
+
+      <div className='px-6 pt-6'>
+        <BreadCrumbs items={breadcrumbs} />
+      </div>
       
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 pb-8">
         {/* Header Section */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full mb-6 shadow-lg">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-            </svg>
-          </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent mb-4">
-            Record New Expense
-          </h1>
+        <div className="text-center mb-6">
           <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto">
             Track your property expenses with our comprehensive categorization system. 
             Keep your financial records organized and up-to-date.
@@ -174,18 +173,18 @@ export default function ExpensesPage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Expense Details Card */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div className="bg-slate-50 dark:bg-slate-700 px-8 py-6 border-b border-slate-200 dark:border-slate-600">
-              <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 flex items-center">
+            <div className="bg-slate-50 dark:bg-slate-700 px-8 py-3 border-b border-slate-200 dark:border-slate-600">
+              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 flex items-center">
                 <svg className="w-6 h-6 mr-3 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 Expense Details
               </h3>
             </div>
-            <div className="p-8 space-y-6">
+            <div className="p-4 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -256,22 +255,40 @@ export default function ExpensesPage() {
                   Payment Method *
                 </label>
                 <div className="relative">
-                  <select
-                    value={formData.paymentMethod}
-                    onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
-                    className="w-full px-4 py-3 bg-white dark:bg-slate-700 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 appearance-none border-slate-200 dark:border-slate-600 focus:border-blue-500"
-                  >
-                    {PAYMENT_METHOD_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value} className="py-2">
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
+                  <FormControl fullWidth>
+                    <InputLabel>Payment Method</InputLabel>
+                    <Select
+                      value={formData.paymentMethod}
+                      onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
+                      label="Payment Method"
+                      sx={(theme: Theme) => ({
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '12px',
+                          backgroundColor: theme.palette.mode === 'dark' ? '#1e293b' : '#ffffff',
+                          '& fieldset': {
+                            borderColor: theme.palette.mode === 'dark' ? '#475569' : '#e2e8f0',
+                            borderWidth: '2px',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: theme.palette.mode === 'dark' ? '#64748b' : '#cbd5e1',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#3b82f6',
+                            boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.2)',
+                          },
+                        },
+                        '& .MuiSelect-select': {
+                          padding: '12px 14px',
+                        },
+                      })}
+                    >
+                      {PAYMENT_METHOD_OPTIONS.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </div>
               </div>
             </div>
@@ -279,22 +296,20 @@ export default function ExpensesPage() {
 
           {/* Category Selection Card */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div className="bg-slate-50 dark:bg-slate-700 px-8 py-6 border-b border-slate-200 dark:border-slate-600">
-              <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 flex items-center">
+            <div className="bg-slate-50 dark:bg-slate-700 px-8 py-3 border-b border-slate-200 dark:border-slate-600">
+              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 flex items-center">
                 <svg className="w-6 h-6 mr-3 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
                 Category & Classification
               </h3>
             </div>
-            <div className="p-8 space-y-6">
+            <div className="p-4 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    Category *
-                  </label>
-                  <div className="relative">
-                    <select
+                  <FormControl fullWidth error={!!errors.category}>
+                    <InputLabel>Category *</InputLabel>
+                    <Select
                       value={formData.category}
                       onChange={(e) => {
                         const selectedCategory = categoriesData?.data.find(cat => cat._id === e.target.value);
@@ -311,31 +326,43 @@ export default function ExpensesPage() {
                         }
                       }}
                       disabled={categoriesLoading}
-                      className={`w-full px-4 py-3 bg-white dark:bg-slate-700 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-500/20 transition-all duration-200 appearance-none ${
-                        categoriesLoading 
-                          ? 'bg-slate-100 dark:bg-slate-600 border-slate-200 dark:border-slate-500 cursor-not-allowed' 
-                          : ''
-                      } ${
-                        errors.category 
-                          ? 'border-red-400 focus:border-red-500' 
-                          : 'border-slate-200 dark:border-slate-600 focus:border-emerald-500'
-                      }`}
+                      label="Category *"
+                      sx={(theme: Theme) => ({
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '12px',
+                          backgroundColor: categoriesLoading 
+                            ? (theme.palette.mode === 'dark' ? '#475569' : '#f1f5f9')
+                            : (theme.palette.mode === 'dark' ? '#1e293b' : '#ffffff'),
+                          '& fieldset': {
+                            borderColor: errors.category 
+                              ? '#ef4444' 
+                              : (theme.palette.mode === 'dark' ? '#475569' : '#e2e8f0'),
+                            borderWidth: '2px',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: errors.category 
+                              ? '#dc2626' 
+                              : (theme.palette.mode === 'dark' ? '#64748b' : '#cbd5e1'),
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: errors.category ? '#dc2626' : '#10b981',
+                            boxShadow: errors.category 
+                              ? '0 0 0 4px rgba(239, 68, 68, 0.2)' 
+                              : '0 0 0 4px rgba(16, 185, 129, 0.2)',
+                          },
+                        },
+                      })}
                     >
-                      <option value="">
+                      <MenuItem value="">
                         {categoriesLoading ? 'Loading categories...' : 'Select Category'}
-                      </option>
+                      </MenuItem>
                       {categoriesData?.data?.map((category) => (
-                        <option key={category._id} value={category._id} className="py-2">
+                        <MenuItem key={category._id} value={category._id}>
                           {category.name}
-                        </option>
+                        </MenuItem>
                       ))}
-                    </select>
-                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                      <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-                  </div>
+                    </Select>
+                  </FormControl>
                   {errors.category && (
                     <p className="text-sm text-red-500 flex items-center">
                       <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -355,39 +382,49 @@ export default function ExpensesPage() {
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    Subcategory *
-                  </label>
-                  <div className="relative">
-                    <select
+                  <FormControl fullWidth error={!!errors.subcategory}>
+                    <InputLabel>Subcategory *</InputLabel>
+                    <Select
                       value={formData.subcategory}
                       onChange={(e) => handleInputChange('subcategory', e.target.value)}
                       disabled={!formData.category}
-                      className={`w-full px-4 py-3 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-500/20 transition-all duration-200 appearance-none ${
-                        !formData.category 
-                          ? 'bg-slate-100 dark:bg-slate-600 border-slate-200 dark:border-slate-500 cursor-not-allowed' 
-                          : 'bg-white dark:bg-slate-700'
-                      } ${
-                        errors.subcategory 
-                          ? 'border-red-400 focus:border-red-500' 
-                          : 'border-slate-200 dark:border-slate-600 focus:border-emerald-500'
-                      }`}
+                      label="Subcategory *"
+                      sx={(theme: Theme) => ({
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '12px',
+                          backgroundColor: !formData.category 
+                            ? (theme.palette.mode === 'dark' ? '#475569' : '#f1f5f9')
+                            : (theme.palette.mode === 'dark' ? '#1e293b' : '#ffffff'),
+                          '& fieldset': {
+                            borderColor: errors.subcategory 
+                              ? '#ef4444' 
+                              : (theme.palette.mode === 'dark' ? '#475569' : '#e2e8f0'),
+                            borderWidth: '2px',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: errors.subcategory 
+                              ? '#dc2626' 
+                              : (theme.palette.mode === 'dark' ? '#64748b' : '#cbd5e1'),
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: errors.subcategory ? '#dc2626' : '#10b981',
+                            boxShadow: errors.subcategory 
+                              ? '0 0 0 4px rgba(239, 68, 68, 0.2)' 
+                              : '0 0 0 4px rgba(16, 185, 129, 0.2)',
+                          },
+                        },
+                      })}
                     >
-                      <option value="">Select Subcategory</option>
+                      <MenuItem value="">Select Subcategory</MenuItem>
                       {formData.category && categoriesData?.data
                         ?.find(cat => cat._id === formData.category)
                         ?.subcategories?.map((subcategory) => (
-                        <option key={subcategory} value={subcategory} className="py-2">
+                        <MenuItem key={subcategory} value={subcategory}>
                           {subcategory}
-                        </option>
+                        </MenuItem>
                       ))}
-                    </select>
-                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                      <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-                  </div>
+                    </Select>
+                  </FormControl>
                   {errors.subcategory && (
                     <p className="text-sm text-red-500 flex items-center">
                       <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -403,15 +440,15 @@ export default function ExpensesPage() {
 
           {/* Date Card */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div className="bg-slate-50 dark:bg-slate-700 px-8 py-6 border-b border-slate-200 dark:border-slate-600">
-              <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 flex items-center">
+            <div className="bg-slate-50 dark:bg-slate-700 px-8 py-3 border-b border-slate-200 dark:border-slate-600">
+              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 flex items-center">
                 <svg className="w-6 h-6 mr-3 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 Date & Timing
               </h3>
             </div>
-            <div className="p-8">
+            <div className="p-4">
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
                   Expense Date *
@@ -446,21 +483,8 @@ export default function ExpensesPage() {
           </div>
 
           {/* Form Actions */}
-          <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <button
-              type="button"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-              className="cursor-pointer w-full sm:w-auto px-8 py-3 border-2 border-slate-300 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-4 focus:ring-slate-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium"
-            >
-              <span className="flex items-center justify-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Cancel
-              </span>
-            </button>
-            
+          <div className="flex flex-col sm:flex-row justify-end items-center space-y-4 sm:space-y-0 sm:space-x-4">
+    
             <button
               type="submit"
               disabled={isSubmitting}
@@ -492,10 +516,6 @@ export default function ExpensesPage() {
         open={categoryDialogOpen}
         onClose={() => setCategoryDialogOpen(false)}
         profileId={selectedProperty?.profile || ''}
-        onCategoriesUpdated={() => {
-          // Categories will be automatically refreshed via React Query
-          toast.success('Categories updated successfully!');
-        }}
       />
     </div>
   );

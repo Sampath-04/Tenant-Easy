@@ -81,13 +81,13 @@ export const addSubcategory = async (categoryId: string, subcategoryData: AddSub
 // Update subcategory in a category
 export const updateSubcategory = async (categoryId: string, subcategoryName: string, subcategoryData: UpdateSubcategoryRequest, profileId: string): Promise<CategoryResponse> => {
   return await apiClient.put(`/categories/${categoryId}/subcategories/${subcategoryName}`, {
-    ...subcategoryData,
+    newName: subcategoryData.name,
     profileId
   });
 };
 
 // Remove subcategory from a category
 export const removeSubcategory = async (categoryId: string, subcategoryName: string, profileId: string): Promise<CategoryResponse> => {
-  return await apiClient.post(`/categories/${categoryId}/subcategories/${subcategoryName}/delete`, { profileId });
+  return await apiClient.delete(`/categories/${categoryId}/subcategories/${subcategoryName}`, { profileId });
 };
 

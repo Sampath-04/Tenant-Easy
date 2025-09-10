@@ -12,12 +12,9 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
-
-
 
 export default function ExpensesListPage() {
   const router = useRouter();
@@ -306,6 +303,7 @@ export default function ExpensesListPage() {
   const breadcrumbs = [
     { label: 'Dashboard', url: '/dashboard' },
     { label: 'Expenses', url: '/dashboard/expenses' },
+    { label: 'List', url: '/dashboard/expenses/list' },
   ];
 
   return (
