@@ -26,8 +26,8 @@ const NumberInput: React.FC<NumberInputProps> = ({
     }
   };
 
-  // Show placeholder when value is 0, empty, or undefined
-  const displayValue = (value === 0 || value === "" || value === undefined) ? "" : value;
+  // Show placeholder when value is empty or undefined, but show 0 when value is 0
+  const displayValue = (value === "" || value === undefined) ? "" : value;
 
   return (
     <TextField

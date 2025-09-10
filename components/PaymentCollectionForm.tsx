@@ -59,6 +59,16 @@ export default function PaymentCollectionForm({
   const [paidTo, setPaidTo] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<string>(DEFAULT_PAYMENT_METHOD);
 
+  // Form validation function
+  const isFormValid = () => {
+    // Check required fields
+    if (amount <= 0) return false;
+    if (!paidTo.trim()) return false;
+    if (!paymentMethod) return false;
+    
+    return true;
+  };
+
   // Initialize amount when rentRecord is available
   useEffect(() => {
     if (rentRecord) {
@@ -94,8 +104,8 @@ export default function PaymentCollectionForm({
     accept: {
       'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp']
     },
-    maxFiles: 4 - selectedImages.length,
-    disabled: selectedImages.length >= 4
+    maxFiles: 2 - selectedImages.length,
+    disabled: selectedImages.length >= 2
   });
 
   if (!isOpen || !rentRecord) return null;
@@ -140,11 +150,6 @@ export default function PaymentCollectionForm({
     try {
 
       setIsCollectingStartNew(true);
-      if(amount <= 0 || !paidTo.trim()) {
-        const errorToast = showErrorToast("Please enter the amount and paid to");
-        toast.error(errorToast.message, errorToast.config);
-        return;
-      }
 
       await markRentAsPaidMutation.mutateAsync({
         rentId: rentRecord._id,
@@ -191,11 +196,6 @@ export default function PaymentCollectionForm({
 
   const handleCollectAndApplyNotice = async () => {
     try {
-      if(amount <= 0 || !paidTo.trim()) {
-        const errorToast = showErrorToast('Please enter the amount and paid to');
-        toast.error(errorToast.message, errorToast.config);
-        return;
-      }
       setIsCollectingApplyNotice(true);
       // Step 1: Mark rent as paid first
      if(rentRecord.paymentStatus !== "FULLY_PAID") {
@@ -477,7 +477,7 @@ export default function PaymentCollectionForm({
         {/* Image Upload */}
           <Box className="mt-4">
             <p className='text-gray-600 dark:text-gray-400 text-md mb-2'>
-              Upload Proofs (Optional) - Max 4 images
+              Upload Proofs (Optional) - Max 2 images
             </p>
             
             <div
@@ -485,7 +485,7 @@ export default function PaymentCollectionForm({
               className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
                 isDragActive 
                   ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                  : selectedImages.length >= 4
+                  : selectedImages.length >= 2
                   ? 'border-gray-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600 cursor-not-allowed'
                   : 'border-gray-300 hover:border-gray-400 dark:border-gray-400 dark:hover:border-gray-500'
               }`}
@@ -494,8 +494,8 @@ export default function PaymentCollectionForm({
               <CloudUploadIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               {isDragActive ? (
                 <p className="text-blue-600 dark:text-blue-400">Drop the images here...</p>
-              ) : selectedImages.length >= 4 ? (
-                <p className="text-gray-500 dark:text-gray-400">Maximum 4 images reached</p>
+              ) : selectedImages.length >= 2 ? (
+                <p className="text-gray-500 dark:text-gray-400">Maximum 2 images reached</p>
               ) : (
                 <div>
                   <p className="text-gray-600 dark:text-gray-400 mb-2">
@@ -509,7 +509,7 @@ export default function PaymentCollectionForm({
               </div>
 
             <p className="mt-2 text-gray-600 dark:text-gray-400 text-sm">
-              {selectedImages.length}/4 images selected
+              {selectedImages.length}/2 images selected
             </p>
 
             {/* Image Previews */}
@@ -621,7 +621,7 @@ export default function PaymentCollectionForm({
           </Button>
           <Button
             onClick={handleCollectAndStartNew}
-            disabled={isCollectingStartNew || isCollectingApplyNotice || amount <= 0}
+            disabled={isCollectingStartNew || isCollectingApplyNotice || !isFormValid()}
             sx={(theme: Theme) => ({
               backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
               color: '#ffffff',
@@ -656,7 +656,7 @@ export default function PaymentCollectionForm({
           {rentRecord?.totalAmount <= amount + (rentRecord?.paymentTransactions?.reduce((sum: number, payment: any) => sum + (payment.amount || 0), 0) || 0) && (
             <Button
               onClick={handleCollectAndApplyNotice}
-              disabled={isCollectingStartNew || isCollectingApplyNotice || amount <= 0}
+              disabled={isCollectingStartNew || isCollectingApplyNotice || !isFormValid()}
               sx={(theme: Theme) => ({
                 backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
                 color: '#ffffff',

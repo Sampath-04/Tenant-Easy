@@ -59,6 +59,26 @@ export default function NoticeForm({
   const updateNoticeMutation = useUpdateNotice();
   const isSubmitting = createNoticeMutation.isPending || updateNoticeMutation.isPending;
 
+  // Form validation function
+  const isFormValid = () => {
+    // Check required fields
+    if (!noticeEndDate) return false;
+    if (extraDays < 0) return false;
+    if (cost < 0) return false;
+
+    // If payment amount is entered, validate payment fields
+    if (amount > 0) {
+      // Check if payment amount exceeds maximum allowed
+      const maxAmount = existingNotice ? (existingNotice.remainingAmount || cost) : cost;
+      if (amount > maxAmount) return false;
+      
+      // If amount is entered, paidTo is required
+      if (!paidTo.trim()) return false;
+    }
+
+    return true;
+  };
+
   // Dropzone for payment proof
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -644,7 +664,7 @@ export default function NoticeForm({
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={isSubmitting}
+          disabled={isSubmitting || !isFormValid()}
           sx={(theme) => ({
             backgroundColor: theme.palette.mode === 'dark' ? '#f59e0b' : '#f59e0b',
             color: '#ffffff',

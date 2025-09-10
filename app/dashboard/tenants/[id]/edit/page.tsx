@@ -65,6 +65,17 @@ function TenantEditContent() {
     }));
   };
 
+  // Form validation function
+  const isFormValid = () => {
+    // Check required fields
+    if (!formData.tenantName.trim()) return false;
+    if (!formData.tenantNumber.trim()) return false;
+    if (!formData.checkInDate) return false;
+    if (formData.monthlyRent <= 0) return false;
+    
+    return true;
+  };
+
   const updateTenantMutation = useUpdateTenant();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -304,7 +315,7 @@ function TenantEditContent() {
                
                 <button
                   onClick={handleSubmit}
-                  disabled={updateTenantMutation.isPending}
+                  disabled={updateTenantMutation.isPending || !isFormValid()}
                   className="px-4 py-2 bg-gray-500 dark:bg-gray-700 hover:bg-gray-600 rounded-[30px] cursor-pointer text-white font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Save Changes
@@ -327,7 +338,7 @@ function TenantEditContent() {
                 </button>
                 <button
                   onClick={handleSubmit}
-                  disabled={updateTenantMutation.isPending}
+                  disabled={updateTenantMutation.isPending || !isFormValid()}
                   className="px-4 py-2 bg-gray-500 dark:bg-gray-700 hover:bg-gray-600 rounded-[30px] cursor-pointer text-white font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {updateTenantMutation.isPending ? (

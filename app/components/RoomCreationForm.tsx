@@ -27,6 +27,7 @@ import {
   Tv as TvIcon
 } from "@mui/icons-material";
 import { useCreateRoom } from "@/hooks/useRooms";
+import { useProperty } from "@/contexts/PropertyContext";
 
 export const AMENITY_OPTIONS = [
   { value: 'wifi', label: 'WiFi', icon: <WifiIcon fontSize="small" /> },
@@ -51,20 +52,32 @@ interface RoomCreationFormProps {
 
 export default function AddRoomForm({ onClose, onSubmit, isPending = false, error }: RoomCreationFormProps) {
   const createRoomMutation = useCreateRoom();
-  
+  const { selectedProperty } = useProperty();
+
   const [formData, setFormData] = useState({
-    property: "689bac528e7a5a0671bfba31",
+    property: selectedProperty?.id || '',
     roomNo: "",
     roomType: "sharing",
     maxCapacity: 2,
     amenities: ["ac", "attached_bathroom", "wifi", "balcony", 'tv'],
     currentMeterReading: 0,
-    previousMeterReading: 0,
     isActive: true,
   });
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Form validation function
+  const isFormValid = () => {
+    // Check required fields
+    if (!formData.roomNo.trim()) return false;
+    if (!formData.roomType) return false;
+    if (!formData.maxCapacity || formData.maxCapacity < 1 || formData.maxCapacity > 10) return false;
+    if (!formData.amenities || formData.amenities.length === 0) return false;
+    if (formData.currentMeterReading === undefined || formData.currentMeterReading < 0) return false;
+    
+    return true;
   };
 
   const handleButtonSubmit = () => {
@@ -215,31 +228,35 @@ export default function AddRoomForm({ onClose, onSubmit, isPending = false, erro
                   placeholder="Enter max capacity"
                 />
               </div>
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Room Status
                 </label>
                 <div className="flex items-center h-12 px-4 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700">
                   <Switch
-                    checked={formData.isActive}
-                    onChange={(e) => handleInputChange('isActive', e.target.checked)}
+                    checked={true}
+                    disabled
                     sx={{
                       '& .MuiSwitch-switchBase.Mui-checked': {
                         color: '#3b82f6',
-                        '&:hover': {
-                          backgroundColor: 'rgba(59, 130, 246, 0.08)'
-                        }
                       },
                       '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
                         backgroundColor: '#3b82f6'
+                      },
+                      '& .MuiSwitch-switchBase.Mui-disabled': {
+                        color: '#3b82f6',
+                      },
+                      '& .MuiSwitch-switchBase.Mui-disabled + .MuiSwitch-track': {
+                        backgroundColor: '#3b82f6',
+                        opacity: 0.7,
                       }
                     }}
                   />
                   <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
-                    {formData.isActive ? 'Active' : 'Inactive'}
+                    Active
                   </span>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -335,28 +352,16 @@ export default function AddRoomForm({ onClose, onSubmit, isPending = false, erro
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Current Meter Reading
+                  Current Meter Reading *
                 </label>
                 <input
                   type="number"
-                  value={formData.currentMeterReading}
+                  value={formData.currentMeterReading === undefined ? '' : formData.currentMeterReading}
                   onChange={(e) => handleInputChange('currentMeterReading', Number(e.target.value))}
+                  required
                   min="0"
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
                   placeholder="Enter current reading"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Previous Meter Reading
-                </label>
-                <input
-                  type="number"
-                  value={formData.previousMeterReading}
-                  onChange={(e) => handleInputChange('previousMeterReading', Number(e.target.value))}
-                  min="0"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
-                  placeholder="Enter previous reading"
                 />
               </div>
             </div>
@@ -377,7 +382,7 @@ export default function AddRoomForm({ onClose, onSubmit, isPending = false, erro
           )}
                      <button
              onClick={handleButtonSubmit}
-             disabled={isPending || createRoomMutation.isPending}
+             disabled={isPending || createRoomMutation.isPending || !isFormValid()}
              className="px-6 py-2  bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 rounded-[30px] cursor-pointer text-white font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
            >
              {(isPending || createRoomMutation.isPending) ? (

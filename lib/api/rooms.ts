@@ -60,7 +60,6 @@ export async function createRoom(roomData: {
   maxCapacity: number;
   amenities: string[];
   currentMeterReading: number;
-  previousMeterReading: number;
   isActive: boolean;
 }): Promise<any> {
   return apiClient.post('/rooms', roomData);

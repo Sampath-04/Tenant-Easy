@@ -129,6 +129,32 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
     }));
   };
 
+  // Form validation function
+  const isFormValid = () => {
+    // Check required fields
+    if (!formData.tenantName.trim()) return false;
+    if (!formData.tenantNumber.trim()) return false;
+    if (!formData.room) return false;
+    if (!formData.checkinDate) return false;
+    if (!formData.monthlyRent || formData.monthlyRent <= 0) return false;
+    if (formData.securityDepositTotal === undefined || formData.securityDepositTotal < 0) return false;
+
+    // Check current reading if check-in date is today
+    const today = formatDateToYYYYMMDD(new Date());
+    if (formData.checkinDate === today && (formData.currentReading === undefined || formData.currentReading < 0)) {
+      return false;
+    }
+
+    // Check payment proofs if any amount is paid (except for cash payments)
+    if ((formData.rentPaid && formData.rentPaid > 0) || (formData.securityDepositPaid && formData.securityDepositPaid > 0)) {
+      if (formData.paymentMethod !== 'CASH' && (!formData.paymentProofs || formData.paymentProofs.length === 0)) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   // Validation function for current reading
   const getCurrentReadingValidation = () => {
     if (!formData.room || !formData.currentReading) return null;
@@ -508,10 +534,12 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
                       placeholder="Upload payment proofs"
                       multiple={true}
                       selectedFiles={formData.paymentProofs}
-                      maxFiles={4}
+                      maxFiles={2}
                     />
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Required when rent or security deposit is paid
+                      {formData.paymentMethod === 'CASH' 
+                        ? 'Optional for cash payments' 
+                        : 'Required when rent or security deposit is paid'}
                     </p>
                   </div>
                 </div>
@@ -541,7 +569,7 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
           <button
              type="submit"
              onClick={handleSubmit}
-             disabled={createTenantMutation.isPending}
+             disabled={createTenantMutation.isPending || !isFormValid()}
              className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-[30px] text-md font-medium transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer"
            >
             {createTenantMutation.isPending ? (

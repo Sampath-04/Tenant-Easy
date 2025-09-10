@@ -113,6 +113,32 @@ function CreateTenantContent() {
     }));
   };
 
+  // Form validation function
+  const isFormValid = () => {
+    // Check required fields
+    if (!formData.tenantName.trim()) return false;
+    if (!formData.tenantNumber.trim()) return false;
+    if (!formData.room) return false;
+    if (!formData.checkinDate) return false;
+    if (formData.monthlyRent <= 0) return false;
+    if (formData.securityDepositTotal < 0) return false;
+
+    // Check current reading if check-in date is today
+    const today = formatDateToYYYYMMDD(new Date());
+    if (formData.checkinDate === today && (formData.currentReading === undefined || formData.currentReading < 0)) {
+      return false;
+    }
+
+    // Check payment proofs if any amount is paid (except for cash payments)
+    if ((formData.rentPaid > 0 || formData.securityDepositPaid > 0)) {
+      if (formData.paymentMethod !== 'CASH' && (!formData.paymentProofs || formData.paymentProofs.length === 0)) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -130,12 +156,13 @@ function CreateTenantContent() {
       return;
     }
 
-    // Validate payment proofs if rent or security is paid
-    if ((formData.rentPaid > 0 || formData.securityDepositPaid > 0) && 
-        (!formData.paymentProofs || formData.paymentProofs.length === 0)) {
-      const errorToast = showErrorToast('Payment proof is required when rent or security deposit is paid');
-      toast.error(errorToast.message, errorToast.config);
-      return;
+    // Validate payment proofs if rent or security is paid (except for cash payments)
+    if ((formData.rentPaid > 0 || formData.securityDepositPaid > 0)) {
+      if (formData.paymentMethod !== 'CASH' && (!formData.paymentProofs || formData.paymentProofs.length === 0)) {
+        const errorToast = showErrorToast('Payment proof is required when rent or security deposit is paid (except for cash payments)');
+        toast.error(errorToast.message, errorToast.config);
+        return;
+      }
     }
 
     createTenantMutation.mutate(formData, {
@@ -490,10 +517,12 @@ function CreateTenantContent() {
                           placeholder="Upload payment proofs"
                           multiple={true}
                           selectedFiles={formData.paymentProofs}
-                          maxFiles={4}
+                          maxFiles={2}
                         />
                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                         Required when rent or security deposit is paid
+                         {formData.paymentMethod === 'CASH' 
+                           ? 'Optional for cash payments' 
+                           : 'Required when rent or security deposit is paid'}
                        </p>
                      </div>
                   </div>
@@ -509,7 +538,7 @@ function CreateTenantContent() {
                  </button>
                  <button
                    onClick={handleSubmit}
-                   disabled={createTenantMutation.isPending}
+                   disabled={createTenantMutation.isPending || !isFormValid()}
                    className="px-6 py-2 bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 rounded-[30px] cursor-pointer text-white font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-1 md:flex-none w-fit"
                  >
                    {createTenantMutation.isPending ? (

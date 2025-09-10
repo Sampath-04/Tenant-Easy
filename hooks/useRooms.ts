@@ -65,7 +65,6 @@ interface CreateRoomData {
   maxCapacity: number;
   amenities: string[];
   currentMeterReading: number;
-  previousMeterReading: number;
   isActive: boolean;
 }
 

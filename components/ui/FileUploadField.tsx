@@ -98,7 +98,7 @@ export default function FileUploadField({
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             Selected Files:
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="flex gap-6">
             {selectedFiles.map((file, index) => (
               <div key={index} className="relative group w-[160px] h-[160px]">
                 <div className="aspect-square rounded-lg overflow-hidden border border-gray-200 bg-gray-50 dark:bg-gray-700 flex items-center justify-center">

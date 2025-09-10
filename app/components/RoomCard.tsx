@@ -102,6 +102,17 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
     setEditDialogOpen(true);
   };
 
+  // Form validation function
+  const isFormValid = () => {
+    // Check required fields
+    if (!editForm.roomNo.trim()) return false;
+    if (!editForm.roomType) return false;
+    if (!editForm.maxCapacity || editForm.maxCapacity < 1 || editForm.maxCapacity > 10) return false;
+    if (!editForm.amenities || editForm.amenities.length === 0) return false;
+    
+    return true;
+  };
+
   const handleSaveRoom = () => {
     if (onRoomUpdate) {
       onRoomUpdate(room._id, editForm);
@@ -606,6 +617,7 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
         </button>
         <button
           onClick={handleSaveRoom}
+          disabled={!isFormValid()}
           className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-[30px] text-md font-medium transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer"
         >
           <SaveIcon fontSize="small" />
