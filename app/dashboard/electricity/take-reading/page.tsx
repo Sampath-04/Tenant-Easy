@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AuthGuard, useAuth } from '../../../../contexts/AuthContext';
 import { useProperty } from '../../../../contexts/PropertyContext';
-import { useRecordElectricityReading } from '../../../../hooks/useElectricityReadings';
+import { useRecordElectricityReading, useUpdateElectricityReading } from '../../../../hooks/useElectricityReadings';
 import { useRooms } from '../../../../hooks/useRooms';
 import { AppHeader } from '../../../../components/AppHeader';
 import NumberInput from '../../../../components/ui/NumberInput';
@@ -60,10 +60,11 @@ function ElectricityReadingContent() {
   const { data: allRoomsResponse, isLoading: allRoomsLoading, error: allRoomsError } = useRooms(
     selectedProperty?.id || '',
     1,
-    1000
+    30
   );
   
   const recordReadingMutation = useRecordElectricityReading();
+  const updateReadingMutation = useUpdateElectricityReading();
 
   const handleReadingChange = (roomId: string, value: number) => {
     setRoomReadings(prev => ({
@@ -91,7 +92,8 @@ function ElectricityReadingContent() {
         room: roomId,
         meterReading: reading.meterReading,
         recordedBy: {
-          name: user.name || 'Unknown'
+          name: user.name || 'Unknown',
+          role: user.role || 'Unknown'
         }
       });
       // Update local state to show recorded status
@@ -127,7 +129,53 @@ function ElectricityReadingContent() {
   };
 
   const handleSaveEdit = async (roomId: string) => {
-    await handleRecordReading(roomId);
+    if (!selectedProperty || !user) return;
+    const reading = roomReadings[roomId];
+    if (!reading || reading.meterReading <= 0) {
+      const errorToast = showErrorToast('Please enter a valid meter reading');
+      toast.error(errorToast.message, errorToast.config);
+      return;
+    }
+    
+    // Check if this is an existing reading that needs to be updated
+    if (reading.recordedData && reading.recordedData._id) {
+      setRecordingRoomId(roomId);
+      try {
+        const response = await updateReadingMutation.mutateAsync({
+          readingId: reading.recordedData._id,
+          data: {
+            meterReading: reading.meterReading,
+            recordedBy: {
+              name: user.name || 'Unknown',
+              role: user.role || 'Unknown'
+            }
+          }
+        });
+        
+        // Update local state to show updated status
+        setRoomReadings(prev => ({
+          ...prev,
+          [roomId]: {
+            ...prev[roomId],
+            isRecorded: true,
+            isEditing: false,
+            recordedData: response.data
+          }
+        }));
+
+        const successToast = showSuccessToast('Electricity reading updated successfully!');
+        toast.success(successToast.message, successToast.config);
+      } catch (error) {
+        console.error('Failed to update reading:', error);
+        const errorToast = showErrorToast('Failed to update electricity reading');
+        toast.error(errorToast.message, errorToast.config);
+      } finally {
+        setRecordingRoomId(null);
+      }
+    } else {
+      // If no existing reading ID, treat as new recording
+      await handleRecordReading(roomId);
+    }
   };
 
   const handleCancelEdit = (roomId: string) => {

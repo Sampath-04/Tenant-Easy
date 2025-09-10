@@ -7,6 +7,15 @@ export interface ElectricityReadingRequest {
   meterReading: number;
   recordedBy: {
     name: string;
+    role: string;
+  };
+}
+
+export interface UpdateElectricityReadingRequest {
+  meterReading: number;
+  recordedBy: {
+    name: string;
+    role: string;
   };
 }
 
@@ -51,6 +60,13 @@ export interface RoomsResponse {
 
 export async function recordElectricityReading(data: ElectricityReadingRequest): Promise<ElectricityReadingResponse> {
   return apiClient.post<ElectricityReadingResponse>('/electricity-readings/', data);
+}
+
+export async function updateElectricityReading(
+  readingId: string, 
+  data: UpdateElectricityReadingRequest
+): Promise<ElectricityReadingResponse> {
+  return apiClient.put<ElectricityReadingResponse>(`/electricity-readings/${readingId}`, data);
 }
 
 
