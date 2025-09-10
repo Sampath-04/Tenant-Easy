@@ -38,7 +38,8 @@ import { Suspense } from "react";
 
 export default function TenantPaymentWrapper() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>Loading...</div>}> 
+    {/* suspense added for useSearchParams */}
       <TenantPaymentPage />
     </Suspense>
   );
