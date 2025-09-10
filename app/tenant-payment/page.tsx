@@ -34,7 +34,17 @@ import { formatDate, formatCurrency } from '@/lib/utils/formatters';
 import { useSubmitPaymentRequest } from '@/hooks/usePaymentRequests';
 import { toast } from 'react-toastify';
 
-export default function TenantPaymentPage() {
+import { Suspense } from "react";
+
+export default function TenantPaymentWrapper() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TenantPaymentPage />
+    </Suspense>
+  );
+}
+
+function TenantPaymentPage() {
   const searchParams = useSearchParams();
   const rentRecordId = searchParams.get('rentRecordId');
   

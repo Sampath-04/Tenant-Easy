@@ -442,7 +442,7 @@ function ElectricityReadingContent() {
                         sx={{ 
                             padding: '16px !important',
                             borderRadius: '16px', 
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                            boxShadow: "rgba(0, 0, 0, 0.15) 0px 2px 8px"
                         }}
                         >
                         <CardContent sx={{height: '100%', padding: '0px !important'}}>
@@ -582,7 +582,7 @@ function ElectricityReadingContent() {
                                         type="button"
                                         onClick={() => handleRecordReading(room._id)}
                                          disabled={recordingRoomId === room._id || roomReading.meterReading <= 0}
-                                         className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-[30px] text-md font-medium transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+                                         className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-[30px] text-md font-medium transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer text-sm"
                                          >
                                          {recordingRoomId === room._id ? (
                                             <>
@@ -631,7 +631,7 @@ function ElectricityReadingContent() {
         </div>
         {/* Pagination */}
         {roomsResponse?.pagination && roomsResponse.pagination.totalPages > 0 && (
-          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50 mt-6">
+          <div className=" mt-6">
             <TablePagination
               component="div"
               count={roomsResponse.total || 0}
