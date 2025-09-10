@@ -6,7 +6,7 @@ import { AuthGuard } from '@/contexts/AuthContext';
 import { useProperty } from '@/contexts/PropertyContext';
 import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
-import { PAYMENT_METHOD_OPTIONS } from '@/lib/constants/paymentConstants';
+import { DEFAULT_PAYMENT_METHOD, PAYMENT_METHOD_OPTIONS } from '@/lib/constants/paymentConstants';
 import { useCreateTenant } from '@/hooks/useTenants';
 import { useRooms } from '@/hooks/useRooms';
 import { showErrorToast, showSuccessToast } from '@/lib/toast-config';
@@ -57,14 +57,14 @@ function CreateTenantContent() {
   // Reusable NumberInput styles with theme support
   const numberInputStyles = (theme: Theme) => ({
     "& .MuiInputBase-root": {
+      '& .MuiInputBase-input':{
+        padding: "14px",
+      },
       borderRadius: "8px", // Override the default 30px to match other inputs
       backgroundColor: theme.palette.mode === "dark" 
-        ? "rgba(55, 65, 81, 0.8)" 
-        : "rgba(255, 255, 255, 0.8)",
+        ? "#374151" 
+        : "rgba(255,255,255,0.8)",
       color: theme.palette.mode === "dark" ? "white" : "black",
-      border: theme.palette.mode === "dark" 
-        ? "1px solid #4a5565" 
-        : "1px solid #d1d5db",
       "&.Mui-focused": {
         borderColor: "#3B82F6",
         border: "2px solid #3B82F6",
@@ -90,7 +90,7 @@ function CreateTenantContent() {
       relation: ''
     },
     rentPaid: 0,
-    paymentMethod: 'CASH',
+    paymentMethod: DEFAULT_PAYMENT_METHOD,
     paymentProofs: []
   });
 
@@ -170,7 +170,7 @@ function CreateTenantContent() {
       
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
-          <div className="p-6">
+          <div className="p-4 w-[60%] mx-auto">
             <div className="mb-6">
                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                  New Tenant
@@ -297,9 +297,15 @@ function CreateTenantContent() {
                              fullWidth: true,
                              placeholder: "Select check-in date",
                              required: true,
-                             sx: {
+                             sx: (theme) => ({
+                                "& .MuiPickersInputBase-root":{
+                                  borderRadius: "8px",
+                                  backgroundColor: theme.palette.mode === "dark" ? "#374151" : "rgba(255,255,255,0.8)",
+                                },
+                                "& .MuiPickersSectionList-root":{
+                                padding: "14px 4px",
+                              },
                                "& .MuiInputBase-root": {
-                                 borderRadius: "8px",
                                  height: "48px",
                                  color: "white",
                                  backgroundColor: "rgba(55, 65, 81, 0.8)",
@@ -317,7 +323,7 @@ function CreateTenantContent() {
                                  borderColor: "#3b82f6",
                                  boxShadow: "0 0 0 3px rgba(59,130,246,0.2)",
                                },
-                             }
+                             })
                            },
                          }}
                        />
@@ -407,12 +413,12 @@ function CreateTenantContent() {
                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                        Security Deposit Total *
                      </label>
-                                           <NumberInput
+                        <NumberInput
                         value={formData.securityDepositTotal}
                         onChange={(value) => handleInputChange('securityDepositTotal', value || 0)}
                         placeholder="Enter security deposit total"
                         customeStyles={numberInputStyles}
-                      />
+                        />
                    </div>
                  </div>
                </div>
@@ -442,7 +448,7 @@ function CreateTenantContent() {
                         <NumberInput
                         value={formData.securityDepositPaid}
                         onChange={(value) => handleInputChange('securityDepositPaid', value || 0)}
-                        placeholder="Enter security deposit paid"
+                        placeholder="Security deposit paid"
                         customeStyles={numberInputStyles}
                       />
                    </div>
@@ -497,14 +503,14 @@ function CreateTenantContent() {
                <div className="flex flex-col md:flex-row gap-4 pt-6 border-t border-gray-200 dark:border-gray-700 justify-end">
                  <button
                    onClick={() => router.push('/dashboard/tenants')}
-                   className="px-6 py-3 border border-gray-300 text-gray-700 hover:border-gray-400 dark:border-gray-600 dark:text-gray-300 dark:hover:border-gray-500 rounded-[30px] cursor-pointer transition-colors duration-200 font-medium"
+                   className="px-6 py-2 border border-gray-300 text-gray-700 hover:border-gray-400 dark:border-gray-600 dark:text-gray-300 dark:hover:border-gray-500 rounded-[30px] cursor-pointer transition-colors duration-200 font-medium"
                  >
                    Cancel
                  </button>
                  <button
                    onClick={handleSubmit}
                    disabled={createTenantMutation.isPending}
-                   className="px-6 py-3 bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 rounded-[30px] cursor-pointer text-white font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-1 md:flex-none w-fit"
+                   className="px-6 py-2 bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 rounded-[30px] cursor-pointer text-white font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-1 md:flex-none w-fit"
                  >
                    {createTenantMutation.isPending ? (
                      <div className="flex items-center justify-center">

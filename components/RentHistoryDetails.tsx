@@ -28,8 +28,6 @@ const RentHistoryDetails: React.FC<RentHistoryDetailsProps> = ({
     setActiveTab(newValue);
   };
 
-  // For records without notice, we'll still show the component but with different content
-
   return (
     <Accordion 
       expanded={isExpanded} 

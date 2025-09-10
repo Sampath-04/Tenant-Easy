@@ -15,6 +15,7 @@ import {
   MenuItem,
   IconButton,
   Tooltip,
+  Link,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -32,6 +33,9 @@ import {
   Schedule as ScheduleIcon,
   FilterList as FilterIcon,
   Download as DownloadIcon,
+  ElectricBolt as ElectricBoltIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
 } from '@mui/icons-material';
 import { useRefunds, useProcessRefund } from '@/hooks/useRefunds';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -41,6 +45,7 @@ import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
 import ProcessRefundForm from '@/components/ProcessRefundForm';
 import RefundsExportDialog from '@/components/RefundsExportDialog';
+import RefundDetails from '@/components/RefundDetails';
 import { Refund } from '@/lib/api/refunds';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
@@ -56,6 +61,7 @@ export default function RefundsPage() {
   const [processFormOpen, setProcessFormOpen] = useState(false);
   const [selectedRefund, setSelectedRefund] = useState<Refund | null>(null);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [expandedRefundId, setExpandedRefundId] = useState<string | null>(null);
 
   // Debounce search value to prevent excessive API calls
   const debouncedSearch = useDebounce(filters.search, 500);
@@ -101,6 +107,10 @@ export default function RefundsPage() {
   const handleProcessRefund = (refund: Refund) => {
     setSelectedRefund(refund);
     setProcessFormOpen(true);
+  };
+
+  const toggleRefundDetails = (refundId: string) => {
+    setExpandedRefundId(expandedRefundId === refundId ? null : refundId);
   };
 
   const handleProcessRefundSubmit = async (data: {
@@ -469,7 +479,7 @@ export default function RefundsPage() {
                           </div>
 
                           {/* Refund Details */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                             {/* Left Column - Refund Information */}
                             <div className="space-y-4">
                               <div className='grid gap-1'>
@@ -489,15 +499,6 @@ export default function RefundsPage() {
                                   {formatCurrency(refund.refundAmount)}
                                 </Typography>
                               </div>
-
-                              <div className='grid gap-1'>
-                                <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
-                                  Notice Ends
-                                </Typography>
-                                <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
-                                  {formatDate(refund.noticeEndsOn)}
-                                </Typography>
-                              </div>
                             </div>
 
                             {/* Right Column - Deductions */}
@@ -515,15 +516,6 @@ export default function RefundsPage() {
 
                                   <div className='grid gap-1'>
                                     <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
-                                      Electricity Units
-                                    </Typography>
-                                    <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
-                                      {refund.deductions.electricityUnits}
-                                    </Typography>
-                                  </div>
-
-                                  <div className='grid gap-1'>
-                                    <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                                       Other Deductions
                                     </Typography>
                                     <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
@@ -534,6 +526,7 @@ export default function RefundsPage() {
                               )}
                             </div>
                           </div>
+
 
                           {/* Bottom Section - Additional Info */}
                           <div className="flex items-center gap-6">
@@ -589,9 +582,40 @@ export default function RefundsPage() {
                               Process Refund
                             </Button>
                           )}
+                          <Button
+                            variant="outlined"
+                            startIcon={<ElectricBoltIcon />}
+                            endIcon={expandedRefundId === refund._id ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                            onClick={() => toggleRefundDetails(refund._id)}
+                            sx={(theme) => ({
+                              borderColor: theme.palette.mode === 'dark' ? '#8b5cf6' : '#8b5cf6',
+                              color: theme.palette.mode === 'dark' ? '#a78bfa' : '#8b5cf6',
+                              borderRadius: '12px',
+                              textTransform: 'none',
+                              fontWeight: 600,
+                              padding: '8px 16px',
+                              '&:hover': {
+                                backgroundColor: theme.palette.mode === 'dark'
+                                  ? 'rgba(139, 92, 246, 0.1)'
+                                  : '#f3f4f6',
+                                borderColor: theme.palette.mode === 'dark' ? '#a78bfa' : '#7c3aed',
+                                color: theme.palette.mode === 'dark' ? '#a78bfa' : '#7c3aed',
+                              },
+                              transition: 'all 0.2s ease',
+                            })}
+                            size="small"
+                          >
+                            {expandedRefundId === refund._id ? 'Hide Details' : 'Show Details'}
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
+                    {/* Refund Details Section with Transaction Details */}
+                    <RefundDetails
+                      refund={refund}
+                      isExpanded={expandedRefundId === refund._id}
+                      onToggle={() => toggleRefundDetails(refund._id)}
+                    />
                   </Card>
                 ))
               )}

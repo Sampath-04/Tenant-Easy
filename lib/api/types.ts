@@ -88,6 +88,12 @@ export interface RoomsListResponse {
     hasPrev: boolean;
   };
   data: RoomDetail[];
+  summary: {
+    totalRooms: number;
+    recorded: number;
+    pending: number;
+    totalTenants: number;
+}
 }
 
 export interface Property {

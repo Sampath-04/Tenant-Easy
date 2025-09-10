@@ -116,7 +116,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                   >
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                       <div className="flex-1">
-                        <div className="flex flex-row justify-between gap-4">
+                        <div className="flex flex-row gap-24">
                           <div>
                             <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                               Payment Date
@@ -145,14 +145,14 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                               {payment.metadata.paidTo}
                             </Typography>
                           </div>
-                          <div>
+                          {/* <div>
                             <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                               Recorded By
                             </Typography>
                             <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
                               {payment.recordedBy.name} ({payment.recordedBy.role})
                             </Typography>
-                          </div>
+                          </div> */}
                           {/* <div>
                             <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                               Comments

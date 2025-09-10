@@ -27,7 +27,7 @@ export const getCurrentDate = () => {
   const today = new Date().toISOString();
   let currentDate = new Date(today);
   currentDate.setMonth(currentDate.getMonth() + 2); // move to next month
-  // currentDate.setDate(currentDate.getDate() + 21); // add 4 days to the current date
+  currentDate.setDate(currentDate.getDate() + 10); // add 4 days to the current date
   return currentDate;
 };
 

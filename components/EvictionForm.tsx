@@ -634,14 +634,7 @@ export default function EvictionForm({
             gap: '8px',
           })}
         >
-          {isSubmitting ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              Processing...
-            </>
-          ) : (
-            'Complete Eviction'
-          )}
+          {isSubmitting ? 'Processing...' : 'Complete Eviction'}
         </Button>
       </DialogActions>
     </Dialog>
