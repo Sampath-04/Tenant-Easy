@@ -44,7 +44,7 @@ import {
   IconButton,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import * as XLSX from 'xlsx';
+// import * as XLSX from 'xlsx';
 import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
@@ -120,26 +120,26 @@ export default function TenantOnboardPaymentsPage() {
       });
 
       // Create and download Excel file
-      const worksheet = XLSX.utils.json_to_sheet(excelData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Onboarding Tenants');
+      // const worksheet = XLSX.utils.json_to_sheet(excelData);
+      // const workbook = XLSX.utils.book_new();
+      // XLSX.utils.book_append_sheet(workbook, worksheet, 'Onboarding Tenants');
       
       // Add summary section
-      if (summary) {
-        const summaryData = [
-          { 'Metric': 'SUMMARY', 'Value': '' },
-          { 'Metric': 'Total Tenants', 'Value': summary.totalTenants },
-          { 'Metric': 'Total Pending Amount', 'Value': formatCurrency(summary.totalPendingAmount) },
-          { 'Metric': 'Total Security Pending', 'Value': formatCurrency(summary.totalSecurityPending) },
-          { 'Metric': 'Total Rent Pending', 'Value': formatCurrency(summary.totalRentPending) },
-        ];
+      // if (summary) {
+      //   const summaryData = [
+      //     { 'Metric': 'SUMMARY', 'Value': '' },
+      //     { 'Metric': 'Total Tenants', 'Value': summary.totalTenants },
+      //     { 'Metric': 'Total Pending Amount', 'Value': formatCurrency(summary.totalPendingAmount) },
+      //     { 'Metric': 'Total Security Pending', 'Value': formatCurrency(summary.totalSecurityPending) },
+      //     { 'Metric': 'Total Rent Pending', 'Value': formatCurrency(summary.totalRentPending) },
+      //   ];
         
-        const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
-        XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
-      }
+      //   const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
+      //   XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
+      // }
       
-      const fileName = `onboarding-tenants-${new Date().toISOString().split('T')[0]}.xlsx`;
-      XLSX.writeFile(workbook, fileName);
+      // const fileName = `onboarding-tenants-${new Date().toISOString().split('T')[0]}.xlsx`;
+      // XLSX.writeFile(workbook, fileName);
       
       // Reset states
       setExportDialogOpen(false);

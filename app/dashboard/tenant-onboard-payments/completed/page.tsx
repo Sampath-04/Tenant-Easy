@@ -13,8 +13,8 @@ import {
   Pagination,
   MenuItem,
   Chip,
-  FormControl,
-  InputLabel,
+//   FormControl,
+//   InputLabel,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -44,7 +44,7 @@ import {
   IconButton,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import * as XLSX from 'xlsx';
+// import * as XLSX from 'xlsx';
 import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
@@ -113,26 +113,26 @@ export default function TenantOnboardCompletedPage() {
       });
 
       // Create and download Excel file
-      const worksheet = XLSX.utils.json_to_sheet(excelData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Completed Tenants');
+      // const worksheet = XLSX.utils.json_to_sheet(excelData);
+      // const workbook = XLSX.utils.book_new();
+      // XLSX.utils.book_append_sheet(workbook, worksheet, 'Completed Tenants');
       
-      // Add summary section
-      if (summary) {
-        const summaryData = [
-          { 'Metric': 'SUMMARY', 'Value': '' },
-          { 'Metric': 'Total Tenants', 'Value': summary.totalTenants },
-          { 'Metric': 'Total Security Collected', 'Value': formatCurrency(summary.totalSecurityDepositCollected || 0) },
-          { 'Metric': 'Total Rent Collected', 'Value': formatCurrency(summary.totalOnboardingRentCollected || 0) },
-          { 'Metric': 'Total Amount Collected', 'Value': formatCurrency(summary.totalAmountCollected || 0) },
-        ];
+      // // Add summary section
+      // if (summary) {
+      //   const summaryData = [
+      //     { 'Metric': 'SUMMARY', 'Value': '' },
+      //     { 'Metric': 'Total Tenants', 'Value': summary.totalTenants },
+      //     { 'Metric': 'Total Security Collected', 'Value': formatCurrency(summary.totalSecurityDepositCollected || 0) },
+      //     { 'Metric': 'Total Rent Collected', 'Value': formatCurrency(summary.totalOnboardingRentCollected || 0) },
+      //     { 'Metric': 'Total Amount Collected', 'Value': formatCurrency(summary.totalAmountCollected || 0) },
+      //   ];
         
-        const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
-        XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
-      }
+      //   const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
+      //   XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
+      // }
       
-      const fileName = `completed-onboard-tenants-${new Date().toISOString().split('T')[0]}.xlsx`;
-      XLSX.writeFile(workbook, fileName);
+      // const fileName = `completed-onboard-tenants-${new Date().toISOString().split('T')[0]}.xlsx`;
+      // XLSX.writeFile(workbook, fileName);
       
       // Reset states
       setExportDialogOpen(false);
