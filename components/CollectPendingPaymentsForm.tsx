@@ -11,6 +11,10 @@ import {
   IconButton,
   Theme,
   Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { Close as CloseIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 import { CircularProgress } from '@mui/material';
@@ -50,8 +54,8 @@ export default function CollectOnboardPendingPaymentsForm({
 
   // Handle file uploads
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (formData.paymentProofs.length + acceptedFiles.length > 4) {
-      alert('You can only upload up to 4 files');
+    if (formData.paymentProofs.length + acceptedFiles.length > 2) {
+      alert('You can only upload up to 2 images');
       return;
     }
 
@@ -64,11 +68,10 @@ export default function CollectOnboardPendingPaymentsForm({
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp'],
-      'application/pdf': ['.pdf']
+      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp']
     },
-    maxFiles: 4 - formData.paymentProofs.length,
-    disabled: formData.paymentProofs.length >= 4
+    maxFiles: 2 - formData.paymentProofs.length,
+    disabled: formData.paymentProofs.length >= 2
   });
 
   const removeFile = (index: number) => {
@@ -93,6 +96,30 @@ export default function CollectOnboardPendingPaymentsForm({
     }
   };
 
+  // Form validation function
+  const isFormValid = () => {
+    const hasAmount = formData.securityDepositAmount || formData.rentAmount;
+    
+    if (!hasAmount) return false;
+    if (!formData.paymentMethod?.trim()) return false;
+    
+    // Payment proofs are optional for CASH payments
+    if (formData.paymentMethod !== 'CASH' && formData.paymentProofs.length === 0) {
+      return false;
+    }
+
+    // Validate amounts don't exceed pending amounts
+    if (formData.securityDepositAmount && formData.securityDepositAmount > (tenant?.pendingSecurityAmount || 0)) {
+      return false;
+    }
+
+    if (formData.rentAmount && formData.rentAmount > (tenant?.pendingOnboardingRentAmount || 0)) {
+      return false;
+    }
+
+    return true;
+  };
+
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -106,8 +133,8 @@ export default function CollectOnboardPendingPaymentsForm({
       if (!formData.paymentMethod?.trim()) {
         newErrors.paymentMethod = 'Payment method is required';
       }
-      if (formData.paymentProofs.length === 0) {
-        newErrors.paymentProofs = 'Payment proof is required';
+      if (formData.paymentMethod !== 'CASH' && formData.paymentProofs.length === 0) {
+        newErrors.paymentProofs = 'Payment proof is required for non-cash payments';
       }
     }
 
@@ -155,21 +182,74 @@ export default function CollectOnboardPendingPaymentsForm({
         '& .MuiDialog-paper': {
           borderRadius: '20px',
           backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+          maxHeight: '90vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
           '@media (max-width: 600px)': {
             margin: '16px',
             width: '100%',
+            maxHeight: '95vh',
           }
         }
       })}
     >
-      <DialogTitle className="flex items-center justify-between">
-        <p className="font-semibold text-lg">Collect Pending Payments - {tenant?.tenantName}</p>
-        <IconButton onClick={handleClose} disabled={isSubmitting}>
+      <DialogTitle
+        sx={(theme: Theme) => ({
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+          pb: 2,
+          backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+        })}
+      >
+        <Typography
+          sx={(theme: Theme) => ({
+            fontWeight: 600,
+            fontSize: '1.25rem',
+            color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+          })}
+        >
+          Collect Pending Payments - {tenant?.tenantName}
+        </Typography>
+        <IconButton 
+          onClick={handleClose} 
+          disabled={isSubmitting}
+          sx={(theme: Theme) => ({
+            color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f3f4f6',
+            }
+          })}
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       
-      <DialogContent>
+      <DialogContent
+        sx={(theme: Theme) => ({
+          flex: 1,
+          overflow: 'auto',
+          padding: '24px',
+          backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+          minHeight: 0, // Important for flex child to shrink
+          '&::-webkit-scrollbar': {
+            width: '6px',
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f1f5f9',
+            borderRadius: '3px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: theme.palette.mode === 'dark' ? '#6b7280' : '#cbd5e1',
+            borderRadius: '3px',
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#9ca3af' : '#94a3b8',
+            },
+          },
+        })}
+      >
         {/* Tenant Information */}
         <Box className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
           <Typography variant="subtitle2" className="text-blue-800 dark:text-blue-300 mb-3">
@@ -272,30 +352,44 @@ export default function CollectOnboardPendingPaymentsForm({
                 },
               })}
             />
-            <TextField
-              fullWidth
-              label="Payment Method *"
-              value={formData.paymentMethod}
-              onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
-              error={!!errors.paymentMethod}
-              helperText={errors.paymentMethod || "e.g., UPI, Cash, Bank Transfer"}
-              placeholder="Enter payment method"
-              variant="outlined"
-              sx={(theme: Theme) => ({
-                '& .MuiOutlinedInput-root': {
-                  '& fieldset': {
+            <FormControl fullWidth variant="outlined">
+              <InputLabel>Payment Method *</InputLabel>
+              <Select
+                value={formData.paymentMethod}
+                onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
+                label="Payment Method *"
+                error={!!errors.paymentMethod}
+                sx={(theme: Theme) => ({
+                  '& .MuiOutlinedInput-notchedOutline': {
                     borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
                   },
-                },
-              })}
-            />
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme.palette.mode === 'dark' ? '#3b82f6' : '#2563eb',
+                  },
+                })}
+              >
+                <MenuItem value="CASH">Cash</MenuItem>
+                <MenuItem value="UPI">UPI</MenuItem>
+                <MenuItem value="BANK_TRANSFER">Bank Transfer</MenuItem>
+                <MenuItem value="CHEQUE">Cheque</MenuItem>
+                <MenuItem value="CARD">Card</MenuItem>
+              </Select>
+            </FormControl>
+            {errors.paymentMethod && (
+              <Typography variant="caption" className="text-red-500 mt-1">
+                {errors.paymentMethod}
+              </Typography>
+            )}
           </Box>
         </Box>
 
         {/* Payment Proof Upload */}
         <Box className="mt-4">
           <p className='text-gray-600 dark:text-gray-400 text-md mb-2'>
-            Payment Proof * - Max 4 files
+            Upload Proofs (Optional) - Max 2 images
           </p>
           
           <div
@@ -303,7 +397,7 @@ export default function CollectOnboardPendingPaymentsForm({
             className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
               isDragActive 
                 ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                : formData.paymentProofs.length >= 4
+                : formData.paymentProofs.length >= 2
                 ? 'border-gray-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600 cursor-not-allowed'
                 : 'border-gray-300 hover:border-gray-400 dark:border-gray-400 dark:hover:border-gray-500'
             }`}
@@ -311,16 +405,16 @@ export default function CollectOnboardPendingPaymentsForm({
             <input {...getInputProps()} />
             <CloudUploadIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
             {isDragActive ? (
-              <p className="text-blue-600 dark:text-blue-400">Drop the files here...</p>
-            ) : formData.paymentProofs.length >= 4 ? (
-              <p className="text-gray-500 dark:text-gray-400">Maximum 4 files reached</p>
+              <p className="text-blue-600 dark:text-blue-400">Drop the images here...</p>
+            ) : formData.paymentProofs.length >= 2 ? (
+              <p className="text-gray-500 dark:text-gray-400">Maximum 2 images reached</p>
             ) : (
               <div>
                 <p className="text-gray-600 dark:text-gray-400 mb-2">
-                  Drag & drop files here, or click to select
+                  Drag & drop images here, or click to select
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Supports: JPG, PNG, GIF, BMP, WebP, PDF
+                  Supports: JPG, PNG, GIF, BMP, WebP
                 </p>
               </div>
             )}
@@ -333,32 +427,24 @@ export default function CollectOnboardPendingPaymentsForm({
           )}
 
           <p className="mt-2 text-gray-600 dark:text-gray-400 text-sm">
-            {formData.paymentProofs.length}/4 files selected
+            {formData.paymentProofs.length}/2 images selected
           </p>
 
-          {/* File Preview */}
+          {/* Image Previews */}
           {formData.paymentProofs.length > 0 && (
             <Box className="mt-4">
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Selected Files:
+                Selected Images:
               </p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {formData.paymentProofs.map((file, index) => (
                   <div key={index} className="relative group">
-                    <div className="aspect-square rounded-lg overflow-hidden border border-gray-200 bg-gray-50 dark:bg-gray-700 flex items-center justify-center">
-                      {file.type.startsWith('image/') ? (
-                        <img
-                          src={URL.createObjectURL(file)}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="text-center p-2">
-                          <Typography variant="caption" className="text-gray-500 dark:text-gray-400">
-                            PDF
-                          </Typography>
-                        </div>
-                      )}
+                    <div className="aspect-square rounded-lg overflow-hidden border border-gray-200">
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <IconButton
                       onClick={() => removeFile(index)}
@@ -380,12 +466,12 @@ export default function CollectOnboardPendingPaymentsForm({
                         transition: 'all 0.2s ease-in-out',
                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
                       }}
-                      title="Remove file"
+                      title="Remove image"
                     >
                       <CloseIcon sx={{ fontSize: 14, color: '#ef4444' }} />
                     </IconButton>
                     <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 text-center">
-                      {file.name.length > 15 ? file.name.substring(0, 12) + '...' : file.name}
+                      Image {index + 1}
                     </div>
                   </div>
                 ))}
@@ -411,27 +497,71 @@ export default function CollectOnboardPendingPaymentsForm({
         </Alert>
       </DialogContent>
 
-      <DialogActions sx={{
-        padding: '20px',
-        paddingTop: '16px',
-        borderTop: '1px solid #e0e0e0',
-        gap: '10px',
-        '@media (max-width: 600px)': {
-          justifyContent: 'center',
-          gap: '8px',
-        }
-      }}>
-        <button onClick={handleClose} disabled={isSubmitting} className='hidden md:block border-2 border-gray-300 text-gray-600 px-4 py-2 rounded-[30px] cursor-pointer dark:border-gray-400 dark:text-gray-200'>
-          Cancel
-        </button>
-        <button
-          onClick={handleSubmit}
-          disabled={isSubmitting || !hasAmount}
-          className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"
+      <DialogActions
+        sx={(theme: Theme) => ({
+          px: 2,
+          py: 2,
+          gap: 1,
+          backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+          borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+        })}
+      >
+        <Button
+          onClick={handleClose}
+          disabled={isSubmitting}
+          sx={(theme: Theme) => ({
+            backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
+            color: '#ffffff',
+            px: 3,
+            py: 1.5,
+            borderRadius: '30px',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            textTransform: 'none',
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#4b5563',
+            },
+            '&:disabled': {
+              opacity: 0.5,
+            }
+          })}
         >
-          {isSubmitting && <CircularProgress size={16} color="inherit" />}
-          {isSubmitting ? 'Collecting...' : 'Collect Payments'}
-        </button>
+          Cancel
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          disabled={isSubmitting || !isFormValid()}
+          sx={(theme: Theme) => ({
+            backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
+            color: '#ffffff',
+            px: 3,
+            py: 1.5,
+            borderRadius: '30px',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            textTransform: 'none',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#4b5563',
+            },
+            '&:disabled': {
+              opacity: 0.5,
+            }
+          })}
+        >
+          {isSubmitting ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Collecting...
+            </>
+          ) : (
+            'Collect Payments'
+          )}
+        </Button>
       </DialogActions>
     </Dialog>
   );

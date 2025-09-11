@@ -3,6 +3,7 @@ import {
   Card,
   CardContent,
   Typography,
+  Skeleton,
 } from '@mui/material';
 import {
   Person as PersonIcon,
@@ -26,26 +27,43 @@ interface SummaryData {
 interface SummaryCardsProps {
   summary: SummaryData;
   variant?: 'pending' | 'upcoming' | 'completed';
+  loading?: boolean;
 }
 
-export default function TenantOnboardSummaryCards({ summary, variant = 'pending' }: SummaryCardsProps) {
+export default function TenantOnboardSummaryCards({ summary, variant = 'pending', loading = false }: SummaryCardsProps) {
   const isUpcoming = variant === 'upcoming';
   const isCompleted = variant === 'completed';
+
+  // Show skeleton loading state
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+        <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
+        <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
+        <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
+        <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
+        <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
+      </div>
+    );
+  }
 
   
   if (isCompleted) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
         <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
           borderRadius: '12px',
           boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
         }}>
-          <CardContent className="p-6">
+          <CardContent sx={{
+            padding: '16px!important',
+            height: "140px"
+          }}>
             <div className="flex items-center justify-between">
               <div>
-                <Typography variant="h4" className="font-bold text-gray-900 dark:text-white">
+                <p className="text-gray-900 dark:text-white text-3xl">
                   {summary.totalTenants}
-                </Typography>
+                </p>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                   Total Tenants
                 </Typography>
@@ -57,14 +75,17 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
 
         <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
           borderRadius: '12px',
-          boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
+          boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;",
         }}>
-          <CardContent className="p-6">
+          <CardContent sx={{
+            padding: '16px!important',
+            height: "140px"
+          }}>
             <div className="flex items-center justify-between">
               <div>
-                <Typography variant="h4" className="font-bold text-gray-900 dark:text-white">
+                <p className="text-gray-900 dark:text-white text-3xl">
                   {formatCurrency(summary.totalAmountCollected || 0)}
-                </Typography>
+                </p>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                   Total Collected
                 </Typography>
@@ -78,12 +99,15 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
           borderRadius: '12px',
           boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
         }}>
-          <CardContent className="p-6">
+          <CardContent sx={{
+            padding: '16px!important',
+            height: "140px"
+          }}>
             <div className="flex items-center justify-between">
               <div>
-                <Typography variant="h4" className="font-bold text-gray-900 dark:text-white">
+                <p className="text-gray-900 dark:text-white text-3xl">
                   {formatCurrency(summary.totalSecurityDepositCollected || 0)}
-                </Typography>
+                </p>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                   Security Collected
                 </Typography>
@@ -97,12 +121,15 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
           borderRadius: '12px',
           boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
         }}>
-          <CardContent className="p-6">
+          <CardContent sx={{
+            padding: '16px!important',
+            height: "140px"
+          }}>
             <div className="flex items-center justify-between">
               <div>
-                <Typography variant="h4" className="font-bold text-gray-900 dark:text-white">
+                <p className="text-gray-900 dark:text-white text-3xl">
                   {formatCurrency(summary.totalOnboardingRentCollected || 0)}
-                </Typography>
+                </p>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                   Rent Collected
                 </Typography>
@@ -116,17 +143,20 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
   }
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
       <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
         borderRadius: '12px',
         boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
       }}>
-        <CardContent className="p-6">
+        <CardContent sx={{
+          padding: '16px!important',
+          height: "140px"
+        }}>
           <div className="flex items-center justify-between">
             <div>
-              <Typography variant="h4" className="font-bold text-gray-900 dark:text-white">
+              <p className="text-gray-900 dark:text-white text-3xl">
                 {summary.totalTenants}
-              </Typography>
+              </p>
               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                 Total Tenants
               </Typography>
@@ -140,12 +170,15 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
         borderRadius: '12px',
         boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
       }}>
-        <CardContent className="p-6">
+        <CardContent sx={{
+          padding: '16px!important',
+          height: "140px"
+        }}>
           <div className="flex items-center justify-between">
             <div>
-              <Typography variant="h4" className="font-bold text-gray-900 dark:text-white">
+              <p className="text-gray-900 dark:text-white text-3xl">
                 {formatCurrency(summary.totalPendingAmount || 0)}
-              </Typography>
+              </p>
               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                 Total Pending
               </Typography>
@@ -159,12 +192,15 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
         borderRadius: '12px',
         boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
       }}>
-        <CardContent className="p-6">
+        <CardContent sx={{
+          padding: '16px!important',
+          height: "140px"
+        }}>
           <div className="flex items-center justify-between">
             <div>
-              <Typography variant="h4" className="font-bold text-gray-900 dark:text-white">
+              <p className="text-gray-900 dark:text-white text-3xl">
                 {formatCurrency(summary.totalSecurityPending || 0)}
-              </Typography>
+              </p>
               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                 Security Pending
               </Typography>
@@ -182,12 +218,15 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
         borderRadius: '12px',
         boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
       }}>
-        <CardContent className="p-6">
+        <CardContent sx={{
+          padding: '16px!important',
+          height: "140px"
+        }}>
           <div className="flex items-center justify-between">
             <div>
-              <Typography variant="h4" className="font-bold text-gray-900 dark:text-white">
+              <p className="text-gray-900 dark:text-white text-3xl">
                 {formatCurrency(summary.totalRentPending || 0)}
-              </Typography>
+              </p>
               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                 Rent Pending
               </Typography>

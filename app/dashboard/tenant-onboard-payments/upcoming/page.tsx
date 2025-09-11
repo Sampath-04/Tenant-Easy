@@ -265,7 +265,7 @@ export default function UpcomingTenantsPage() {
 
             {/* Search and Filter */}
             {showFilters && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
                 <div className="flex flex-col md:flex-row gap-4 items-center">
                   <div className="flex-1 w-full">
                     <TextField

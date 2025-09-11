@@ -186,7 +186,9 @@ export default function TenantOnboardCompletedPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
 
-      <BreadCrumbs items={breadcrumbs} />
+      <div className='px-6 pt-6 flex flex-row justify-between items-center'>
+        <BreadCrumbs items={breadcrumbs} />
+      </div>
       
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
@@ -238,7 +240,7 @@ export default function TenantOnboardCompletedPage() {
 
             {/* Search and Filter */}
             {showFilters && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                   <div className="flex-1 w-full">
                     <TextField
