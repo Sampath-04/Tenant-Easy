@@ -13,6 +13,8 @@ import {
   Pagination,
   MenuItem,
   Chip,
+  Tooltip,
+  IconButton,
 } from '@mui/material';
 import { Theme } from '@mui/material/styles';
 import {
@@ -26,7 +28,7 @@ import {
 import { useUpcomingTenants, useProcessTenant } from '@/hooks/useTenants';
 import { useRooms } from '@/hooks/useRooms';
 import { useDebounce } from '@/hooks/useDebounce';
-import { formatDate, formatCurrency, getCurrentDate } from '@/lib/utils/formatters';
+import { formatDate, formatCurrency, getCurrentDate, formatDateForAPI } from '@/lib/utils/formatters';
 import { useProperty } from '@/contexts/PropertyContext';
 import TenantOnboardSummaryCards from '@/components/TenantOnboardSummaryCards';
 import ProcessTenantForm from '@/components/ProcessTenantForm';
@@ -35,7 +37,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  IconButton,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 // import * as XLSX from 'xlsx';
@@ -48,7 +49,7 @@ export default function UpcomingTenantsPage() {
   const [limit] = useState(10);
   const [filters, setFilters] = useState({
     search: '',
-    roomNo: '',
+    roomId: '',
   });
   
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
@@ -64,7 +65,7 @@ export default function UpcomingTenantsPage() {
   const { data: upcomingResponse, isLoading, error } = useUpcomingTenants(selectedProperty?.id || '', {
     page,
     limit,
-    room: filters.roomNo || undefined,
+    room: filters.roomId || undefined,
     search: debouncedSearch || undefined,
   });
   // Process tenant mutation
@@ -149,11 +150,11 @@ export default function UpcomingTenantsPage() {
         tenant.tenantName.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         tenant.tenantNumber.includes(debouncedSearch);
       
-      const matchesRoom = !filters.roomNo || tenant.room.roomNo === filters.roomNo;
+      const matchesRoom = !filters.roomId || tenant.room._id === filters.roomId;
       
       return matchesSearch && matchesRoom;
     });
-  }, [upcomingTenants, debouncedSearch, filters.roomNo]);
+  }, [upcomingTenants, debouncedSearch, filters.roomId]);
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
@@ -162,6 +163,14 @@ export default function UpcomingTenantsPage() {
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({ ...prev, [field]: value }));
     setPage(1); // Reset to first page when filters change
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      search: '',
+      roomId: '',
+    });
+    setPage(1);
   };
 
   const toggleFilters = () => {
@@ -220,28 +229,41 @@ export default function UpcomingTenantsPage() {
           <div className="p-6">
 
             {/* Summary Cards */}
-            {summary && <TenantOnboardSummaryCards summary={summaryData} variant="upcoming" />}
+            <TenantOnboardSummaryCards 
+              summary={summaryData || { totalTenants: 0 }} 
+              variant="upcoming" 
+              loading={isLoading} 
+            />
 
             {/* Filter Toggle and Export Button */}
             <div className="flex justify-between items-center mb-6">
-              <Button
-                variant="outlined"
-                startIcon={<FilterIcon />}
-                onClick={toggleFilters}
-                size="small"
-                sx={{
-                  borderColor: showFilters ? '#3b82f6' : '#9ca3af',
-                  color: showFilters ? '#3b82f6' : '#9ca3af',
-                  '&:hover': {
-                    borderColor: showFilters ? '#2563eb' : '#6b7280',
-                    backgroundColor: showFilters ? 'rgba(59, 130, 246, 0.04)' : 'rgba(156, 163, 175, 0.04)',
-                  },
-                  borderRadius: '12px',
-                  textTransform: 'none',
-                }}
-              >
-                {showFilters ? 'Hide Filters' : 'Show Filters'}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Tooltip title="Toggle Filters">
+                  <IconButton
+                    onClick={toggleFilters}
+                    className={`${showFilters ? 'bg-blue-100 dark:bg-blue-900' : 'bg-gray-100 dark:bg-gray-800'} hover:bg-blue-200 dark:hover:bg-blue-800 transition-all duration-200 ease-in-out`}
+                  >
+                    <FilterIcon className={`${showFilters ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'} transition-colors duration-200`} />
+                  </IconButton>
+                </Tooltip>
+
+                {showFilters && (
+                  <Button
+                    onClick={clearFilters}
+                    variant="outlined"
+                    size="small"
+                    className="bg-red-100 dark:bg-red-900 hover:bg-red-200 dark:hover:bg-red-800 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 transition-all duration-200 ease-in-out"
+                    sx={{
+                      borderRadius: '8px',
+                      textTransform: 'none',
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                    }}
+                  >
+                    Clear All
+                  </Button>
+                )}
+              </div>
 
               <Button
                 variant="outlined"
@@ -264,10 +286,11 @@ export default function UpcomingTenantsPage() {
             </div>
 
             {/* Search and Filter */}
-            {showFilters && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+            <div className={`overflow-hidden transition-all duration-300 ${showFilters ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+              }`}>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
                 <div className="flex flex-col md:flex-row gap-4 items-center">
-                  <div className="flex-1 w-full">
+                  <div className="w-[30%]">
                     <TextField
                       fullWidth
                       placeholder="Search by tenant name, phone number..."
@@ -290,15 +313,15 @@ export default function UpcomingTenantsPage() {
                       select
                       fullWidth
                       label="Room"
-                      value={filters.roomNo}
-                      onChange={(e) => handleFilterChange('roomNo', e.target.value)}
+                      value={filters.roomId}
+                      onChange={(e) => handleFilterChange('roomId', e.target.value)}
                       size="small"
                     >
                       <MenuItem value="">
                         <em>All Rooms</em>
                       </MenuItem>
                       {rooms.map((room) => (
-                        <MenuItem key={room._id} value={room.roomNo}>
+                        <MenuItem key={room._id} value={room._id}>
                           Room {room.roomNo}
                         </MenuItem>
                       ))}
@@ -306,7 +329,7 @@ export default function UpcomingTenantsPage() {
                   </div>
                 </div>
               </div>
-            )}
+            </div>
 
             {/* Upcoming Tenants List */}
             {isLoading ? (
@@ -484,7 +507,7 @@ export default function UpcomingTenantsPage() {
               <Typography variant="body2" className="text-blue-800 dark:text-blue-300">
                 <strong>Current Filters:</strong><br />
                 {filters.search && `Search: ${filters.search}<br />`}
-                {filters.roomNo && `Room: ${filters.roomNo}<br />`}
+                {filters.roomId && `Room: ${rooms.find(r => r._id === filters.roomId)?.roomNo || filters.roomId}<br />`}
                 Records to export: {filteredTenants.length}
               </Typography>
             </Box>

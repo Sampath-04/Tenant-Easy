@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAllRentRecordsForProperty, markRentAsPaid, getPendingRents, createNotice, updateNotice, getRentRecordsForExport, getPropertyRentSummary } from '@/lib/api/rentHistory';
+import { getAllRentRecordsForProperty, markRentAsPaid, getPendingRents, createNotice, updateNotice, getRentRecordsForExport, getPropertyRentSummary, generateRentReceiptPDF } from '@/lib/api/rentHistory';
 import { useProperty } from '@/contexts/PropertyContext';
 import { toast } from 'react-toastify';
 import { showSuccessToast, showErrorToast } from '@/lib/toast-config';
@@ -280,6 +280,19 @@ export function useRentRecordsForExport(
     enabled: enabled && !!propertyId && !!startDate && !!endDate,
     staleTime: 0,
     gcTime: 0
+  });
+}
+
+/**
+ * Hook to generate PDF receipt for a rent record
+ */
+export function useGenerateRentReceiptPDF() {
+  return useMutation({
+    mutationFn: generateRentReceiptPDF,
+    onError: (error: any) => {
+      const message = error?.response?.data?.message || error?.message || 'Failed to generate PDF receipt';
+      showErrorToast(message);
+    },
   });
 }
 

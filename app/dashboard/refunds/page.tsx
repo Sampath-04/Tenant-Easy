@@ -16,6 +16,7 @@ import {
   IconButton,
   Tooltip,
   Link,
+  Skeleton,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -39,7 +40,7 @@ import {
 } from '@mui/icons-material';
 import { useRefunds, useProcessRefund } from '@/hooks/useRefunds';
 import { useDebounce } from '@/hooks/useDebounce';
-import { formatDate, formatCurrency } from '@/lib/utils/formatters';
+import { formatDate, formatCurrency, formatDateForAPI } from '@/lib/utils/formatters';
 import { useProperty } from '@/contexts/PropertyContext';
 import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
@@ -72,8 +73,8 @@ export default function RefundsPage() {
     {
       search: debouncedSearch,
       status: filters.status,
-      processedAtFrom: startDate ? startDate.toISOString().split('T')[0] : undefined,
-      processedAtTo: endDate ? endDate.toISOString().split('T')[0] : undefined,
+      processedAtFrom: startDate ? formatDateForAPI(startDate) : undefined,
+      processedAtTo: endDate ? formatDateForAPI(endDate) : undefined,
     }
   );
 
@@ -170,13 +171,6 @@ export default function RefundsPage() {
     );
   };
 
-  if (refundsLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <CircularProgress />
-      </div>
-    );
-  }
   if (refundsError) {
     return (
       <div className="p-6">
@@ -206,8 +200,16 @@ export default function RefundsPage() {
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
           <div className="p-4">
             {/* Summary Cards */}
-            {refundsResponse && refundsResponse.data && (
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+            {
+              refundsLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+                  <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
+                  <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
+                  <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
+                </div>
+              ) : (
+                (refundsResponse?.statistics || !refundsLoading) && (
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
                 <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
                   borderRadius: '12px',
                   boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
@@ -292,8 +294,10 @@ export default function RefundsPage() {
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            )}
+                  </div>
+                )
+              )
+            }
 
             {/* Filter Toggle and Export Button */}
             <div className="flex justify-between items-center mb-6">
@@ -421,8 +425,13 @@ export default function RefundsPage() {
             </div>
 
             {/* Refunds List */}
-            <div className="space-y-4">
-              {filteredRefunds.length === 0 ? (
+            {refundsLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <CircularProgress />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredRefunds.length === 0 ? (
                 <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
                   borderRadius: '12px',
                   boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
@@ -619,7 +628,8 @@ export default function RefundsPage() {
                   </Card>
                 ))
               )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </main>

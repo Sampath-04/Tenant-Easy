@@ -15,6 +15,8 @@ import {
   Chip,
   FormControl,
   InputLabel,
+  Tooltip,
+  IconButton,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -31,7 +33,7 @@ import {
 import { useOnboardedPendingPayments, useCollectPendingPayments } from '@/hooks/useTenants';
 import { useRooms } from '@/hooks/useRooms';
 import { useDebounce } from '@/hooks/useDebounce';
-import { formatDate, formatCurrency } from '@/lib/utils/formatters';
+import { formatDate, formatCurrency, formatDateForAPI } from '@/lib/utils/formatters';
 import { useProperty } from '@/contexts/PropertyContext';
 import TenantOnboardSummaryCards from '@/components/TenantOnboardSummaryCards';
 import CollectOnboardPendingPaymentsForm from '@/components/CollectPendingPaymentsForm';
@@ -41,7 +43,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  IconButton,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 // import * as XLSX from 'xlsx';
@@ -55,7 +56,7 @@ export default function TenantOnboardPaymentsPage() {
   const [limit] = useState(10);
   const [filters, setFilters] = useState({
     search: '',
-    roomNo: '',
+    roomId: '',
     startCheckInDate: null as Date | null,
     endCheckInDate: null as Date | null,
   });
@@ -73,10 +74,10 @@ export default function TenantOnboardPaymentsPage() {
   const { data: onboardedResponse, isLoading, error } = useOnboardedPendingPayments(selectedProperty?.id || '', {
     page,
     limit,
-    room: filters.roomNo || undefined,
+    room: filters.roomId || undefined,
     search: debouncedSearch || undefined,
-    startCheckInDate: filters.startCheckInDate?.toISOString().split('T')[0] || undefined,
-    endCheckInDate: filters.endCheckInDate?.toISOString().split('T')[0] || undefined,
+    startCheckInDate: filters.startCheckInDate ? formatDateForAPI(filters.startCheckInDate) : undefined,
+    endCheckInDate: filters.endCheckInDate ? formatDateForAPI(filters.endCheckInDate) : undefined,
   });
 
   // Collect pending payments mutation
@@ -163,6 +164,16 @@ export default function TenantOnboardPaymentsPage() {
     setPage(1); // Reset to first page when filters change
   };
 
+  const clearFilters = () => {
+    setFilters({
+      search: '',
+      roomId: '',
+      startCheckInDate: null,
+      endCheckInDate: null,
+    });
+    setPage(1);
+  };
+
   const toggleFilters = () => {
     setShowFilters(!showFilters);
   };
@@ -215,28 +226,41 @@ export default function TenantOnboardPaymentsPage() {
           <div className="p-6">
 
             {/* Summary Cards */}
-            {summary && <TenantOnboardSummaryCards summary={summary} variant="pending" />}
+            <TenantOnboardSummaryCards 
+              summary={summary || { totalTenants: 0 }} 
+              variant="pending" 
+              loading={isLoading} 
+            />
 
             {/* Filter Toggle and Export Button */}
             <div className="flex justify-between items-center mb-6">
-              <Button
-                variant="outlined"
-                startIcon={<FilterIcon />}
-                onClick={toggleFilters}
-                size="small"
-                sx={{
-                  borderColor: showFilters ? '#3b82f6' : '#9ca3af',
-                  color: showFilters ? '#3b82f6' : '#9ca3af',
-                  '&:hover': {
-                    borderColor: showFilters ? '#2563eb' : '#6b7280',
-                    backgroundColor: showFilters ? 'rgba(59, 130, 246, 0.04)' : 'rgba(156, 163, 175, 0.04)',
-                  },
-                  borderRadius: '12px',
-                  textTransform: 'none',
-                }}
-              >
-                {showFilters ? 'Hide Filters' : 'Show Filters'}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Tooltip title="Toggle Filters">
+                  <IconButton
+                    onClick={toggleFilters}
+                    className={`${showFilters ? 'bg-blue-100 dark:bg-blue-900' : 'bg-gray-100 dark:bg-gray-800'} hover:bg-blue-200 dark:hover:bg-blue-800 transition-all duration-200 ease-in-out`}
+                  >
+                    <FilterIcon className={`${showFilters ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'} transition-colors duration-200`} />
+                  </IconButton>
+                </Tooltip>
+
+                {showFilters && (
+                  <Button
+                    onClick={clearFilters}
+                    variant="outlined"
+                    size="small"
+                    className="bg-red-100 dark:bg-red-900 hover:bg-red-200 dark:hover:bg-red-800 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 transition-all duration-200 ease-in-out"
+                    sx={{
+                      borderRadius: '8px',
+                      textTransform: 'none',
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                    }}
+                  >
+                    Clear All
+                  </Button>
+                )}
+              </div>
 
               <Button
                 variant="outlined"
@@ -259,10 +283,11 @@ export default function TenantOnboardPaymentsPage() {
             </div>
 
             {/* Search and Filter */}
-            {showFilters && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-                  <div className="flex-1 w-full">
+            <div className={`overflow-hidden transition-all duration-300 ${showFilters ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+              }`}>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+                <div className="flex gap-4 items-center">
+                  <div className="w-[380px]">
                     <TextField
                       fullWidth
                       placeholder="Search by tenant name, phone number..."
@@ -280,20 +305,20 @@ export default function TenantOnboardPaymentsPage() {
                       }}
                     />
                   </div>
-                  <div className="w-full">
+                  <div className='w-full md:w-48'>
                     <TextField
                       select
                       fullWidth
                       label="Room"
-                      value={filters.roomNo}
-                      onChange={(e) => handleFilterChange('roomNo', e.target.value)}
+                      value={filters.roomId}
+                      onChange={(e) => handleFilterChange('roomId', e.target.value)}
                       size="small"
                     >
                       <MenuItem value="">
                         <em>All Rooms</em>
                       </MenuItem>
                       {rooms.map((room) => (
-                        <MenuItem key={room._id} value={room.roomNo}>
+                        <MenuItem key={room._id} value={room._id}>
                           Room {room.roomNo}
                         </MenuItem>
                       ))}
@@ -302,6 +327,7 @@ export default function TenantOnboardPaymentsPage() {
                   
                   {/* Start Date Filter */}
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <div className='w-full md:w-48'>
                     <DatePicker
                       label="Check-in From"
                       value={filters.startCheckInDate}
@@ -309,7 +335,6 @@ export default function TenantOnboardPaymentsPage() {
                       slotProps={{
                         textField: {
                           size: 'small',
-                          fullWidth: true,
                           sx: {
                             "& .MuiInputBase-root": {
                               borderRadius: '12px',
@@ -319,18 +344,20 @@ export default function TenantOnboardPaymentsPage() {
                         },
                       }}
                     />
+                    </div>
+                    
                   </LocalizationProvider>
 
                   {/* End Date Filter */}
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DatePicker
+                   <div>
+                   <DatePicker
                       label="Check-in To"
                       value={filters.endCheckInDate}
                       onChange={(newValue) => handleFilterChange('endCheckInDate', newValue)}
                       slotProps={{
                         textField: {
                           size: 'small',
-                          fullWidth: true,
                           sx: {
                             "& .MuiInputBase-root": {
                               borderRadius: '12px',
@@ -340,31 +367,11 @@ export default function TenantOnboardPaymentsPage() {
                         },
                       }}
                     />
+                   </div>
                   </LocalizationProvider>
-
-                  {/* Clear Filters Button */}
-                  <Button
-                    variant="outlined"
-                    onClick={() => {
-                      setFilters({
-                        search: '',
-                        roomNo: '',
-                        startCheckInDate: null,
-                        endCheckInDate: null,
-                      });
-                    }}
-                    size="small"
-                    sx={{
-                      height: '40px',
-                      textTransform: 'none',
-                      borderRadius: '12px',
-                    }}
-                  >
-                    Clear Filters
-                  </Button>
                 </div>
               </div>
-            )}
+            </div>
 
             {/* Onboarding Tenants List */}
             {isLoading ? (
@@ -542,7 +549,7 @@ export default function TenantOnboardPaymentsPage() {
               <Typography variant="body2" className="text-blue-800 dark:text-blue-300">
                 <strong>Current Filters:</strong><br />
                 {filters.search && `Search: ${filters.search}<br />`}
-                {filters.roomNo && `Room: ${filters.roomNo}<br />`}
+                {filters.roomId && `Room: ${rooms.find(r => r._id === filters.roomId)?.roomNo || filters.roomId}<br />`}
                 Records to export: {filteredTenants.length}
               </Typography>
             </Box>

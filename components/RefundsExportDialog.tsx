@@ -290,18 +290,7 @@ export default function RefundsExportDialog({
               border: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
             })}
           >
-            <Typography
-              variant="body2"
-              sx={(theme) => ({
-                color: theme.palette.mode === 'dark' ? '#d1d5db' : '#6b7280',
-                fontWeight: 600,
-                mb: 2,
-              })}
-            >
-              Export Summary:
-            </Typography>
-            
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', alignItems: 'start', justifyContent: 'center', gap: 2 }}>
               <Box>
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
                   <Typography

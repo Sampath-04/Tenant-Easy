@@ -449,3 +449,8 @@ export interface SingleRentRecordResponse {
 export const getRentRecordById = async (rentRecordId: string): Promise<SingleRentRecordResponse> => {
   return await apiClient.get(`/rent-history/${rentRecordId}`);
 };
+
+// Generate PDF receipt for rent record
+export const generateRentReceiptPDF = async (rentRecordId: string): Promise<Blob> => {
+  return await apiClient.getBlob(`/rent-history/${rentRecordId}/receipt-pdf`);
+};

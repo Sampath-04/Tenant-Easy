@@ -84,6 +84,42 @@ export const apiClient = {
     }
   },
 
+  async getBlob(endpoint: string): Promise<Blob> {
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/pdf, application/octet-stream, */*',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        // Try to get error message from response
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          // If response is not JSON, use default error message
+        }
+        throw new ApiError(errorMessage, response.status);
+      }
+
+      return await response.blob();
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      // Handle network errors
+      throw new ApiError(
+        'Network error: Unable to connect to the server',
+        0,
+        { originalError: error }
+      );
+    }
+  },
+
   async post<T>(endpoint: string, body: any): Promise<T> {
     try {
 

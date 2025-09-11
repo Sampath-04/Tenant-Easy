@@ -194,38 +194,13 @@ export default function RentRecordsPage() {
   };
 
   const handleStartDateChange = (newValue: Date | null) => {
-    if (newValue) {
-      if (endDate) {
-        // If end date exists, update start date and keep end date
-        setStartDate(newValue);
-      } else {
-        // If no end date, set both to same date
-        setStartDate(newValue);
-        setEndDate(newValue);
-      }
-    } else {
-      // If start date is cleared, clear the entire range
-      setStartDate(null);
-      setEndDate(null);
-    }
-    setPage(1); // Reset to first page when date range changes
+    setStartDate(newValue);
+    setPage(1); // Reset to first page when date changes
   };
 
   const handleEndDateChange = (newValue: Date | null) => {
-    if (newValue) {
-      if (startDate) {
-        // If start date exists, update end date and keep start date
-        setEndDate(newValue);
-      } else {
-        // If no start date, set both to same date
-        setStartDate(newValue);
-        setEndDate(newValue);
-      }
-    } else {
-      // If end date is cleared, clear the entire range
-      setEndDate(null);
-    }
-    setPage(1); // Reset to first page when date range changes
+    setEndDate(newValue);
+    setPage(1); // Reset to first page when date changes
   };
 
   const clearFilters = () => {
