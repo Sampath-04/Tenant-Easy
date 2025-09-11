@@ -427,4 +427,89 @@ export async function updateOnboardingPaymentAmount(
   return apiClient.put<{ success: boolean; message: string }>(`/payment-transactions/${paymentId}/onboarding`, data);
 }
 
+// Tenant Analysis Types
+export interface TenantAnalysisData {
+  _id: string;
+  tenantName: string;
+  tenantNumber: string;
+  monthlyRent: number;
+  checkInDate: string;
+  securityDepositTotal: number;
+  securityDepositPaid: number;
+  securityDepositBalance: number;
+  room: {
+    _id: string;
+    roomNo: string;
+    roomType: string;
+  };
+  property: {
+    _id: string;
+    propertyName: string;
+  };
+  cycleStart: string;
+  cycleEnd: string;
+  currentCycleMonth: string;
+  totalPendingAmount: number;
+  monthsWithDuePayments: string[];
+  currentMonthPaymentStatus: string;
+  currentMonthTotalAmount: number;
+  currentMonthPaidAmount: number;
+  tenureInMonths: number;
+  exactCycle: {
+    cycleStart: string;
+    cycleEnd: string;
+    rentMonth: string;
+  };
+}
+
+export interface TenantAnalysisResponse {
+  success: boolean;
+  message: string;
+  data: {
+    tenants: TenantAnalysisData[];
+    total: number;
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+      limit: number;
+    };
+  };
+}
+
+export interface TenantAnalysisSummary {
+  success: boolean;
+  message: string;
+  data: {
+    totalActiveTenants: number;
+    totalSecurityCollected: number;
+    totalSecurityBalance: number;
+    totalMonthlyRentExpected: number;
+    totalPendingAmount: number;
+    averageTenureMonths: number;
+    currentMonthPaymentSummary: {
+      fullyPaid: number;
+      partiallyPaid: number;
+      unpaid: number;
+    };
+    tenantsWithPendingPayments: number;
+    collectionEfficiency: number;
+  };
+}
+
+/**
+ * Get tenant analysis data for a property
+ */
+export async function getTenantAnalysis(propertyId: string): Promise<TenantAnalysisResponse> {
+  return apiClient.get<TenantAnalysisResponse>(`/tenants/property/${propertyId}/analysis`);
+}
+
+/**
+ * Get tenant analysis summary for a property
+ */
+export async function getTenantAnalysisSummary(propertyId: string): Promise<TenantAnalysisSummary> {
+  return apiClient.get<TenantAnalysisSummary>(`/tenants/property/${propertyId}/analysis/summary`);
+}
+
 

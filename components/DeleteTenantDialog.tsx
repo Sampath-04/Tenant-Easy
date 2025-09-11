@@ -108,7 +108,7 @@ export default function DeleteTenantDialog({
             }
           })}
         >
-          This action cannot be undone. The tenant will be permanently removed{roomNo ? ` from ${roomNo}` : ' from the system'}.
+          This action cannot be undone. The tenant will be permanently removed{roomNo ? ` from Room ${roomNo}` : ' from the system'}.
         </Alert>
         
         {tenant && (

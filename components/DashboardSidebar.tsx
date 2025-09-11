@@ -216,7 +216,6 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                   : 'rgba(0, 0, 0, 0.04)',
               },
               borderRadius: 1,
-              mx: 1,
               mb: 0.5,
             }}
           >
@@ -311,7 +310,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 
       {/* Main Menu */}
       <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-        <List>
+        <List sx={{margin: "0"}}>
           {menuItems.map(item => renderMenuItem(item))}
         </List>
       </Box>

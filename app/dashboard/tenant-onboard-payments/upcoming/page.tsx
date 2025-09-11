@@ -483,61 +483,250 @@ export default function UpcomingTenantsPage() {
         onClose={() => setExportDialogOpen(false)}
         maxWidth="sm"
         fullWidth
-        sx={(theme: Theme) => ({
+        sx={(theme) => ({
           '& .MuiDialog-paper': {
-            borderRadius: '20px',
-            backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+            borderRadius: '16px',
+            backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
+            boxShadow: theme.palette.mode === 'dark'
+              ? '0 10px 40px rgba(0, 0, 0, 0.3)'
+              : '0 10px 40px rgba(0, 0, 0, 0.1)',
           }
         })}
       >
-        <DialogTitle className="flex items-center justify-between">
-          <Typography variant="h6" className="font-semibold">Export Upcoming Tenants</Typography>
-          <IconButton onClick={() => setExportDialogOpen(false)} disabled={isExporting}>
+        <DialogTitle
+          sx={(theme) => ({
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+            pb: 2,
+            backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
+          })}
+        >
+          <Typography
+            sx={(theme) => ({
+              fontWeight: 600,
+              fontSize: '1.25rem',
+              color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+            })}
+          >
+            Export Upcoming Tenants
+          </Typography>
+          <IconButton
+            onClick={() => setExportDialogOpen(false)}
+            disabled={isExporting}
+            sx={(theme) => ({
+              color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
+              '&:hover': {
+                backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f3f4f6',
+              }
+            })}
+          >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        
-        <DialogContent>
-          <Box className="space-y-4">
-            <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+
+        <DialogContent
+          sx={(theme) => ({
+            paddingTop: "24px !important",
+            backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
+          })}
+        >
+          <Box sx={{ mb: 2 }}>
+            <Typography
+              variant="body1"
+              sx={(theme) => ({
+                mb: 2,
+                color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+              })}
+            >
               Export the currently filtered upcoming tenants to Excel. The export will include all tenants matching your current filters.
             </Typography>
-            
-            <Box className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <Typography variant="body2" className="text-blue-800 dark:text-blue-300">
-                <strong>Current Filters:</strong><br />
-                {filters.search && `Search: ${filters.search}<br />`}
-                {filters.roomId && `Room: ${rooms.find(r => r._id === filters.roomId)?.roomNo || filters.roomId}<br />`}
-                Records to export: {filteredTenants.length}
+
+            <Box
+              sx={(theme) => ({
+                backgroundColor: theme.palette.mode === 'dark' ? '#111827' : '#f9fafb',
+                borderRadius: '8px',
+                p: 2.5,
+                border: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+              })}
+            >
+              <Typography
+                variant="body2"
+                sx={(theme) => ({
+                  color: theme.palette.mode === 'dark' ? '#d1d5db' : '#6b7280',
+                  fontWeight: 600,
+                  mb: 2,
+                })}
+              >
+                Export Summary:
               </Typography>
+              
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                <Box>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={(theme) => ({
+                        color: theme.palette.mode === 'dark' ? '#d1d5db' : '#6b7280',
+                        mb: 1,
+                        fontWeight: 500,
+                      })}
+                    >
+                      Search
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={(theme) => ({
+                        color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+                        mb: 2,
+                      })}
+                    >
+                      {filters.search || 'None'}
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={(theme) => ({
+                        color: theme.palette.mode === 'dark' ? '#d1d5db' : '#6b7280',
+                        mb: 1,
+                        fontWeight: 500,
+                      })}
+                    >
+                      Room
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={(theme) => ({
+                        color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+                        mb: 2,
+                      })}
+                    >
+                      {filters.roomId ? (rooms.find(r => r._id === filters.roomId)?.roomNo || filters.roomId) : 'All rooms'}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* vertical divider */}
+                <div className="h-full w-px bg-gray-200 dark:bg-gray-700"></div>
+                
+                <Box>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={(theme) => ({
+                        color: theme.palette.mode === 'dark' ? '#d1d5db' : '#6b7280',
+                        mb: 1,
+                        fontWeight: 500,
+                      })}
+                    >
+                      Status
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={(theme) => ({
+                        color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+                        mb: 2,
+                      })}
+                    >
+                      Upcoming
+                    </Typography>
+                  </Box>
+                  
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={(theme) => ({
+                        color: theme.palette.mode === 'dark' ? '#d1d5db' : '#6b7280',
+                        mb: 1,
+                        fontWeight: 500,
+                      })}
+                    >
+                      Records Count
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={(theme) => ({
+                        color: theme.palette.mode === 'dark' ? '#3b82f6' : '#3b82f6',
+                        fontWeight: 600,
+                      })}
+                    >
+                      {filteredTenants.length} records
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
             </Box>
           </Box>
         </DialogContent>
-        
-        <DialogActions sx={{ padding: '20px', gap: '10px' }}>
+
+        <DialogActions
+          sx={(theme) => ({
+            px: 3,
+            py: 2,
+            gap: 2,
+            backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
+            borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+          })}
+        >
           <Button
             onClick={() => setExportDialogOpen(false)}
             disabled={isExporting}
-            variant="outlined"
+            sx={(theme) => ({
+              backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
+              color: '#ffffff',
+              px: 3,
+              borderRadius: '30px',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              textTransform: 'none',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#4b5563',
+              },
+              '&:disabled': {
+                opacity: 0.5,
+              }
+            })}
           >
             Cancel
           </Button>
           <Button
             // onClick={handleExport}
             disabled={isExporting || !filteredTenants || filteredTenants.length === 0}
-            variant="contained"
-            startIcon={isExporting ? <CircularProgress size={16} color="inherit" /> : <DownloadIcon />}
-            sx={{
-              backgroundColor: '#3b82f6',
+            sx={(theme) => ({
+              backgroundColor: theme.palette.mode === 'dark' ? '#3b82f6' : '#3b82f6',
+              color: '#ffffff',
+              px: 3,
+              borderRadius: '30px',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              textTransform: 'none',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
               '&:hover': {
-                backgroundColor: '#2563eb',
+                backgroundColor: theme.palette.mode === 'dark' ? '#2563eb' : '#2563eb',
               },
               '&:disabled': {
-                backgroundColor: '#9ca3af',
-              },
-            }}
+                opacity: 0.5,
+              }
+            })}
           >
-            {isExporting ? 'Exporting...' : 'Export to Excel'}
+            {isExporting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Exporting...
+              </>
+            ) : (
+              <>
+                <DownloadIcon fontSize="small" />
+                Export to Excel
+              </>
+            )}
           </Button>
         </DialogActions>
       </Dialog>

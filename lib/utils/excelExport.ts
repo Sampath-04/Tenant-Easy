@@ -281,6 +281,186 @@ export const generateRentHistoryExcel = async (
   return fileName;
 };
 
+// Tenant Analysis Export Function
+export const generateTenantAnalysisExcel = async (
+  tenantAnalysisData: any[],
+  summaryData: any
+) => {
+  // Create a new workbook
+  const workbook = new ExcelJS.Workbook();
+
+  // Create Tenant Analysis sheet
+  const analysisSheet = workbook.addWorksheet('Tenant Analysis');
+  
+  // Define columns for Tenant Analysis
+  analysisSheet.columns = [
+    { header: 'Tenant Name', key: 'tenantName', width: 25 },
+    { header: 'Phone Number', key: 'tenantNumber', width: 18 },
+    { header: 'Room No', key: 'roomNo', width: 12 },
+    { header: 'Room Type', key: 'roomType', width: 15 },
+    { header: 'Monthly Rent', key: 'monthlyRent', width: 18 },
+    { header: 'Check-in Date', key: 'checkInDate', width: 18 },
+    { header: 'Security Deposit Total', key: 'securityDepositTotal', width: 25 },
+    { header: 'Security Deposit Paid', key: 'securityDepositPaid', width: 25 },
+    { header: 'Security Deposit Balance', key: 'securityDepositBalance', width: 28 },
+    { header: 'Current Cycle Month', key: 'currentCycleMonth', width: 22 },
+    { header: 'Total Pending Amount', key: 'totalPendingAmount', width: 25 },
+    { header: 'Current Month Status', key: 'currentMonthPaymentStatus', width: 25 },
+    { header: 'Current Month Total', key: 'currentMonthTotalAmount', width: 25 },
+    { header: 'Current Month Paid', key: 'currentMonthPaidAmount', width: 22 },
+    { header: 'Tenure (Months)', key: 'tenureInMonths', width: 18 },
+    { header: 'Months with Due', key: 'monthsWithDuePayments', width: 25 },
+  ];
+
+  // Style the header row for Tenant Analysis
+  const analysisHeaderRow = analysisSheet.getRow(1);
+  analysisHeaderRow.eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: 'FF000000' }, size: 12 };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFFFF00' } // Yellow background
+    };
+    cell.alignment = { 
+      horizontal: 'center', 
+      vertical: 'middle',
+      wrapText: false
+    };
+    cell.border = {
+      top: { style: 'thin', color: { argb: 'FF000000' } },
+      left: { style: 'thin', color: { argb: 'FF000000' } },
+      bottom: { style: 'thin', color: { argb: 'FF000000' } },
+      right: { style: 'thin', color: { argb: 'FF000000' } }
+    };
+  });
+
+  // Add data rows for Tenant Analysis
+  tenantAnalysisData.forEach((tenant) => {
+    const row = analysisSheet.addRow({
+      tenantName: tenant.tenantName,
+      tenantNumber: tenant.tenantNumber,
+      roomNo: tenant.room.roomNo,
+      roomType: tenant.room.roomType,
+      monthlyRent: tenant.monthlyRent,
+      checkInDate: formatDate(tenant.checkInDate),
+      securityDepositTotal: tenant.securityDepositTotal,
+      securityDepositPaid: tenant.securityDepositPaid,
+      securityDepositBalance: tenant.securityDepositBalance,
+      currentCycleMonth: tenant.currentCycleMonth,
+      totalPendingAmount: tenant.totalPendingAmount,
+      currentMonthPaymentStatus: tenant.currentMonthPaymentStatus,
+      currentMonthTotalAmount: tenant.currentMonthTotalAmount,
+      currentMonthPaidAmount: tenant.currentMonthPaidAmount,
+      tenureInMonths: tenant.tenureInMonths,
+      monthsWithDuePayments: tenant.monthsWithDuePayments.join(', '),
+    });
+
+    // Style data cells
+    row.eachCell((cell) => {
+      cell.alignment = { 
+        horizontal: 'left', 
+        vertical: 'middle',
+        wrapText: false
+      };
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        left: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        right: { style: 'thin', color: { argb: 'FFCCCCCC' } }
+      };
+    });
+  });
+
+  // Create Summary sheet
+  const summarySheet = workbook.addWorksheet('Summary');
+  
+  // Define columns for Summary
+  summarySheet.columns = [
+    { header: 'Metric', key: 'metric', width: 30 },
+    { header: 'Value', key: 'value', width: 20 },
+  ];
+
+  // Style the header row for Summary
+  const summaryHeaderRow = summarySheet.getRow(1);
+  summaryHeaderRow.eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: 'FF000000' }, size: 12 };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFFFF00' } // Yellow background
+    };
+    cell.alignment = { 
+      horizontal: 'center', 
+      vertical: 'middle',
+      wrapText: false
+    };
+    cell.border = {
+      top: { style: 'thin', color: { argb: 'FF000000' } },
+      left: { style: 'thin', color: { argb: 'FF000000' } },
+      bottom: { style: 'thin', color: { argb: 'FF000000' } },
+      right: { style: 'thin', color: { argb: 'FF000000' } }
+    };
+  });
+
+  // Add summary data
+  const summaryRows = [
+    { metric: 'Total Active Tenants', value: summaryData.totalActiveTenants },
+    { metric: 'Total Security Collected', value: `₹${summaryData.totalSecurityCollected.toLocaleString()}` },
+    { metric: 'Total Security Balance', value: `₹${summaryData.totalSecurityBalance.toLocaleString()}` },
+    { metric: 'Total Monthly Rent Expected', value: `₹${summaryData.totalMonthlyRentExpected.toLocaleString()}` },
+    { metric: 'Total Pending Amount', value: `₹${summaryData.totalPendingAmount.toLocaleString()}` },
+    { metric: 'Average Tenure (Months)', value: summaryData.averageTenureMonths },
+    { metric: 'Collection Efficiency (%)', value: `${summaryData.collectionEfficiency}%` },
+    { metric: 'Tenants with Pending Payments', value: summaryData.tenantsWithPendingPayments },
+    { metric: '', value: '' }, // Empty row
+    { metric: 'Current Month Payment Summary', value: '' },
+    { metric: 'Fully Paid', value: summaryData.currentMonthPaymentSummary.fullyPaid },
+    { metric: 'Partially Paid', value: summaryData.currentMonthPaymentSummary.partiallyPaid },
+    { metric: 'Unpaid', value: summaryData.currentMonthPaymentSummary.unpaid },
+  ];
+
+  summaryRows.forEach((rowData) => {
+    const row = summarySheet.addRow(rowData);
+    
+    // Style data cells
+    row.eachCell((cell) => {
+      cell.alignment = { 
+        horizontal: 'left', 
+        vertical: 'middle',
+        wrapText: false
+      };
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        left: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+        right: { style: 'thin', color: { argb: 'FFCCCCCC' } }
+      };
+      
+      // Style the metric column
+      if (cell.address[0] === 'A') {
+        cell.font = { bold: true };
+      }
+    });
+  });
+
+  // Generate filename with current date
+  const currentDate = formatDateToYYYYMMDD(new Date());
+  const fileName = `tenant-analysis-report-${currentDate}.xlsx`;
+  
+  // Write the file
+  await workbook.xlsx.writeBuffer().then((buffer) => {
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  });
+  
+  return fileName;
+};
+
 // Refunds Export Function
 export const generateRefundsExcel = async (
   refundsData: any[],
@@ -471,6 +651,7 @@ export const generateRefundsExcel = async (
 export const generateProfitLossExcel = async (
   profitLossData: any[]
 ) => {
+
   // Create a new workbook and worksheet
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Profit-Loss Report');
@@ -521,7 +702,7 @@ export const generateProfitLossExcel = async (
       totalIncome: record.income.totalAmount,
       rentIncome: record.income.categoryBreakdown.rent,
       otherIncome: record.income.categoryBreakdown.other,
-      totalExpenses: record.expenses.totalAmount,
+      totalExpenses: record.expense.totalAmount,
       grossProfit: record.financialSummary.grossProfit,
       netProfit: record.financialSummary.netProfit,
       profitMargin: record.financialSummary.profitMargin,

@@ -1,9 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -13,6 +17,7 @@ import {
   PieChart as PieChartIcon,
   CalendarToday as CalendarIcon,
   Description as DescriptionIcon,
+  People as PeopleIcon,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -23,12 +28,13 @@ import BreadCrumbs from '@/components/ui/BreadCrumbs';
 import { formatDateForAPI } from '@/lib/utils/formatters';
 import { showErrorToast, showSuccessToast } from '@/lib/toast-config';
 import { toast } from 'react-toastify';
-import { generateRefundsExcel, generateProfitLossExcel } from '@/lib/utils/excelExport';
+import { generateRefundsExcel, generateProfitLossExcel, generateTenantAnalysisExcel } from '@/lib/utils/excelExport';
 
 // Import existing export functions
 import { getRentRecordsForExport } from '@/lib/api/rentHistory';
 import { getRefundsForExport } from '@/lib/api/refunds';
 import { getProfitLossByProperty } from '@/lib/api/profitLoss';
+import { getTenantAnalysis, getTenantAnalysisSummary } from '@/lib/api/tenants';
 import { generateRentHistoryExcel } from '@/lib/utils/excelExport';
 
 interface ReportOption {
@@ -38,7 +44,7 @@ interface ReportOption {
   icon: React.ReactNode;
   color: string;
   requiresDateRange: boolean;
-  exportFunction: (propertyId: string, startDate?: string, endDate?: string) => Promise<any>;
+  exportFunction: (propertyId: string, ...args: any[]) => Promise<any>;
 }
 
 const reportOptions: ReportOption[] = [
@@ -79,6 +85,21 @@ const reportOptions: ReportOption[] = [
     exportFunction: async (propertyId: string) => {
       return await getProfitLossByProperty(propertyId);
     }
+  },
+  {
+    id: 'tenant-analysis',
+    title: 'Tenant Analysis Report',
+    description: 'Export comprehensive tenant analysis with payment status, tenure, and financial summaries',
+    icon: <PeopleIcon />,
+    color: 'bg-orange-500',
+    requiresDateRange: false,
+    exportFunction: async (propertyId: string) => {
+      const [analysisData, summaryData] = await Promise.all([
+        getTenantAnalysis(propertyId),
+        getTenantAnalysisSummary(propertyId)
+      ]);
+      return { analysisData: analysisData.data.tenants, summaryData: summaryData.data };
+    }
   }
 ];
 
@@ -89,13 +110,58 @@ export default function ReportsPage() {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  
+  // Month/Year filter states for profit & loss
+  const [monthFrom, setMonthFrom] = useState<string>('');
+  const [monthTo, setMonthTo] = useState<string>('');
+  const [year, setYear] = useState<number | ''>(new Date().getFullYear());
+  const [profitLossDialogOpen, setProfitLossDialogOpen] = useState(false);
 
-  const handleReportSelect = (report: ReportOption) => {
-    setSelectedReport(report);
-    setDialogOpen(true);
-    // Reset dates when opening dialog
-    setStartDate(null);
-    setEndDate(null);
+  // Update month values when year changes
+  useEffect(() => {
+    if (year && monthFrom) {
+      const month = monthFrom.split('-')[1];
+      setMonthFrom(`${year}-${month}`);
+    }
+    if (year && monthTo) {
+      const month = monthTo.split('-')[1];
+      setMonthTo(`${year}-${month}`);
+    }
+  }, [year]);
+
+  const handleReportSelect = async (report: ReportOption) => {
+    if (report.id === 'tenant-analysis') {
+      // Directly export tenant analysis without dialog
+      if (!selectedProperty) return;
+      
+      setIsExporting(true);
+      try {
+        const response = await report.exportFunction(selectedProperty.id);
+        await generateTenantAnalysisExcel(response.analysisData, response.summaryData);
+        
+        const { message, config } = showSuccessToast('Tenant Analysis Report exported successfully!');
+        toast.success(message, config);
+      } catch (error: any) {
+        console.error('Export failed:', error);
+        const { message, config } = showErrorToast(error.message || 'Failed to export tenant analysis report');
+        toast.error(message, config);
+      } finally {
+        setIsExporting(false);
+      }
+    } else if (report.id === 'profit-loss') {
+      setSelectedReport(report);
+      setProfitLossDialogOpen(true);
+      // Reset profit & loss filters
+      setMonthFrom('');
+      setMonthTo('');
+      setYear(new Date().getFullYear());
+    } else {
+      setSelectedReport(report);
+      setDialogOpen(true);
+      // Reset dates when opening dialog
+      setStartDate(null);
+      setEndDate(null);
+    }
   };
 
   const handleExport = async () => {
@@ -106,18 +172,6 @@ export default function ReportsPage() {
       const { message, config } = showErrorToast('Please select both start and end dates');
       toast.error(message, config);
       return;
-    }
-
-    // Check if date range is more than 2 months for date-based reports
-    if (selectedReport.requiresDateRange && startDate && endDate) {
-      const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
-      if (diffDays > 60) {
-        const { message, config } = showErrorToast('Please select a date range of maximum 2 months (60 days)');
-        toast.error(message, config);
-        return;
-      }
     }
 
     setIsExporting(true);
@@ -151,6 +205,46 @@ export default function ReportsPage() {
     }
   };
 
+  const handleProfitLossExport = async () => {
+    if (!selectedProperty) return;
+
+    // Validate required fields
+    if (!monthFrom || !monthTo || !year) {
+      const { message, config } = showErrorToast('Please select month range and year');
+      toast.error(message, config);
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      const response = await getProfitLossByProperty(
+        selectedProperty.id,
+        undefined, // month
+        year || undefined,
+        undefined, // status
+        monthFrom || undefined,
+        monthTo || undefined,
+        undefined, // yearFrom
+        undefined  // yearTo
+      );
+
+      // Generate Excel file based on report type
+      await generateExcelReport('profit-loss', response, null, null);
+
+      const { message, config } = showSuccessToast('Profit & Loss Report exported successfully!');
+      toast.success(message, config);
+
+      setProfitLossDialogOpen(false);
+    } catch (error: any) {
+      console.error('Export failed:', error);
+      const { message, config } = showErrorToast(error.message || 'Failed to export report');
+      toast.error(message, config);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const generateExcelReport = async (reportType: string, data: any, startDate?: Date | null, endDate?: Date | null) => {
     switch (reportType) {
       case 'rent-history':
@@ -165,6 +259,10 @@ export default function ReportsPage() {
         await generateProfitLossExcel(data.data);
         return; 
 
+      case 'tenant-analysis':
+        await generateTenantAnalysisExcel(data.analysisData, data.summaryData);
+        return;
+
       default:
         throw new Error('Unknown report type');
     }
@@ -175,6 +273,15 @@ export default function ReportsPage() {
     setSelectedReport(null);
     setStartDate(null);
     setEndDate(null);
+  };
+
+  const handleProfitLossClose = () => {
+    setProfitLossDialogOpen(false);
+    setSelectedReport(null);
+    // Reset profit & loss filters
+    setMonthFrom('');
+    setMonthTo('');
+    setYear(new Date().getFullYear());
   };
 
   const breadcrumbs = [
@@ -205,12 +312,15 @@ export default function ReportsPage() {
         title="Reports"
         subtitle={`Generate Excel reports for ${selectedProperty.name}`}
       />
-      
-      <div className="px-4 sm:px-6 lg:px-8 pt-3">
+
+      <div className='px-6 pt-6'>
         <BreadCrumbs items={breadcrumbs} />
+      </div>
+      
+      <div className="px-4 sm:px-6 pt-3">
         
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 mt-6">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
               Available Reports
@@ -222,19 +332,18 @@ export default function ReportsPage() {
         </div>
 
         {/* Reports Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
           {reportOptions.map((report) => (
             <div
               key={report.id}
-              className="group bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:border-blue-300 dark:hover:border-blue-600 hover:-translate-y-1"
-              onClick={() => handleReportSelect(report)}
+              className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 hover:scale-105 transition-transform duration-200 grid grid-rows-[auto_1fr_auto] gap-2"
             >
               <div className="flex items-center mb-4">
-                <div className={`p-3 rounded-xl ${report.color} text-white mr-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                <div className={`p-3 rounded-xl ${report.color} text-white mr-4 shadow-lg`}>
                   {report.icon}
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                     {report.title}
                   </h3>
                   {report.requiresDateRange && (
@@ -255,7 +364,7 @@ export default function ReportsPage() {
               </p>
               
               <button
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl group-hover:scale-105"
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-2 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleReportSelect(report);
@@ -286,7 +395,7 @@ export default function ReportsPage() {
       >
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700 px-6 py-5 border-b border-slate-200 dark:border-slate-600">
+          <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700 px-6 py-3 border-b border-slate-200 dark:border-slate-600">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -296,9 +405,6 @@ export default function ReportsPage() {
                   <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
                     {selectedReport?.title}
                   </h2>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                    Generate comprehensive Excel report
-                  </p>
                 </div>
               </div>
               <button
@@ -313,11 +419,6 @@ export default function ReportsPage() {
 
           {/* Content */}
           <div className="p-6 space-y-6 bg-white dark:bg-slate-800">
-            {/* <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg border border-slate-200 dark:border-slate-600">
-              <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                {selectedReport?.description}
-              </p>
-            </div> */}
 
             {selectedReport?.requiresDateRange && (
               <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -415,6 +516,7 @@ export default function ReportsPage() {
               </LocalizationProvider>
             )}
 
+
           
           </div>
 
@@ -431,6 +533,448 @@ export default function ReportsPage() {
               onClick={handleExport}
               disabled={isExporting || (selectedReport?.requiresDateRange && (!startDate || !endDate))}
               className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-500 text-white rounded-lg transition-all duration-200 flex items-center gap-2 disabled:opacity-50 font-semibold shadow-lg hover:shadow-xl"
+            >
+              {isExporting ? (
+                <>
+                  <CircularProgress size={16} color="inherit" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <DownloadIcon className="h-4 w-4" />
+                  Generate Excel Report
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Profit & Loss Dialog */}
+      <Dialog
+        open={profitLossDialogOpen}
+        onClose={handleProfitLossClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
+            background: 'transparent',
+          }
+        }}
+      >
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700 px-6 py-3 border-b border-slate-200 dark:border-slate-600">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                  <PieChartIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                    Profit & Loss Report
+                  </h2>
+                </div>
+              </div>
+              <button
+                onClick={handleProfitLossClose}
+                disabled={isExporting}
+                className="p-2 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-all duration-200 disabled:opacity-50 group"
+              >
+                <CloseIcon className="h-5 w-5 text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200" />
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 space-y-6 bg-white dark:bg-slate-800">
+            <div className="space-y-4">
+              
+
+              <div className='flex justify-between items-center gap-4'>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <CalendarIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  Select Month Range & Year
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4 w-48">
+                  <FormControl fullWidth size="small">
+                    <InputLabel 
+                      sx={{
+                        color: 'rgb(71 85 105)',
+                        '&.Mui-focused': {
+                          color: 'rgb(147 51 234)',
+                        },
+                        '.dark &': {
+                          color: 'rgb(203 213 225)',
+                          '&.Mui-focused': {
+                            color: 'rgb(196 181 253)',
+                          },
+                        },
+                      }}
+                    >
+                      Year *
+                    </InputLabel>
+                    <Select
+                      value={year}
+                      onChange={(e) => setYear(e.target.value as number | '')}
+                      label="Year *"
+                      sx={{
+                        borderRadius: '10px',
+                        backgroundColor: 'rgb(248 250 252)',
+                        color: 'rgb(15 23 42)',
+                        '&:hover': {
+                          backgroundColor: 'rgb(241 245 249)',
+                        },
+                        '&.Mui-focused': {
+                          backgroundColor: 'white',
+                        },
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(226 232 240)',
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(148 163 184)',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(147 51 234)',
+                        },
+                        '& .MuiSelect-icon': {
+                          color: 'rgb(71 85 105)',
+                        },
+                        '.dark &': {
+                          backgroundColor: 'rgb(51 65 85)',
+                          color: 'rgb(241 245 249)',
+                          '&:hover': {
+                            backgroundColor: 'rgb(71 85 105)',
+                          },
+                          '&.Mui-focused': {
+                            backgroundColor: 'rgb(30 41 59)',
+                          },
+                          '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'rgb(71 85 105)',
+                          },
+                          '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'rgb(148 163 184)',
+                          },
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'rgb(196 181 253)',
+                          },
+                          '& .MuiSelect-icon': {
+                            color: 'rgb(203 213 225)',
+                          },
+                        },
+                      }}
+                      MenuProps={{
+                        PaperProps: {
+                          sx: {
+                            backgroundColor: 'white',
+                            color: 'rgb(15 23 42)',
+                            '& .MuiMenuItem-root': {
+                              color: 'rgb(15 23 42)',
+                              '&:hover': {
+                                backgroundColor: 'rgb(248 250 252)',
+                              },
+                              '&.Mui-selected': {
+                                backgroundColor: 'rgb(147 51 234)',
+                                color: 'white',
+                                '&:hover': {
+                                  backgroundColor: 'rgb(126 34 206)',
+                                },
+                              },
+                            },
+                            '.dark &': {
+                              backgroundColor: 'rgb(30 41 59)',
+                              color: 'rgb(241 245 249)',
+                              '& .MuiMenuItem-root': {
+                                color: 'rgb(241 245 249)',
+                                '&:hover': {
+                                  backgroundColor: 'rgb(51 65 85)',
+                                },
+                                '&.Mui-selected': {
+                                  backgroundColor: 'rgb(147 51 234)',
+                                  color: 'white',
+                                  '&:hover': {
+                                    backgroundColor: 'rgb(126 34 206)',
+                                  },
+                                },
+                              },
+                            },
+                          },
+                        },
+                      }}
+                    >
+                      {Array.from({ length: 10 }, (_, i) => {
+                        const year = new Date().getFullYear() - 5 + i;
+                        return (
+                          <MenuItem key={year} value={year}>
+                            {year}
+                          </MenuItem>
+                        );
+                      })}
+                    </Select>
+                  </FormControl>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormControl fullWidth size="small">
+                  <InputLabel 
+                    sx={{
+                      color: 'rgb(71 85 105)',
+                      '&.Mui-focused': {
+                        color: 'rgb(147 51 234)',
+                      },
+                      '.dark &': {
+                        color: 'rgb(203 213 225)',
+                        '&.Mui-focused': {
+                          color: 'rgb(196 181 253)',
+                        },
+                      },
+                    }}
+                  >
+                    From Month *
+                  </InputLabel>
+                     <Select
+                       value={monthFrom ? parseInt(monthFrom.split('-')[1]) : ''}
+                       onChange={(e) => {
+                         const month = e.target.value as number | '';
+                         if (month && year) {
+                           setMonthFrom(`${year}-${String(month).padStart(2, '0')}`);
+                         } else {
+                           setMonthFrom('');
+                         }
+                       }}
+                       label="From Month *"
+                    sx={{
+                      borderRadius: '10px',
+                      backgroundColor: 'rgb(248 250 252)',
+                      color: 'rgb(15 23 42)',
+                      '&:hover': {
+                        backgroundColor: 'rgb(241 245 249)',
+                      },
+                      '&.Mui-focused': {
+                        backgroundColor: 'white',
+                      },
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(226 232 240)',
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(148 163 184)',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(147 51 234)',
+                      },
+                      '& .MuiSelect-icon': {
+                        color: 'rgb(71 85 105)',
+                      },
+                      '.dark &': {
+                        backgroundColor: 'rgb(51 65 85)',
+                        color: 'rgb(241 245 249)',
+                        '&:hover': {
+                          backgroundColor: 'rgb(71 85 105)',
+                        },
+                        '&.Mui-focused': {
+                          backgroundColor: 'rgb(30 41 59)',
+                        },
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(71 85 105)',
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(148 163 184)',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(196 181 253)',
+                        },
+                        '& .MuiSelect-icon': {
+                          color: 'rgb(203 213 225)',
+                        },
+                      },
+                    }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          backgroundColor: 'white',
+                          color: 'rgb(15 23 42)',
+                          '& .MuiMenuItem-root': {
+                            color: 'rgb(15 23 42)',
+                            '&:hover': {
+                              backgroundColor: 'rgb(248 250 252)',
+                            },
+                            '&.Mui-selected': {
+                              backgroundColor: 'rgb(147 51 234)',
+                              color: 'white',
+                              '&:hover': {
+                                backgroundColor: 'rgb(126 34 206)',
+                              },
+                            },
+                          },
+                          '.dark &': {
+                            backgroundColor: 'rgb(30 41 59)',
+                            color: 'rgb(241 245 249)',
+                            '& .MuiMenuItem-root': {
+                              color: 'rgb(241 245 249)',
+                              '&:hover': {
+                                backgroundColor: 'rgb(51 65 85)',
+                              },
+                              '&.Mui-selected': {
+                                backgroundColor: 'rgb(147 51 234)',
+                                color: 'white',
+                                '&:hover': {
+                                  backgroundColor: 'rgb(126 34 206)',
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    }}
+                  >
+                    {Array.from({ length: 12 }, (_, i) => (
+                      <MenuItem key={i + 1} value={i + 1}>
+                        {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl fullWidth size="small">
+                  <InputLabel 
+                    sx={{
+                      color: 'rgb(71 85 105)',
+                      '&.Mui-focused': {
+                        color: 'rgb(147 51 234)',
+                      },
+                      '.dark &': {
+                        color: 'rgb(203 213 225)',
+                        '&.Mui-focused': {
+                          color: 'rgb(196 181 253)',
+                        },
+                      },
+                    }}
+                  >
+                    To Month *
+                  </InputLabel>
+                     <Select
+                       value={monthTo ? parseInt(monthTo.split('-')[1]) : ''}
+                       onChange={(e) => {
+                         const month = e.target.value as number | '';
+                         if (month && year) {
+                           setMonthTo(`${year}-${String(month).padStart(2, '0')}`);
+                         } else {
+                           setMonthTo('');
+                         }
+                       }}
+                       label="To Month *"
+                    sx={{
+                      borderRadius: '10px',
+                      backgroundColor: 'rgb(248 250 252)',
+                      color: 'rgb(15 23 42)',
+                      '&:hover': {
+                        backgroundColor: 'rgb(241 245 249)',
+                      },
+                      '&.Mui-focused': {
+                        backgroundColor: 'white',
+                      },
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(226 232 240)',
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(148 163 184)',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(147 51 234)',
+                      },
+                      '& .MuiSelect-icon': {
+                        color: 'rgb(71 85 105)',
+                      },
+                      '.dark &': {
+                        backgroundColor: 'rgb(51 65 85)',
+                        color: 'rgb(241 245 249)',
+                        '&:hover': {
+                          backgroundColor: 'rgb(71 85 105)',
+                        },
+                        '&.Mui-focused': {
+                          backgroundColor: 'rgb(30 41 59)',
+                        },
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(71 85 105)',
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(148 163 184)',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(196 181 253)',
+                        },
+                        '& .MuiSelect-icon': {
+                          color: 'rgb(203 213 225)',
+                        },
+                      },
+                    }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          backgroundColor: 'white',
+                          color: 'rgb(15 23 42)',
+                          '& .MuiMenuItem-root': {
+                            color: 'rgb(15 23 42)',
+                            '&:hover': {
+                              backgroundColor: 'rgb(248 250 252)',
+                            },
+                            '&.Mui-selected': {
+                              backgroundColor: 'rgb(147 51 234)',
+                              color: 'white',
+                              '&:hover': {
+                                backgroundColor: 'rgb(126 34 206)',
+                              },
+                            },
+                          },
+                          '.dark &': {
+                            backgroundColor: 'rgb(30 41 59)',
+                            color: 'rgb(241 245 249)',
+                            '& .MuiMenuItem-root': {
+                              color: 'rgb(241 245 249)',
+                              '&:hover': {
+                                backgroundColor: 'rgb(51 65 85)',
+                              },
+                              '&.Mui-selected': {
+                                backgroundColor: 'rgb(147 51 234)',
+                                color: 'white',
+                                '&:hover': {
+                                  backgroundColor: 'rgb(126 34 206)',
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    }}
+                  >
+                    {Array.from({ length: 12 }, (_, i) => (
+                      <MenuItem key={i + 1} value={i + 1}>
+                        {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 bg-slate-50 dark:bg-slate-700/50 border-t border-slate-200 dark:border-slate-600 flex justify-end gap-3">
+            <button
+              onClick={handleProfitLossClose}
+              disabled={isExporting}
+              className="px-6 py-2.5 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-all duration-200 disabled:opacity-50 font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleProfitLossExport}
+              disabled={isExporting || !monthFrom || !monthTo || !year}
+              className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-500 text-white rounded-lg transition-all duration-200 flex items-center gap-2 disabled:opacity-50 font-semibold shadow-lg hover:shadow-xl"
             >
               {isExporting ? (
                 <>

@@ -51,6 +51,28 @@ export interface ProfitLossResponse {
   data: ProfitLossRecord[];
 }
 
-export const getProfitLossByProperty = async (propertyId: string): Promise<ProfitLossResponse> => {
-  return await apiClient.get(`/expenses/property/${propertyId}/profit-loss`);
+export const getProfitLossByProperty = async (
+  propertyId: string,
+  month?: number,
+  year?: number,
+  status?: string,
+  monthFrom?: string,
+  monthTo?: string,
+  yearFrom?: number,
+  yearTo?: number
+): Promise<ProfitLossResponse> => {
+  const params = new URLSearchParams();
+  
+  if (month) params.append('month', month.toString());
+  if (year) params.append('year', year.toString());
+  if (status) params.append('status', status);
+  if (monthFrom) params.append('monthFrom', monthFrom);
+  if (monthTo) params.append('monthTo', monthTo);
+  if (yearFrom) params.append('yearFrom', yearFrom.toString());
+  if (yearTo) params.append('yearTo', yearTo.toString());
+  
+  const queryString = params.toString();
+  const url = `/expenses/property/${propertyId}/profit-loss${queryString ? `?${queryString}` : ''}`;
+  
+  return await apiClient.get(url);
 };

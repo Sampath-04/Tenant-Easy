@@ -252,7 +252,7 @@ function TenantViewContent() {
                       {getStatusLabel(localTenant.status)}
                     </span>
                     <span className="text-gray-600 dark:text-gray-400 text-sm font-bold">
-                      {localTenant.room.roomNo}
+                      Room {localTenant.room.roomNo}
                     </span>
                   </div>
                 </div>
