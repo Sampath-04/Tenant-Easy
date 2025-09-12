@@ -29,6 +29,7 @@ import { useUpcomingTenants, useProcessTenant } from '@/hooks/useTenants';
 import { useRooms } from '@/hooks/useRooms';
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatDate, formatCurrency, getCurrentDate, formatDateForAPI } from '@/lib/utils/formatters';
+import { generateUpcomingTenantOnboardExcel } from '@/lib/utils/excelExport';
 import { useProperty } from '@/contexts/PropertyContext';
 import TenantOnboardSummaryCards from '@/components/TenantOnboardSummaryCards';
 import ProcessTenantForm from '@/components/ProcessTenantForm';
@@ -80,66 +81,27 @@ export default function UpcomingTenantsPage() {
   
 
   // Handle export functionality
-  // const handleExport = async () => {
-  //   if (!upcomingTenants || upcomingTenants.length === 0) {
-  //     alert('No records to export');
-  //     return;
-  //   }
+  const handleExport = async () => {
+    if (!upcomingTenants || upcomingTenants.length === 0) {
+      alert('No records to export');
+      return;
+    }
 
-  //   try {
-  //     setIsExporting(true);
+    try {
+      setIsExporting(true);
       
-  //     // Convert upcoming tenants data to Excel format
-  //     const excelData = upcomingTenants.map((tenant: any) => {
-  //       return {
-  //         'Tenant Name': tenant.tenantName,
-  //         'Phone Number': tenant.tenantNumber,
-  //         'Email': tenant.tenantEmail || '',
-  //         'Room Number': tenant.room.roomNo,
-  //         'Room Type': tenant.room.roomType,
-  //         'Check-in Date': formatDate(tenant.checkInDate),
-  //         'Monthly Rent': formatCurrency(tenant.monthlyRent),
-  //         'Security Deposit Total': formatCurrency(tenant.securityDepositTotal),
-  //         'Security Deposit Paid': formatCurrency(tenant.securityDepositPaid),
-  //         'Security Deposit Pending': formatCurrency(tenant.pendingSecurityAmount),
-  //         'Onboarding Rent Paid': formatCurrency(tenant.totalOnboardingRentPaid),
-  //         'Onboarding Rent Pending': formatCurrency(tenant.pendingOnboardingRentAmount),
-  //         'Total Pending Amount': formatCurrency(tenant.totalPendingAmount),
-  //         'Status': tenant.status,
-  //       };
-  //     });
-
-  //     // Create and download Excel file
-  //     const worksheet = XLSX.utils.json_to_sheet(excelData);
-  //     const workbook = XLSX.utils.book_new();
-  //     XLSX.utils.book_append_sheet(workbook, worksheet, 'Upcoming Tenants');
+      // Use the new ExcelJS function
+      generateUpcomingTenantOnboardExcel(upcomingTenants, summary);
       
-  //     // Add summary section
-  //     if (summary) {
-  //       const summaryData = [
-  //         { 'Metric': 'SUMMARY', 'Value': '' },
-  //         { 'Metric': 'Total Tenants', 'Value': summary.totalUpcomingTenants },
-  //         { 'Metric': 'Total Pending Amount', 'Value': formatCurrency(summary.totalPendingAmount) },
-  //         { 'Metric': 'Total Security Pending', 'Value': formatCurrency(summary.totalSecurityPending) },
-  //         { 'Metric': 'Total Rent Pending', 'Value': formatCurrency(summary.totalRentPending) },
-  //       ];
-        
-  //       const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
-  //       XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
-  //     }
-      
-  //     const fileName = `upcoming-tenants-${new Date().toISOString().split('T')[0]}.xlsx`;
-  //     XLSX.writeFile(workbook, fileName);
-      
-  //     // Reset states
-  //     setExportDialogOpen(false);
-  //     setIsExporting(false);
-  //   } catch (error) {
-  //     console.error('Excel generation error:', error);
-  //     alert('Failed to generate Excel file');
-  //     setIsExporting(false);
-  //   }
-  // };
+      // Reset states
+      setExportDialogOpen(false);
+      setIsExporting(false);
+    } catch (error) {
+      console.error('Excel generation error:', error);
+      alert('Failed to generate Excel file');
+      setIsExporting(false);
+    }
+  };
 
   // Filter tenants based on search term and room
   const filteredTenants = useMemo(() => {
@@ -248,20 +210,20 @@ export default function UpcomingTenantsPage() {
                 </Tooltip>
 
                 {showFilters && (
-                  <Button
+              <Button
                     onClick={clearFilters}
-                    variant="outlined"
-                    size="small"
+                variant="outlined"
+                size="small"
                     className="bg-red-100 dark:bg-red-900 hover:bg-red-200 dark:hover:bg-red-800 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 transition-all duration-200 ease-in-out"
-                    sx={{
+                sx={{
                       borderRadius: '8px',
-                      textTransform: 'none',
+                  textTransform: 'none',
                       fontSize: '0.875rem',
                       fontWeight: 500,
-                    }}
-                  >
+                }}
+              >
                     Clear All
-                  </Button>
+              </Button>
                 )}
               </div>
 
@@ -519,13 +481,13 @@ export default function UpcomingTenantsPage() {
               color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
               '&:hover': {
                 backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f3f4f6',
-              }
-            })}
-          >
+          }
+        })}
+      >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-
+        
         <DialogContent
           sx={(theme) => ({
             paddingTop: "24px !important",
@@ -542,7 +504,7 @@ export default function UpcomingTenantsPage() {
             >
               Export the currently filtered upcoming tenants to Excel. The export will include all tenants matching your current filters.
             </Typography>
-
+            
             <Box
               sx={(theme) => ({
                 backgroundColor: theme.palette.mode === 'dark' ? '#111827' : '#f9fafb',
@@ -654,14 +616,14 @@ export default function UpcomingTenantsPage() {
                       })}
                     >
                       {filteredTenants.length} records
-                    </Typography>
+              </Typography>
                   </Box>
                 </Box>
               </Box>
             </Box>
           </Box>
         </DialogContent>
-
+        
         <DialogActions
           sx={(theme) => ({
             px: 3,
@@ -694,7 +656,7 @@ export default function UpcomingTenantsPage() {
             Cancel
           </Button>
           <Button
-            // onClick={handleExport}
+            onClick={handleExport}
             disabled={isExporting || !filteredTenants || filteredTenants.length === 0}
             sx={(theme) => ({
               backgroundColor: theme.palette.mode === 'dark' ? '#3b82f6' : '#3b82f6',

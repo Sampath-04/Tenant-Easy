@@ -652,7 +652,6 @@ export default function RefundsPage() {
       <RefundsExportDialog
         isOpen={exportDialogOpen}
         onClose={() => setExportDialogOpen(false)}
-        propertyId={selectedProperty?.id || ''}
         startDate={startDate}
         endDate={endDate}
         filters={filters}

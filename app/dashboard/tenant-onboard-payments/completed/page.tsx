@@ -36,6 +36,7 @@ import { useOnboardedCompletedPayments } from '@/hooks/useTenants';
 import { useRooms } from '@/hooks/useRooms';
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatDate, formatCurrency, formatDateForAPI } from '@/lib/utils/formatters';
+import { generateCompletedTenantOnboardExcel } from '@/lib/utils/excelExport';
 import { useProperty } from '@/contexts/PropertyContext';
 import TenantOnboardSummaryCards from '@/components/TenantOnboardSummaryCards';
 import {
@@ -95,45 +96,8 @@ export default function TenantOnboardCompletedPage() {
     try {
       setIsExporting(true);
       
-      // Convert completed tenants data to Excel format
-      const excelData = completedTenants.map((tenant: any) => {
-        return {
-          'Tenant Name': tenant.tenantName,
-          'Phone Number': tenant.tenantNumber,
-          'Email': tenant.tenantEmail || '',
-          'Room Number': tenant.room.roomNo,
-          'Room Type': tenant.room.roomType,
-          'Check-in Date': formatDate(tenant.checkInDate),
-          'Monthly Rent': formatCurrency(tenant.monthlyRent),
-          'Security Deposit Total': formatCurrency(tenant.securityDepositTotal),
-          'Security Deposit Paid': formatCurrency(tenant.securityDepositPaid),
-          'Onboarding Rent Paid': formatCurrency(tenant.totalOnboardingRentPaid),
-          'Total Amount Collected': formatCurrency(tenant.totalAmountCollected || 0),
-          'Status': tenant.status,
-        };
-      });
-
-      // Create and download Excel file
-      // const worksheet = XLSX.utils.json_to_sheet(excelData);
-      // const workbook = XLSX.utils.book_new();
-      // XLSX.utils.book_append_sheet(workbook, worksheet, 'Completed Tenants');
-      
-      // // Add summary section
-      // if (summary) {
-      //   const summaryData = [
-      //     { 'Metric': 'SUMMARY', 'Value': '' },
-      //     { 'Metric': 'Total Tenants', 'Value': summary.totalTenants },
-      //     { 'Metric': 'Total Security Collected', 'Value': formatCurrency(summary.totalSecurityDepositCollected || 0) },
-      //     { 'Metric': 'Total Rent Collected', 'Value': formatCurrency(summary.totalOnboardingRentCollected || 0) },
-      //     { 'Metric': 'Total Amount Collected', 'Value': formatCurrency(summary.totalAmountCollected || 0) },
-      //   ];
-        
-      //   const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
-      //   XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
-      // }
-      
-      // const fileName = `completed-onboard-tenants-${new Date().toISOString().split('T')[0]}.xlsx`;
-      // XLSX.writeFile(workbook, fileName);
+      // Use the new ExcelJS function
+      generateCompletedTenantOnboardExcel(completedTenants, summary);
       
       // Reset states
       setExportDialogOpen(false);

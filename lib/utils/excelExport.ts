@@ -281,6 +281,434 @@ export const generateRentHistoryExcel = async (
   return fileName;
 };
 
+// Generate Excel for Upcoming Tenant Onboard Payments
+export const generateUpcomingTenantOnboardExcel = (
+  upcomingTenants: any[],
+  summary: any
+) => {
+  const workbook = new ExcelJS.Workbook();
+
+  // Create Upcoming Tenants sheet
+  const worksheet = workbook.addWorksheet('Upcoming Tenants');
+  
+  // Define columns
+  worksheet.columns = [
+    { header: 'Tenant Name', key: 'tenantName', width: 25 },
+    { header: 'Phone Number', key: 'tenantNumber', width: 18 },
+    { header: 'Email', key: 'tenantEmail', width: 25 },
+    { header: 'Room Number', key: 'roomNo', width: 15 },
+    { header: 'Room Type', key: 'roomType', width: 15 },
+    { header: 'Check-in Date', key: 'checkInDate', width: 18 },
+    { header: 'Monthly Rent', key: 'monthlyRent', width: 18 },
+    { header: 'Security Deposit Total', key: 'securityDepositTotal', width: 25 },
+    { header: 'Security Deposit Paid', key: 'securityDepositPaid', width: 25 },
+    { header: 'Security Deposit Pending', key: 'securityDepositPending', width: 25 },
+    { header: 'Onboarding Rent Paid', key: 'onboardingRentPaid', width: 25 },
+    { header: 'Onboarding Rent Pending', key: 'onboardingRentPending', width: 25 },
+    { header: 'Total Pending Amount', key: 'totalPendingAmount', width: 25 },
+    { header: 'Status', key: 'status', width: 15 },
+  ];
+
+  // Style the header row
+  const headerRow = worksheet.getRow(1);
+  headerRow.eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: 'FF000000' }, size: 12 };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFFFF00' } // Yellow background
+    };
+    cell.border = {
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' }
+    };
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+  });
+
+  // Add data rows
+  upcomingTenants.forEach((tenant) => {
+    const row = worksheet.addRow({
+      tenantName: tenant.tenantName,
+      tenantNumber: tenant.tenantNumber,
+      tenantEmail: tenant.tenantEmail || '',
+      roomNo: tenant.room.roomNo,
+      roomType: tenant.room.roomType,
+      checkInDate: formatDate(tenant.checkInDate),
+      monthlyRent: tenant.monthlyRent,
+      securityDepositTotal: tenant.securityDepositTotal,
+      securityDepositPaid: tenant.securityDepositPaid,
+      securityDepositPending: tenant.pendingSecurityAmount,
+      onboardingRentPaid: tenant.totalOnboardingRentPaid,
+      onboardingRentPending: tenant.pendingOnboardingRentAmount,
+      totalPendingAmount: tenant.totalPendingAmount,
+      status: tenant.status,
+    });
+
+    // Style data cells
+    row.eachCell((cell) => {
+      cell.alignment = { 
+        horizontal: 'left', 
+        vertical: 'middle' 
+      };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
+  });
+
+  // Create Summary sheet
+  const summarySheet = workbook.addWorksheet('Summary');
+  
+  // Define summary columns
+  summarySheet.columns = [
+    { header: 'Metric', key: 'metric', width: 30 },
+    { header: 'Value', key: 'value', width: 20 },
+  ];
+
+  // Style summary header
+  const summaryHeaderRow = summarySheet.getRow(1);
+  summaryHeaderRow.eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: 'FF000000' }, size: 12 };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFFFF00' } // Yellow background
+    };
+    cell.border = {
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' }
+    };
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+  });
+
+  // Add summary data
+  const summaryData = [
+    { metric: 'SUMMARY', value: '' },
+    { metric: 'Total Tenants', value: summary.totalUpcomingTenants },
+    { metric: 'Total Pending Amount', value: summary.totalPendingAmount },
+    { metric: 'Total Security Pending', value: summary.totalSecurityPending },
+    { metric: 'Total Rent Pending', value: summary.totalRentPending },
+  ];
+
+  summaryData.forEach((item) => {
+    const row = summarySheet.addRow(item);
+    row.eachCell((cell) => {
+      cell.alignment = { 
+        horizontal: 'left', 
+        vertical: 'middle' 
+      };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
+  });
+
+  // Download the file
+  workbook.xlsx.writeBuffer().then((buffer) => {
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `upcoming-tenants-${new Date().toISOString().split('T')[0]}.xlsx`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  });
+};
+
+// Generate Excel for Pending Tenant Onboard Payments
+export const generatePendingTenantOnboardExcel = (
+  pendingTenants: any[],
+  summary: any
+) => {
+  const workbook = new ExcelJS.Workbook();
+
+  // Create Pending Tenants sheet
+  const worksheet = workbook.addWorksheet('Pending Tenants');
+  
+  // Define columns
+  worksheet.columns = [
+    { header: 'Tenant Name', key: 'tenantName', width: 25 },
+    { header: 'Phone Number', key: 'tenantNumber', width: 18 },
+    { header: 'Email', key: 'tenantEmail', width: 25 },
+    { header: 'Room Number', key: 'roomNo', width: 15 },
+    { header: 'Room Type', key: 'roomType', width: 15 },
+    { header: 'Check-in Date', key: 'checkInDate', width: 18 },
+    { header: 'Monthly Rent', key: 'monthlyRent', width: 18 },
+    { header: 'Security Deposit Total', key: 'securityDepositTotal', width: 25 },
+    { header: 'Security Deposit Paid', key: 'securityDepositPaid', width: 25 },
+    { header: 'Security Deposit Pending', key: 'securityDepositPending', width: 25 },
+    { header: 'Onboarding Rent Paid', key: 'onboardingRentPaid', width: 25 },
+    { header: 'Onboarding Rent Pending', key: 'onboardingRentPending', width: 25 },
+    { header: 'Total Pending Amount', key: 'totalPendingAmount', width: 25 },
+    { header: 'Status', key: 'status', width: 15 },
+  ];
+
+  // Style the header row
+  const headerRow = worksheet.getRow(1);
+  headerRow.eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: 'FF000000' }, size: 12 };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFFFF00' } // Yellow background
+    };
+    cell.border = {
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' }
+    };
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+  });
+
+  // Add data rows
+  pendingTenants.forEach((tenant) => {
+    const row = worksheet.addRow({
+      tenantName: tenant.tenantName,
+      tenantNumber: tenant.tenantNumber,
+      tenantEmail: tenant.tenantEmail || '',
+      roomNo: tenant.room.roomNo,
+      roomType: tenant.room.roomType,
+      checkInDate: formatDate(tenant.checkInDate),
+      monthlyRent: tenant.monthlyRent,
+      securityDepositTotal: tenant.securityDepositTotal,
+      securityDepositPaid: tenant.securityDepositPaid,
+      securityDepositPending: tenant.pendingSecurityAmount,
+      onboardingRentPaid: tenant.totalOnboardingRentPaid,
+      onboardingRentPending: tenant.pendingOnboardingRentAmount,
+      totalPendingAmount: tenant.totalPendingAmount,
+      status: tenant.status,
+    });
+
+    // Style data cells
+    row.eachCell((cell) => {
+      cell.alignment = { 
+        horizontal: 'left', 
+        vertical: 'middle' 
+      };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
+  });
+
+  // Create Summary sheet
+  const summarySheet = workbook.addWorksheet('Summary');
+  
+  // Define summary columns
+  summarySheet.columns = [
+    { header: 'Metric', key: 'metric', width: 30 },
+    { header: 'Value', key: 'value', width: 20 },
+  ];
+
+  // Style summary header
+  const summaryHeaderRow = summarySheet.getRow(1);
+  summaryHeaderRow.eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: 'FF000000' }, size: 12 };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFFFF00' } // Yellow background
+    };
+    cell.border = {
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' }
+    };
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+  });
+
+  // Add summary data
+  const summaryData = [
+    { metric: 'SUMMARY', value: '' },
+    { metric: 'Total Tenants', value: summary.totalPendingTenants },
+    { metric: 'Total Pending Amount', value: summary.totalPendingAmount },
+    { metric: 'Total Security Pending', value: summary.totalSecurityPending },
+    { metric: 'Total Rent Pending', value: summary.totalRentPending },
+  ];
+
+  summaryData.forEach((item) => {
+    const row = summarySheet.addRow(item);
+    row.eachCell((cell) => {
+      cell.alignment = { 
+        horizontal: 'left', 
+        vertical: 'middle' 
+      };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
+  });
+
+  // Download the file
+  workbook.xlsx.writeBuffer().then((buffer) => {
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `pending-tenants-${new Date().toISOString().split('T')[0]}.xlsx`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  });
+};
+
+// Generate Excel for Completed Tenant Onboard Payments
+export const generateCompletedTenantOnboardExcel = (
+  completedTenants: any[],
+  summary: any
+) => {
+  const workbook = new ExcelJS.Workbook();
+
+  // Create Completed Tenants sheet
+  const worksheet = workbook.addWorksheet('Completed Tenants');
+  
+  // Define columns
+  worksheet.columns = [
+    { header: 'Tenant Name', key: 'tenantName', width: 25 },
+    { header: 'Phone Number', key: 'tenantNumber', width: 18 },
+    { header: 'Email', key: 'tenantEmail', width: 25 },
+    { header: 'Room Number', key: 'roomNo', width: 15 },
+    { header: 'Room Type', key: 'roomType', width: 15 },
+    { header: 'Check-in Date', key: 'checkInDate', width: 18 },
+    { header: 'Monthly Rent', key: 'monthlyRent', width: 18 },
+    { header: 'Security Deposit Total', key: 'securityDepositTotal', width: 25 },
+    { header: 'Security Deposit Collected', key: 'securityDepositCollected', width: 25 },
+    { header: 'Onboarding Rent Collected', key: 'onboardingRentCollected', width: 25 },
+    { header: 'Status', key: 'status', width: 15 },
+  ];
+
+  // Style the header row
+  const headerRow = worksheet.getRow(1);
+  headerRow.eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: 'FF000000' }, size: 12 };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFFFF00' } // Yellow background
+    };
+    cell.border = {
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' }
+    };
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+  });
+
+  // Add data rows
+  completedTenants.forEach((tenant) => {
+    const row = worksheet.addRow({
+      tenantName: tenant.tenantName,
+      tenantNumber: tenant.tenantNumber,
+      tenantEmail: tenant.tenantEmail || '',
+      roomNo: tenant.room.roomNo,
+      roomType: tenant.room.roomType,
+      checkInDate: formatDate(tenant.checkInDate),
+      monthlyRent: tenant.monthlyRent,
+      securityDepositTotal: tenant.securityDepositTotal,
+      securityDepositCollected: tenant.securityDepositPaid,
+      onboardingRentCollected: tenant.totalOnboardingRentPaid,
+      status: tenant.status,
+    });
+
+    // Style data cells
+    row.eachCell((cell) => {
+      cell.alignment = { 
+        horizontal: 'left', 
+        vertical: 'middle' 
+      };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
+  });
+
+  // Create Summary sheet
+  const summarySheet = workbook.addWorksheet('Summary');
+  
+  // Define summary columns
+  summarySheet.columns = [
+    { header: 'Metric', key: 'metric', width: 30 },
+    { header: 'Value', key: 'value', width: 20 },
+  ];
+
+  // Style summary header
+  const summaryHeaderRow = summarySheet.getRow(1);
+  summaryHeaderRow.eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: 'FF000000' }, size: 12 };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFFFF00' } // Yellow background
+    };
+    cell.border = {
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' }
+    };
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+  });
+
+  // Add summary data
+  const totalAmountCollected = (summary.totalSecurityDepositCollected || 0) + (summary.totalOnboardingRentCollected || 0);
+  
+  const summaryData = [
+    { metric: 'SUMMARY', value: '' },
+    { metric: 'Total Tenants', value: summary.totalTenants },
+    { metric: 'Total Amount Collected', value: totalAmountCollected },
+    { metric: 'Total Security Collected', value: summary.totalSecurityDepositCollected || 0 },
+    { metric: 'Total Rent Collected', value: summary.totalOnboardingRentCollected || 0 },
+  ];
+
+  summaryData.forEach((item) => {
+    const row = summarySheet.addRow(item);
+    row.eachCell((cell) => {
+      cell.alignment = { 
+        horizontal: 'left', 
+        vertical: 'middle' 
+      };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
+  });
+
+  // Download the file
+  workbook.xlsx.writeBuffer().then((buffer) => {
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `completed-tenants-${new Date().toISOString().split('T')[0]}.xlsx`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  });
+};
+
 // Tenant Analysis Export Function
 export const generateTenantAnalysisExcel = async (
   tenantAnalysisData: any[],

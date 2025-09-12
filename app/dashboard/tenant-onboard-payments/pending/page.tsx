@@ -34,6 +34,7 @@ import { useOnboardedPendingPayments, useCollectPendingPayments } from '@/hooks/
 import { useRooms } from '@/hooks/useRooms';
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatDate, formatCurrency, formatDateForAPI } from '@/lib/utils/formatters';
+import { generatePendingTenantOnboardExcel } from '@/lib/utils/excelExport';
 import { useProperty } from '@/contexts/PropertyContext';
 import TenantOnboardSummaryCards from '@/components/TenantOnboardSummaryCards';
 import CollectOnboardPendingPaymentsForm from '@/components/CollectPendingPaymentsForm';
@@ -100,47 +101,8 @@ export default function TenantOnboardPaymentsPage() {
     try {
       setIsExporting(true);
       
-      // Convert onboarding tenants data to Excel format
-      const excelData = onboardedTenants.map((tenant: any) => {
-        return {
-          'Tenant Name': tenant.tenantName,
-          'Phone Number': tenant.tenantNumber,
-          'Email': tenant.tenantEmail || '',
-          'Room Number': tenant.room.roomNo,
-          'Room Type': tenant.room.roomType,
-          'Check-in Date': formatDate(tenant.checkInDate),
-          'Monthly Rent': formatCurrency(tenant.monthlyRent),
-          'Security Deposit Total': formatCurrency(tenant.securityDepositTotal),
-          'Security Deposit Paid': formatCurrency(tenant.securityDepositPaid),
-          'Security Deposit Pending': formatCurrency(tenant.pendingSecurityAmount),
-          'Onboarding Rent Paid': formatCurrency(tenant.totalOnboardingRentPaid),
-          'Onboarding Rent Pending': formatCurrency(tenant.pendingOnboardingRentAmount),
-          'Total Pending Amount': formatCurrency(tenant.totalPendingAmount),
-          'Status': tenant.status,
-        };
-      });
-
-      // Create and download Excel file
-      // const worksheet = XLSX.utils.json_to_sheet(excelData);
-      // const workbook = XLSX.utils.book_new();
-      // XLSX.utils.book_append_sheet(workbook, worksheet, 'Onboarding Tenants');
-      
-      // Add summary section
-      // if (summary) {
-      //   const summaryData = [
-      //     { 'Metric': 'SUMMARY', 'Value': '' },
-      //     { 'Metric': 'Total Tenants', 'Value': summary.totalTenants },
-      //     { 'Metric': 'Total Pending Amount', 'Value': formatCurrency(summary.totalPendingAmount) },
-      //     { 'Metric': 'Total Security Pending', 'Value': formatCurrency(summary.totalSecurityPending) },
-      //     { 'Metric': 'Total Rent Pending', 'Value': formatCurrency(summary.totalRentPending) },
-      //   ];
-        
-      //   const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
-      //   XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
-      // }
-      
-      // const fileName = `onboarding-tenants-${new Date().toISOString().split('T')[0]}.xlsx`;
-      // XLSX.writeFile(workbook, fileName);
+      // Use the new ExcelJS function
+      generatePendingTenantOnboardExcel(onboardedTenants, summary);
       
       // Reset states
       setExportDialogOpen(false);

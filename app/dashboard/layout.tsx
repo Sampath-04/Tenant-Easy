@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Box, CssBaseline } from '@mui/material';
 import { DashboardSidebar } from '@/components/DashboardSidebar';
-import { AppHeader } from '@/components/AppHeader';
 import { AuthGuard } from '@/contexts/AuthContext';
 
 interface DashboardLayoutProps {
