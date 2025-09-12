@@ -299,17 +299,15 @@ export const generateTenantAnalysisExcel = async (
     { header: 'Room No', key: 'roomNo', width: 12 },
     { header: 'Room Type', key: 'roomType', width: 15 },
     { header: 'Monthly Rent', key: 'monthlyRent', width: 18 },
-    { header: 'Check-in Date', key: 'checkInDate', width: 18 },
     { header: 'Security Deposit Total', key: 'securityDepositTotal', width: 25 },
     { header: 'Security Deposit Paid', key: 'securityDepositPaid', width: 25 },
     { header: 'Security Deposit Balance', key: 'securityDepositBalance', width: 28 },
-    { header: 'Current Cycle Month', key: 'currentCycleMonth', width: 22 },
-    { header: 'Total Pending Amount', key: 'totalPendingAmount', width: 25 },
-    { header: 'Current Month Status', key: 'currentMonthPaymentStatus', width: 25 },
-    { header: 'Current Month Total', key: 'currentMonthTotalAmount', width: 25 },
-    { header: 'Current Month Paid', key: 'currentMonthPaidAmount', width: 22 },
+    { header: 'Check-in Date', key: 'checkInDate', width: 18 },
     { header: 'Tenure (Months)', key: 'tenureInMonths', width: 18 },
+    { header: 'Cycle Start', key: 'cycleStart', width: 18 },
+    { header: 'Cycle End', key: 'cycleEnd', width: 18 },
     { header: 'Months with Due', key: 'monthsWithDuePayments', width: 25 },
+    { header: 'Total Pending Amount', key: 'totalPendingAmount', width: 25 },
   ];
 
   // Style the header row for Tenant Analysis
@@ -342,17 +340,18 @@ export const generateTenantAnalysisExcel = async (
       roomNo: tenant.room.roomNo,
       roomType: tenant.room.roomType,
       monthlyRent: tenant.monthlyRent,
-      checkInDate: formatDate(tenant.checkInDate),
+      // security deposit
       securityDepositTotal: tenant.securityDepositTotal,
       securityDepositPaid: tenant.securityDepositPaid,
       securityDepositBalance: tenant.securityDepositBalance,
-      currentCycleMonth: tenant.currentCycleMonth,
-      totalPendingAmount: tenant.totalPendingAmount,
-      currentMonthPaymentStatus: tenant.currentMonthPaymentStatus,
-      currentMonthTotalAmount: tenant.currentMonthTotalAmount,
-      currentMonthPaidAmount: tenant.currentMonthPaidAmount,
+
+      checkInDate: formatDate(tenant.checkInDate),
       tenureInMonths: tenant.tenureInMonths,
+      cycleStart: formatDate(tenant.cycleStart),
+      cycleEnd: formatDate(tenant.cycleEnd),
+
       monthsWithDuePayments: tenant.monthsWithDuePayments.join(', '),
+      totalPendingAmount: tenant.totalPendingAmount,
     });
 
     // Style data cells
@@ -412,11 +411,6 @@ export const generateTenantAnalysisExcel = async (
     { metric: 'Average Tenure (Months)', value: summaryData.averageTenureMonths },
     { metric: 'Collection Efficiency (%)', value: `${summaryData.collectionEfficiency}%` },
     { metric: 'Tenants with Pending Payments', value: summaryData.tenantsWithPendingPayments },
-    { metric: '', value: '' }, // Empty row
-    { metric: 'Current Month Payment Summary', value: '' },
-    { metric: 'Fully Paid', value: summaryData.currentMonthPaymentSummary.fullyPaid },
-    { metric: 'Partially Paid', value: summaryData.currentMonthPaymentSummary.partiallyPaid },
-    { metric: 'Unpaid', value: summaryData.currentMonthPaymentSummary.unpaid },
   ];
 
   summaryRows.forEach((rowData) => {
