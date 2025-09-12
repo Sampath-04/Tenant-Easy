@@ -204,7 +204,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
         </div>
         {/* Status Chip */}
         {getStatusChip(record)}
-        <p>current date: {getCurrentDate().toISOString().split('T')[0]}</p>
+        {/* <p>current date: {getCurrentDate().toISOString().split('T')[0]}</p> */}
       </div>
 
       {/* Cycle and Rent Details */}
