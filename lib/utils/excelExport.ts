@@ -46,12 +46,16 @@ export interface RentRecord {
 
 export interface RentSummary {
   totalAmount?: number;
+  totalRent?: number;
+  totalElectricity?: number;
   paidCount?: number;
   pendingCount?: number;
   overdueCount?: number;
+  upcomingCount?: number;
   paidAmount?: number;
   pendingAmount?: number;
   overdueAmount?: number;
+  upcomingAmount?: number;
 }
 
 export const generateRentHistoryExcel = async (
@@ -232,12 +236,16 @@ export const generateRentHistoryExcel = async (
     const summaryData = [
       { metric: 'SUMMARY', value: '' },
       { metric: 'Total Amount', value: formatCurrency(summary.totalAmount || 0) },
+      { metric: 'Total Rent', value: formatCurrency(summary.totalRent || 0) },
+      { metric: 'Total Electricity', value: formatCurrency(summary.totalElectricity || 0) },
       { metric: 'Paid Count', value: summary.paidCount || 0 },
       { metric: 'Pending Count', value: summary.pendingCount || 0 },
       { metric: 'Overdue Count', value: summary.overdueCount || 0 },
+      { metric: 'Upcoming Count', value: summary.upcomingCount || 0 },
       { metric: 'Paid Amount', value: formatCurrency(summary.paidAmount || 0) },
       { metric: 'Pending Amount', value: formatCurrency(summary.pendingAmount || 0) },
       { metric: 'Overdue Amount', value: formatCurrency(summary.overdueAmount || 0) },
+      { metric: 'Upcoming Amount', value: formatCurrency(summary.upcomingAmount || 0) },
     ];
 
     summaryData.forEach((item) => {
@@ -727,6 +735,9 @@ export const generateTenantAnalysisExcel = async (
     { header: 'Room No', key: 'roomNo', width: 12 },
     { header: 'Room Type', key: 'roomType', width: 15 },
     { header: 'Monthly Rent', key: 'monthlyRent', width: 18 },
+    { header: 'Food Opted', key: 'foodOpted', width: 15 },
+    { header: 'Base Rent', key: 'baseRent', width: 15 },
+    { header: 'Food Amount', key: 'foodAmount', width: 15 },
     { header: 'Security Deposit Total', key: 'securityDepositTotal', width: 25 },
     { header: 'Security Deposit Paid', key: 'securityDepositPaid', width: 25 },
     { header: 'Security Deposit Balance', key: 'securityDepositBalance', width: 28 },
@@ -768,6 +779,9 @@ export const generateTenantAnalysisExcel = async (
       roomNo: tenant.room.roomNo,
       roomType: tenant.room.roomType,
       monthlyRent: tenant.monthlyRent,
+      foodOpted: tenant.foodOpted ? 'Yes' : 'No',
+      baseRent: tenant.baseRent,
+      foodAmount: tenant.foodAmount,
       // security deposit
       securityDepositTotal: tenant.securityDepositTotal,
       securityDepositPaid: tenant.securityDepositPaid,
@@ -835,6 +849,8 @@ export const generateTenantAnalysisExcel = async (
     { metric: 'Total Security Collected', value: `₹${summaryData.totalSecurityCollected.toLocaleString()}` },
     { metric: 'Total Security Balance', value: `₹${summaryData.totalSecurityBalance.toLocaleString()}` },
     { metric: 'Total Monthly Rent Expected', value: `₹${summaryData.totalMonthlyRentExpected.toLocaleString()}` },
+    { metric: 'Total Base Rent', value: `₹${summaryData.totalBaseRent.toLocaleString()}` }, 
+    { metric: 'Total Food Amount', value: `₹${summaryData.totalFoodAmount.toLocaleString()}` },
     { metric: 'Total Pending Amount', value: `₹${summaryData.totalPendingAmount.toLocaleString()}` },
     { metric: 'Average Tenure (Months)', value: summaryData.averageTenureMonths },
     { metric: 'Collection Efficiency (%)', value: `${summaryData.collectionEfficiency}%` },

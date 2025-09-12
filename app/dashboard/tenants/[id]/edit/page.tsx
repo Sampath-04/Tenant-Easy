@@ -24,12 +24,14 @@ interface TenantFormData {
   securityDepositTotal: number;
   securityDepositPaid: number;
   checkInDate: string;
+  includeFood: boolean;
 }
 
 function TenantEditContent() {
   const params = useParams();
   const router = useRouter();
   const tenantId = params.id as string;
+  const { selectedProperty } = useProperty();
 
   const [formData, setFormData] = useState<TenantFormData>({
     tenantName: '',
@@ -38,7 +40,8 @@ function TenantEditContent() {
     monthlyRent: 0,
     securityDepositTotal: 0,
     securityDepositPaid: 0,
-    checkInDate: ''
+    checkInDate: '',
+    includeFood: false
   });
 
   const { data: tenant, isLoading, error: fetchError } = useTenant(tenantId);
@@ -50,13 +53,14 @@ function TenantEditContent() {
         tenantName: tenant.tenantName || '',
         tenantNumber: tenant.tenantNumber || '',
         tenantEmail: tenant.tenantEmail || '',
-        monthlyRent: tenant.monthlyRent || 0,
+        monthlyRent: tenant.foodOpted ? tenant.monthlyRent - (selectedProperty?.foodAmount || 0) : tenant.monthlyRent || 0,
         securityDepositTotal: tenant.securityDepositTotal || 0,
         securityDepositPaid: tenant.securityDepositPaid || 0,
         checkInDate: tenant.checkInDate ? tenant.checkInDate.split('T')[0] : '',
+        includeFood: tenant.foodOpted || false,
       });
     }
-  }, [tenant]);
+  }, [tenant, selectedProperty]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -81,14 +85,18 @@ function TenantEditContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Calculate final monthly rent (base rent + food if opted)
+    const finalMonthlyRent = formData.monthlyRent + (formData.includeFood ? (selectedProperty?.foodAmount || 0) : 0);
+    
     const updateData = {
       tenantName: formData.tenantName,
       tenantNumber: formData.tenantNumber,
       tenantEmail: formData.tenantEmail,
-      monthlyRent: formData.monthlyRent,
+      monthlyRent: finalMonthlyRent,
       securityDepositTotal: formData.securityDepositTotal,
       securityDepositPaid: formData.securityDepositPaid,
       checkInDate: formData.checkInDate,
+      foodOpted: formData.includeFood,
     };
 
     updateTenantMutation.mutate(
@@ -305,6 +313,46 @@ function TenantEditContent() {
                         onChange={(value) => handleInputChange('securityDepositPaid', value || 0)}
                         placeholder="0"
                       />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Food Option Toggle */}
+                <div className="mt-6">
+                  <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div>
+                      <h3 className="text-md font-medium text-gray-900 dark:text-white">
+                        Include Food
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Add food charges to monthly rent (₹{selectedProperty?.foodAmount || 0}/month)
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.includeFood}
+                        onChange={(e) => handleInputChange('includeFood', e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 border border-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 dark:border-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:after:border-gray-600 peer-checked:bg-blue-600 peer-checked:border-blue-600"></div>
+                    </label>
+                  </div>
+                  
+                  {/* Final Rent Amount Display */}
+                  <div className="mt-4 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <div className="flex flex-row items-center gap-2 text-md font-medium text-gray-900 dark:text-white">
+                        Final Monthly Rent:
+                        {formData.includeFood && (
+                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                            Base Rent: ₹{formData.monthlyRent} + Food: ₹{selectedProperty?.foodAmount || 0}
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                        ₹{formData.monthlyRent + (formData.includeFood ? (selectedProperty?.foodAmount || 0) : 0)}
+                      </span>
                     </div>
                   </div>
                 </div>

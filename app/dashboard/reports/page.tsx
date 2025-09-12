@@ -31,7 +31,7 @@ import { toast } from 'react-toastify';
 import { generateRefundsExcel, generateProfitLossExcel, generateTenantAnalysisExcel } from '@/lib/utils/excelExport';
 
 // Import existing export functions
-import { getRentRecordsForExport } from '@/lib/api/rentHistory';
+import { getAllRentRecordsForProperty, getRentRecordsForExport, getPropertyRentSummary } from '@/lib/api/rentHistory';
 import { getRefundsForExport } from '@/lib/api/refunds';
 import { getProfitLossByProperty } from '@/lib/api/profitLoss';
 import { getTenantAnalysis, getTenantAnalysisSummary } from '@/lib/api/tenants';
@@ -57,7 +57,14 @@ const reportOptions: ReportOption[] = [
     requiresDateRange: true,
     exportFunction: async (propertyId: string, startDate?: string, endDate?: string) => {
       if (!startDate || !endDate) throw new Error('Date range is required for rent history report');
-      return await getRentRecordsForExport(propertyId, startDate, endDate);
+      
+      // Call both functions in parallel
+      const [rentRecords, rentSummary] = await Promise.all([
+        getAllRentRecordsForProperty(propertyId, 1, 10000, undefined, undefined, undefined, undefined, undefined, startDate, endDate),
+        getPropertyRentSummary(propertyId, startDate, endDate)
+      ]);
+      
+      return { rentRecords, rentSummary };
     }
   },
   {
@@ -178,7 +185,6 @@ export default function ReportsPage() {
 
     try {
       let response;
-      
       if (selectedReport.requiresDateRange && startDate && endDate) {
         response = await selectedReport.exportFunction(
           selectedProperty.id,
@@ -248,7 +254,7 @@ export default function ReportsPage() {
   const generateExcelReport = async (reportType: string, data: any, startDate?: Date | null, endDate?: Date | null) => {
     switch (reportType) {
       case 'rent-history':
-        await generateRentHistoryExcel(data.data, data.summary, startDate, endDate);
+        await generateRentHistoryExcel(data.rentRecords.data, data.rentSummary.data, startDate, endDate);
         return; 
 
       case 'refunds':

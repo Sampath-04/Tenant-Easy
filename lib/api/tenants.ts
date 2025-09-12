@@ -99,6 +99,7 @@ export async function createTenant(tenantData: {
   rentPaid?: number;
   paymentMethod: string;
   paymentProofs?: File[];
+  foodOpted?: boolean;
 }): Promise<Tenant> {
   // Create FormData for file uploads
   const formData = new FormData();
@@ -114,6 +115,7 @@ export async function createTenant(tenantData: {
   formData.append('checkinDate', tenantData.checkinDate);
   formData.append('rentPaid', (tenantData.rentPaid || 0).toString());
   formData.append('paymentMethod', tenantData.paymentMethod);
+  formData.append('foodOpted', (tenantData.foodOpted || false).toString());
   
   // Add optional fields
   if (tenantData.tenantEmail) {
@@ -433,6 +435,9 @@ export interface TenantAnalysisData {
   tenantName: string;
   tenantNumber: string;
   monthlyRent: number;
+  foodOpted: boolean;
+  baseRent: number;
+  foodAmount: number;
   checkInDate: string;
   securityDepositTotal: number;
   securityDepositPaid: number;
@@ -486,6 +491,8 @@ export interface TenantAnalysisSummary {
     totalSecurityCollected: number;
     totalSecurityBalance: number;
     totalMonthlyRentExpected: number;
+    totalBaseRent: number;
+    totalFoodAmount: number;
     totalPendingAmount: number;
     averageTenureMonths: number;
     currentMonthPaymentSummary: {

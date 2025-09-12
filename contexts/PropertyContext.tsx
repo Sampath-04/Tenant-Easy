@@ -20,6 +20,7 @@ export interface Property {
   pendingOnboardingAmount: number;
   pendingOnboardingCount: number;
   monthlyRevenue: number;
+  foodAmount: number;
 }
 
 interface PropertyContextType {
@@ -39,6 +40,7 @@ const convertToProperty = (propertyData: PropertyData, profileId: string): Prope
   name: propertyData.propertyName,
   address: propertyData.propertyAddress,
   profile: profileId,
+  foodAmount: propertyData.foodAmount,
   // Use actual data from API summary
   totalRooms: propertyData.summary.totalRooms,
   occupiedRooms: propertyData.summary.occupiedRooms,

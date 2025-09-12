@@ -100,6 +100,7 @@ export interface Property {
   _id: string;
   propertyName: string;
   propertyAddress: string;
+  foodAmount: number;
   electricitySettings: {
     ratePerUnit: number;
   };
@@ -137,6 +138,9 @@ export interface Tenant {
   monthlyRent: number;
   securityDepositTotal?: number;
   securityDepositPaid?: number;
+  foodOpted?: boolean;
+  baseRent: number; 
+  foodAmount: number;
   onboardingPayments: Payments[];
   status: 'onboarded' | 'notice_serving' | 'evicted';
   evictedDate?: Date;
@@ -208,6 +212,7 @@ export interface PropertyData {
   propertyName: string;
   propertyAddress: string;
   isActive: boolean;
+  foodAmount: number;
   summary: {
     totalTenants: number;
     totalRooms: number;

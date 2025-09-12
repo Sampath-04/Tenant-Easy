@@ -15,6 +15,8 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import RestaurantIcon from '@mui/icons-material/Restaurant';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import WarningIcon from '@mui/icons-material/Warning';
 import RentHistoryTable from '@/app/components/RentHistoryTable';
 import NoticeForm from '@/components/NoticeForm';
@@ -38,6 +40,8 @@ function TenantViewContent() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const { data: tenant, isLoading, error: fetchError } = useTenant(tenantId);
+
+  console.log("tenant", tenant);
   const updatePaymentMutation = useUpdateOnboardingPaymentAmount();
   const markTenantAsDeletedMutation = useMarkTenantAsDeleted();
   const error = fetchError?.message;
@@ -369,6 +373,44 @@ function TenantViewContent() {
                   </div>
                   <div className="font-medium text-gray-900 dark:text-white text-sm">
                     {formatCurrency(localTenant.securityDepositPaid || 0)}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-[220px_auto] items-center">
+                  <div className='flex items-center gap-2'>
+                    <AttachMoneyIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                        Base Rent
+                    </div>
+                  </div>
+                  <div className="font-medium text-gray-900 dark:text-white text-sm">
+                    {formatCurrency(localTenant.baseRent || 0)}
+                  </div>
+                </div>
+
+                {localTenant.foodOpted && (
+                  <div className="grid grid-cols-[220px_auto] items-center">
+                    <div className='flex items-center gap-2'>
+                      <RestaurantIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                          Food Amount
+                      </div>
+                    </div>
+                    <div className="font-medium text-gray-900 dark:text-white text-sm">
+                      {formatCurrency(localTenant.foodAmount || 0)}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-[220px_auto] items-center">
+                  <div className='flex items-center gap-2'>
+                    <AttachMoneyIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                        Total Monthly Rent
+                    </div>
+                  </div>
+                  <div className="font-semibold text-gray-900 dark:text-white text-sm">
+                    {formatCurrency(localTenant.monthlyRent || 0)}
                   </div>
                 </div>
             </div>

@@ -519,6 +519,9 @@ function TenantsContent() {
                           Rent
                         </TableCell>
                         <TableCell className="font-bold text-gray-700 dark:text-gray-300">
+                          Food
+                        </TableCell>
+                        <TableCell className="font-bold text-gray-700 dark:text-gray-300">
                           Status
                         </TableCell>
                         <TableCell className="font-bold text-gray-700 dark:text-gray-300">
@@ -559,6 +562,12 @@ function TenantsContent() {
                             <Typography variant="caption" className="text-gray-600 dark:text-gray-400">
                               Deposit: {formatCurrency(tenant.securityDepositPaid || 0)}
                             </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${tenant.foodOpted ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400 border border-orange-200 dark:border-orange-700' : 'bg-gray-100 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${tenant.foodOpted ? 'bg-orange-500' : 'bg-gray-400'}`}></span>
+                              {tenant.foodOpted ? 'Yes' : 'No'}
+                            </div>
                           </TableCell>
                           <TableCell>
                             <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${tenant.isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 border border-green-200 dark:border-green-700' : 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-400 border border-gray-200 dark:border-gray-700'}`}>
@@ -661,6 +670,15 @@ function TenantsContent() {
                             <Typography variant="body2" className="text-gray-900 dark:text-white">
                               {formatCurrency(tenant.securityDepositPaid || 0)}
                             </Typography>
+                          </div>
+                          <div>
+                            <Typography variant="caption" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              Food
+                            </Typography>
+                            <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${tenant.foodOpted ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400 border border-orange-200 dark:border-orange-700' : 'bg-gray-100 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${tenant.foodOpted ? 'bg-orange-500' : 'bg-gray-400'}`}></span>
+                              {tenant.foodOpted ? 'Yes' : 'No'}
+                            </div>
                           </div>
                           <div>
                             <Typography variant="caption" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider">

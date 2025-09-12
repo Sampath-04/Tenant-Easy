@@ -431,10 +431,10 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
                           secondary={
                             <>
                               <span className="block text-sm text-gray-600 dark:text-gray-400">
-                                ₹{((reading.meterReading - reading.previousReading) * room.property.electricitySettings.ratePerUnit).toFixed(2)} • {new Date(reading.readingDate).toLocaleDateString()}
+                                {new Date(reading.readingDate).toLocaleDateString()}
                               </span>
-                              <span className="block text-xs text-gray-500">
-                                Rate: ₹{room.property.electricitySettings.ratePerUnit}/unit • Recorded by: {reading.recordedBy?.name || 'System'}
+                                <span className="block text-xs text-gray-500">
+                                  Recorded by: {reading.recordedBy?.name || 'System'}
                               </span>
                             </>
                           }
