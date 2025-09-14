@@ -136,9 +136,11 @@ export interface Tenant {
   tenantEmail?: string;
   currentReading?: number;
   monthlyRent: number;
+  dailyRent?: number;
   securityDepositTotal?: number;
   securityDepositPaid?: number;
   foodOpted?: boolean;
+  isTemporary?: boolean;
   baseRent: number; 
   foodAmount: number;
   onboardingPayments: Payments[];

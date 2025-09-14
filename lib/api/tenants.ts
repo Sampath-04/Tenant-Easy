@@ -519,4 +519,68 @@ export async function getTenantAnalysisSummary(propertyId: string): Promise<Tena
   return apiClient.get<TenantAnalysisSummary>(`/tenants/property/${propertyId}/analysis/summary`);
 }
 
+// Temporary Tenant Types
+export interface CreateTemporaryTenantRequest {
+  tenantName: string;
+  tenantNumber: string;
+  tenantEmail?: string;
+  property: string;
+  room: string;
+  checkInDate: string;
+  checkOutDate: string;
+  dailyRent: number;
+  foodRate?: number;
+  foodOpted?: boolean;
+  securityDepositTotal?: number;
+  securityDepositPaid?: number;
+  amountPaid?: number;
+  paymentMethod?: string;
+  paymentProofs?: File[];
+}
+
+export interface CreateTemporaryTenantResponse {
+  success: boolean;
+  message: string;
+  data: Tenant;
+}
+
+/**
+ * Create a temporary tenant
+ */
+export async function createTemporaryTenant(data: CreateTemporaryTenantRequest): Promise<CreateTemporaryTenantResponse> {
+  return apiClient.post<CreateTemporaryTenantResponse>('/temporary-tenants', data);
+}
+
+export interface TemporaryTenantsResponse {
+  success: boolean;
+  data: {
+    tenants: Tenant[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+/**
+ * Get temporary tenants for a property
+ */
+export async function getTemporaryTenants(propertyId: string): Promise<TemporaryTenantsResponse> {
+  return apiClient.get<TemporaryTenantsResponse>(`/temporary-tenants/property/${propertyId}`);
+}
+
+/**
+ * Update a temporary tenant
+ */
+export async function updateTemporaryTenant(id: string, data: Partial<CreateTemporaryTenantRequest>): Promise<CreateTemporaryTenantResponse> {
+  return apiClient.put<CreateTemporaryTenantResponse>(`/temporary-tenants/${id}`, data);
+}
+
+/**
+ * Delete a temporary tenant
+ */
+export async function deleteTemporaryTenant(id: string): Promise<{ success: boolean; message: string }> {
+  return apiClient.delete<{ success: boolean; message: string }>(`/temporary-tenants/${id}`);
+}
+
 

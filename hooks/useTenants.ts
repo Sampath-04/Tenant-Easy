@@ -12,7 +12,13 @@ import {
   processTenant,
   collectPendingPayments,
   updateOnboardingPaymentAmount,
-  type OnboardedTenantsResponse 
+  createTemporaryTenant,
+  getTemporaryTenants,
+  updateTemporaryTenant,
+  deleteTemporaryTenant,
+  type OnboardedTenantsResponse,
+  type CreateTemporaryTenantRequest,
+  type TemporaryTenantsResponse
 } from '../lib/api/tenants';
 import { 
   Tenant, 
@@ -282,6 +288,73 @@ export function useUpdateOnboardingPaymentAmount() {
     },
     onError: (error: ApiError) => {
       console.error('Failed to update payment amount:', error);
+      const errorToast = showErrorToast(error.getUserMessage());
+      toast.error(errorToast.message, errorToast.config);
+    },
+  });
+}
+
+// Temporary Tenant Hooks
+export function useTemporaryTenants(propertyId: string) {
+  return useQuery({
+    queryKey: ['temporaryTenants', propertyId],
+    queryFn: () => getTemporaryTenants(propertyId),
+    enabled: !!propertyId,
+  });
+}
+
+export function useCreateTemporaryTenant() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: createTemporaryTenant,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['temporaryTenants'] });
+      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      const successToast = showSuccessToast('Temporary tenant created successfully');
+      toast.success(successToast.message, successToast.config);
+    },
+    onError: (error: ApiError) => {
+      console.error('Failed to create temporary tenant:', error);
+      const errorToast = showErrorToast(error.getUserMessage());
+      toast.error(errorToast.message, errorToast.config);
+    },
+  });
+}
+
+export function useUpdateTemporaryTenant() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreateTemporaryTenantRequest> }) =>
+      updateTemporaryTenant(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['temporaryTenants'] });
+      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      const successToast = showSuccessToast('Temporary tenant updated successfully');
+      toast.success(successToast.message, successToast.config);
+    },
+    onError: (error: ApiError) => {
+      console.error('Failed to update temporary tenant:', error);
+      const errorToast = showErrorToast(error.getUserMessage());
+      toast.error(errorToast.message, errorToast.config);
+    },
+  });
+}
+
+export function useDeleteTemporaryTenant() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: deleteTemporaryTenant,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['temporaryTenants'] });
+      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      const successToast = showSuccessToast('Temporary tenant deleted successfully');
+      toast.success(successToast.message, successToast.config);
+    },
+    onError: (error: ApiError) => {
+      console.error('Failed to delete temporary tenant:', error);
       const errorToast = showErrorToast(error.getUserMessage());
       toast.error(errorToast.message, errorToast.config);
     },
