@@ -14,7 +14,7 @@ interface BreadcrumbsProps {
 
 export default function Breadcrumbs({ items }: BreadcrumbsProps) {
   return (
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center flex-wrap gap-y-2 space-x-2">
         {items.map((item, index) => (
           <div key={item.url} className="flex items-center space-x-2">
             {index > 0 && (
@@ -22,7 +22,7 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
             )}
             <Link
               href={item.url}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 transition-colors"
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 transition-colors max-w-[150px] truncate md:max-w-none"
             >
               {item.label}
             </Link>

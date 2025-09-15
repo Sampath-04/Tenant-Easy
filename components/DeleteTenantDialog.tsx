@@ -94,6 +94,7 @@ export default function DeleteTenantDialog({
         sx={(theme) => ({
           paddingTop: "24px !important",
           backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
+          padding: {xs: "8px 16px", sm: "16px 24px"},
         })}
       >
         <Alert 
@@ -105,7 +106,8 @@ export default function DeleteTenantDialog({
             border: theme.palette.mode === 'dark' ? '1px solid #451a03' : '1px solid #fde68a',
             '& .MuiAlert-icon': {
               color: theme.palette.mode === 'dark' ? '#fbbf24' : '#f59e0b',
-            }
+            },
+            padding: {xs: "8px 16px", sm: "16px 24px"},
           })}
         >
           This action cannot be undone. The tenant will be permanently removed{roomNo ? ` from Room ${roomNo}` : ' from the system'}.

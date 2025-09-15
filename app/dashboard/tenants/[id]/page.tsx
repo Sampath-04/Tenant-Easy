@@ -240,15 +240,15 @@ function TenantViewContent() {
 
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER + " py-4"}>
         {/* Tenant Overview Card */}
-        <div className={`${LAYOUT_CLASSES.CARD_CONTAINER} mb-6`}>
+        <div className={`${LAYOUT_CLASSES.CARD_CONTAINER} md:mb-6 mb-4`}>
           <div className="p-2 md:p-3">
-            <div className="flex flex-row items-center justify-between mb-3">
+            <div className="flex md:flex-row flex-col md:items-center md:justify-between justify-start mb-3">
               <div className="flex items-center md:space-x-4 gap-2 md:gap-0">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
+                <div className="hidden w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full md:flex items-center justify-center text-white text-xl font-bold">
                   {localTenant.tenantName.charAt(0).toUpperCase()}
                 </div>
                 <div className='flex flex-row items-center gap-2'>
-                  <h1 className="text-lg font-bold text-gray-900 dark:text-white ">
+                  <h1 className="md:text-lg text-base font-bold text-gray-900 dark:text-white ">
                     {localTenant.tenantName}
                   </h1>
                   <div className="flex items-center space-x-2">
@@ -262,7 +262,7 @@ function TenantViewContent() {
                 </div>
               </div>
 
-              <div className="mt-0 text-right">
+              <div className="md:mt-0 mt-2 md:text-right text-left">
                 <div className="text-md md:text-lg text-green-600 dark:text-green-400 font-bold">
                   {formatCurrency(localTenant.monthlyRent)}
                 </div>
@@ -274,7 +274,7 @@ function TenantViewContent() {
 
             <hr className="my-4 border-gray-200 dark:border-gray-700" />
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <div className="grid grid-cols-[220px_auto] items-center">
                   <div className='flex items-center gap-2'>
                     <PhoneIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
@@ -415,7 +415,7 @@ function TenantViewContent() {
                 </div>
             </div>
 
-            <div className='flex flex-row items-center justify-between gap-2'>
+            <div className='flex md:flex-row flex-col md:items-center md:justify-between justify-start gap-2'>
               {localTenant.notice && (
                 <div className="mt-4 p-2 md:px-3 md:py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg w-fit">
                   <div className="flex items-center space-x-3">
@@ -434,7 +434,7 @@ function TenantViewContent() {
 
               {/* Apply Notice Button - Only show for onboarded tenants without notice */}
           
-              <div className="flex justify-end gap-4 mt-4 ml-auto">
+              <div className="grid grid-cols-2 md:flex md:flex-row md:justify-end justify-start gap-4 md:mt-4 mt-3 md:ml-auto">
                 <Button
                   variant="outlined"
                   onClick={() => router.push(`/dashboard/tenants/${tenantId}/edit`)}
@@ -491,7 +491,7 @@ function TenantViewContent() {
                     transition: 'all 0.2s ease',
                   }}
                 >
-                  Apply Notice Period
+                  Apply Notice
                 </Button>}
                 <Button
                   variant="outlined"
@@ -550,15 +550,31 @@ function TenantViewContent() {
                       <AccordionSummary
                         expandIcon={<ExpandMoreIcon />}
                         sx={(theme) => ({
+                          "@media (max-width: 768px)":{
+                            minHeight: "50px",
+                            "& .MuiTypography-root":{
+                              fontSize: "16px !important",
+                            }
+                          },
+                          
                           backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#f8fafc',
                           borderRadius: '12px',
                           '&.Mui-expanded': {
                             borderBottomLeftRadius: 0,
                             borderBottomRightRadius: 0,
+                            "@media (max-width: 768px)":{
+                              minHeight: "50px",
+                              "& .MuiAccordionSummary-content":{
+                                margin: "0",
+                              },
+                              "& .MuiTypography-root":{
+                                fontSize: "16px !important",
+                              }
+                            },
                           },
                           '&:hover': {
                             backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f1f5f9',
-                          }
+                          },
                         })}
                       >
                         <div className="flex items-center gap-3">
@@ -570,14 +586,14 @@ function TenantViewContent() {
                           </Typography>
                         </div>
                       </AccordionSummary>
-                      <AccordionDetails sx={{ padding: '16px,', paddingTop: '0px' }}>
+                      <AccordionDetails sx={{ padding: '16px,', paddingTop: '0px'  }}>
                         <div className="space-y-2">
                           {localTenant.onboardingPayments.map((payment: any, index: number) => (
                             <div 
                               key={payment._id || index}
                               className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
                             >
-                              <div className="flex items-center justify-between mb-3">
+                              <div className="flex md:flex-row flex-col md:items-center md:justify-between justify-start mb-3">
                                 <div className="flex items-center gap-3">
                                   <Typography variant="subtitle1" sx={(theme) => ({ 
                                     fontWeight: 600, 
@@ -645,7 +661,7 @@ function TenantViewContent() {
                                </div>
                               </div>
                               
-                                <div className="grid grid-cols-1 md:flex gap-4 text-sm items-center">
+                                <div className="grid grid-cols-1 md:flex md:gap-4 gap-2 text-sm items-center">
                                 <div className="flex flex-row items-center gap-2">
                                   <Typography variant="body2" sx={(theme) => ({ 
                                     color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280', 
@@ -662,7 +678,7 @@ function TenantViewContent() {
                                   </Typography>
                                 </div>
                                 {/*  vertical line */}
-                                <div className="h-4 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
+                                <div className="hidden md:block h-4 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
                                 <div className="flex flex-row items-center gap-2">
                                   <Typography variant="body2" sx={(theme) => ({ 
                                     color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280', 
@@ -763,91 +779,104 @@ function TenantViewContent() {
         onClose={() => setShowEditDialog(false)}
         maxWidth="sm"
         fullWidth
+        sx={{
+          '& .MuiDialog-paper': {
+            margin: { xs: '16px', sm: '32px' },
+            width: { xs: 'calc(100% - 32px)', sm: '100%' },
+            maxHeight: { xs: 'calc(100% - 32px)', sm: '90vh' },
+          }
+        }}
       >
         <DialogTitle sx={(theme) => ({
           color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
           backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#f8fafc',
           borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
-          padding: '16px !important'
+          padding: { xs: '12px 16px', sm: '16px' },
+          fontSize: { xs: '18px', sm: '20px' },
+          fontWeight: 600
         })}>
           Edit Payment Amount
         </DialogTitle>
         <DialogContent sx={(theme) => ({
           backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
-          padding: '16px !important'
+          padding: { xs: '12px 16px', sm: '16px' }
         })}>
           {editingPayment && (
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4 md:mt-0">
               {/* Payment Details */}
-              <div className="grid gap-3">
-                <Typography sx={(theme) => ({
+              <div className="grid gap-3 mt-2">
+                {/* <Typography sx={(theme) => ({
                   color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
                   fontWeight: 600,
-                  fontSize: '16px'
+                  fontSize: { xs: '14px', sm: '16px' }
                 })}>
                   Payment Details
-                </Typography>
+                </Typography> */}
                 
-                <div className="grid grid-cols-[auto_1fr] gap-2">
-                  <div className="flex flex-row items-center gap-2">
+                <div className="grid grid-cols-2 gap-2 md:gap-3">
+                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 py-1">
                     <Typography variant="body2" sx={(theme) => ({
                       color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
-                      fontWeight: 500
+                      fontWeight: 500,
+                      fontSize: { xs: '12px', sm: '14px' }
                     })}>
-                      Payment Type
+                      Payment Type:
                     </Typography>
                     <Typography sx={(theme) => ({
                       color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
                       fontWeight: 600,
-                      fontSize: '14px'
+                      fontSize: { xs: '13px', sm: '14px' }
                     })}>
                       {editingPayment.paymentType === 'SECURITY_DEPOSIT' ? 'Security Deposit' : 'Onboarding Rent'}
                     </Typography>
                   </div>
                   
-                  <div className="flex flex-row items-center gap-2">
+                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 py-1">
                     <Typography variant="body2" sx={(theme) => ({
                       color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
-                      fontWeight: 500
+                      fontWeight: 500,
+                      fontSize: { xs: '12px', sm: '14px' }
                     })}>
-                      Payment Method
+                      Payment Method:
                     </Typography>
                     <Typography variant="body1" sx={(theme) => ({
                       color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
                       fontWeight: 600,
-                      fontSize: '14px'
+                      fontSize: { xs: '13px', sm: '14px' }
                     })}>
                       {editingPayment.method.replace('_', ' ')}
                     </Typography>
                   </div>
                   
-                  <div className="flex flex-row items-center gap-2">
+                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 py-1">
                     <Typography variant="body2" sx={(theme) => ({
                       color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
-                      fontWeight: 500
+                      fontWeight: 500,
+                      fontSize: { xs: '12px', sm: '14px' }
                     })}>
-                      Payment Date
+                      Payment Date:
                     </Typography>
                     <Typography variant="body1" sx={(theme) => ({
                       color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
                       fontWeight: 600,
-                      fontSize: '14px'
+                      fontSize: { xs: '13px', sm: '14px' }
                     })}>
                       {formatDate(editingPayment.paidAt)}
                     </Typography>
                   </div>
                   
-                  <div className="flex flex-row items-center gap-2">
+                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 py-1">
                     <Typography variant="body2" sx={(theme) => ({
                       color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
-                      fontWeight: 500
+                      fontWeight: 500,
+                      fontSize: { xs: '12px', sm: '14px' }
                     })}>
-                      Current Amount
+                      Current Amount:
                     </Typography>
                     <Typography variant="body1" sx={(theme) => ({
                       color: theme.palette.mode === 'dark' ? '#10b981' : '#059669',
                       fontWeight: 700,
-                      fontSize: '14px'
+                      fontSize: { xs: '14px', sm: '15px' }
                     })}>
                       ₹{editingPayment.amount}
                     </Typography>
@@ -860,7 +889,7 @@ function TenantViewContent() {
                 <Typography variant="body2" sx={(theme) => ({
                   color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
                   fontWeight: 600,
-                  fontSize: '16px'
+                  fontSize: { xs: '14px', sm: '16px' }
                 })}>
                   New Amount
                 </Typography>
@@ -888,11 +917,11 @@ function TenantViewContent() {
                   }}
                   sx={{
                     '& .MuiInputBase-root': {
-                      fontSize: '1.125rem',
+                      fontSize: { xs: '1rem', sm: '1.125rem' },
                       fontWeight: 600,
                     },
                     "& .MuiInputBase-input": {
-                      padding: '12px 14px',
+                      padding: { xs: '10px 12px', sm: '12px 14px' },
                     },
                     '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
                       display: 'none',
@@ -915,8 +944,9 @@ function TenantViewContent() {
         <DialogActions sx={(theme) => ({
           backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#f8fafc',
           borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
-          padding: '16px 24px',
-          gap: '12px'
+          padding: { xs: '12px 16px', sm: '16px 24px' },
+          gap: { xs: '8px', sm: '12px' },
+          display: "flex",
         })}>
           <Button
             onClick={() => setShowEditDialog(false)}
@@ -936,10 +966,11 @@ function TenantViewContent() {
               },
               textTransform: 'none',
               fontWeight: 500,
-              fontSize: '14px',
-              padding: '10px 20px',
+              fontSize: { xs: '13px', sm: '14px' },
+              padding: { xs: '8px 16px', sm: '10px 20px' },
               borderRadius: '8px',
               transition: 'all 0.2s ease',
+              width: { xs: '100%', sm: 'auto' },
             })}
           >
             Cancel
@@ -965,13 +996,14 @@ function TenantViewContent() {
               },
               textTransform: 'none',
               fontWeight: 500,
-              fontSize: '14px',
-              padding: '10px 20px',
+              fontSize: { xs: '13px', sm: '14px' },
+              padding: { xs: '8px 16px', sm: '10px 20px' },
               borderRadius: '8px',
               transition: 'all 0.2s ease',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
+              width: { xs: '100%', sm: 'auto' },
             })}
           >
             {updatePaymentMutation.isPending ? (

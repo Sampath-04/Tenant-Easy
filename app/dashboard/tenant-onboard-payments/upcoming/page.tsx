@@ -183,7 +183,7 @@ export default function UpcomingTenantsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className='px-6 pt-6 flex flex-row justify-between items-center'>
+      <div className='px-4 md:px-6 pt-3  md:pt-6 flex flex-row justify-between items-center'>
       <BreadCrumbs items={breadcrumbs} />
       </div>
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER + ' px-6 pt-4'}>

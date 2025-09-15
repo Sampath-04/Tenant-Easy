@@ -297,6 +297,7 @@ export default function NoticeForm({
           borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
           pb: 2,
           backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+          padding: {xs: "8px 16px", sm: "16px 24px"},
         })}
       >
         <Typography
@@ -326,7 +327,7 @@ export default function NoticeForm({
         sx={(theme) => ({
           flex: 1,
           overflow: 'auto',
-          padding: '24px',
+          padding: {xs: "8px 16px", sm: "16px 24px"},
           backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
           minHeight: 0, // Important for flex child to shrink
           '&::-webkit-scrollbar': {
@@ -349,8 +350,8 @@ export default function NoticeForm({
           <p className="text-orange-800 dark:text-orange-300 mb-3">
             Notice Details
           </p>
-          <Box className="space-y-2">
-            <div className='flex justify-between'>
+          <Box className="md:space-y-2">
+            <div className='flex md:flex-row flex-col md:justify-between justify-start'>
             <div className='flex items-center gap-2'>
               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Tenant:</Typography>
               <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
@@ -364,8 +365,8 @@ export default function NoticeForm({
               </Typography>
             </div>
             </div>
-            <div className='flex justify-between'>
-                <div className='flex items-center gap-2'>
+            <div className='flex md:flex-row flex-col md:justify-between justify-start'>
+                <div className='flex  items-center gap-2'>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Cycle End Date:</Typography>
                 <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
                     {new Date(cycleEndDate).toLocaleDateString('en-IN', {
@@ -493,7 +494,7 @@ export default function NoticeForm({
          {/* Payment Section */}
          {cost > 0 && (
            <Box 
-             className="mt-6 p-4" 
+             className="md:mt-6 mt-4 p-4" 
              sx={(theme) => ({ 
                border: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
                borderRadius: '8px',
@@ -505,7 +506,7 @@ export default function NoticeForm({
                sx={(theme) => ({
                  fontWeight: 500,
                  color: theme.palette.mode === 'dark' ? '#3b82f6' : '#1d4ed8',
-                 mb: 3,
+                 mb: {xs: 1, sm: 3},
                })}
              >
                {existingNotice ? 'Additional Payment Details (Optional)' : 'Payment Details (Optional)'}

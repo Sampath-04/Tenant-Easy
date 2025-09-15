@@ -201,15 +201,15 @@ function CreateTenantContent() {
         title="Add New Tenant"
         subtitle="Create a new tenant record"
       />
-      <div className='px-6 pt-6 flex flex-row justify-between items-center'>
+      <div className='px-4 md:px-6 pt-3  md:pt-6 flex flex-row justify-between items-center'>
       <BreadCrumbs items={breadcrumbs} /> 
       </div>
       
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
-          <div className="p-4 w-[60%] mx-auto">
-            <div className="mb-6">
-               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <div className="p-3 md:p-4 md:w-[60%] w-full mx-auto">
+            <div className="md:mb-6 mb-4">
+               <h1 className="md:text-2xl text-lg font-bold text-gray-900 dark:text-white">
                  New Tenant
                </h1>
              </div>
@@ -225,14 +225,14 @@ function CreateTenantContent() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-4 md:space-y-8">
               {/* Property and Room Selection */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 md:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                <h2 className="md:text-xl text-lg font-semibold text-gray-900 dark:text-white md:mb-6 mb-4 flex items-center">
                   <PersonIcon className="mr-2"/>
                   Property & Room Selection
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Property *
@@ -241,7 +241,7 @@ function CreateTenantContent() {
                        type="text"
                        value={selectedProperty?.name || 'No property selected'}
                        disabled
-                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                       className="w-full px-4 md:py-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                      />
                   </div>
                      <div>
@@ -261,7 +261,12 @@ function CreateTenantContent() {
                          borderRadius: "8px",
                          "& .MuiSelect-select": {
                            borderRadius: "8px",
-                         }
+                         },
+                        "& .MuiInputBase-input": {
+                          "@media (max-width: 768px)": {
+                            padding: "10px",
+                          }
+                        }
                        }}
                      />
                      {isLoadingRooms && (
@@ -275,12 +280,12 @@ function CreateTenantContent() {
               </div>
 
                {/* Basic Information */}
-               <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+               <div className="bg-white dark:bg-gray-800 rounded-lg p-3 md:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                 <h2 className="md:text-xl text-lg font-semibold text-gray-900 dark:text-white md:mb-6 mb-4 flex items-center">
                    <PersonIcon className="mr-2"/>
                    Basic Information
                  </h2>
-                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                    <div>
                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                        Tenant Name *
@@ -290,7 +295,7 @@ function CreateTenantContent() {
                        value={formData.tenantName}
                        onChange={(e) => handleInputChange('tenantName', e.target.value)}
                        required
-                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
+                       className="w-full px-4 md:py-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
                        placeholder="Enter tenant's full name"
                      />
                    </div>
@@ -303,7 +308,7 @@ function CreateTenantContent() {
                        value={formData.tenantNumber}
                        onChange={(e) => handleInputChange('tenantNumber', e.target.value)}
                        required
-                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
+                       className="w-full px-4 md:py-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
                        placeholder="Enter phone number"
                      />
                    </div>
@@ -315,7 +320,7 @@ function CreateTenantContent() {
                         type="email"
                         value={formData.tenantEmail}
                         onChange={(e) => handleInputChange('tenantEmail', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
+                        className="w-full px-4 md:py-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
                         placeholder="Enter email address"
                       />
                    </div>
@@ -377,7 +382,7 @@ function CreateTenantContent() {
                          ...formData.emergencyContact, 
                          name: e.target.value 
                        })}
-                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
+                       className="w-full px-4 md:py-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
                        placeholder="Enter emergency contact name"
                      />
                    </div>
@@ -392,7 +397,7 @@ function CreateTenantContent() {
                          ...formData.emergencyContact, 
                          phone: e.target.value 
                        })}
-                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
+                       className="w-full px-4 md:py-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
                        placeholder="Enter emergency contact phone"
                      />
                    </div>
@@ -407,7 +412,7 @@ function CreateTenantContent() {
                          ...formData.emergencyContact, 
                          relation: e.target.value 
                        })}
-                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
+                       className="w-full px-4 md:py-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
                        placeholder="Enter relation (e.g., Father, Mother, Spouse)"
                      />
                    </div>
@@ -429,17 +434,17 @@ function CreateTenantContent() {
                </div>
 
                {/* Financial Information */}
-               <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+               <div className="bg-white dark:bg-gray-800 rounded-lg p-3 md:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                 <h2 className="md:text-xl text-lg font-semibold text-gray-900 dark:text-white md:mb-6 mb-4 flex items-center">
                    <CurrencyRupeeIcon className="mr-2"/>
                    Financial Information
                  </h2>
-                 <div className="flex flex-col md:flex-row gap-6">
+                 <div className="flex flex-col md:flex-row gap-4 md:gap-6">
                    <div>
                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                        Monthly Rent *
                      </label>
-                                           <NumberInput
+                       <NumberInput
                         value={formData.monthlyRent}
                         onChange={(value) => handleInputChange('monthlyRent', value || 0)}
                         placeholder="Enter monthly rent"
@@ -460,7 +465,7 @@ function CreateTenantContent() {
                  </div>
                  
                  {/* Food Option Toggle */}
-                 <div className="mt-6">
+                 <div className="md:mt-6 mt-4">
                    <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
                      <div>
                        <h3 className="text-md font-medium text-gray-900 dark:text-white">
@@ -483,11 +488,11 @@ function CreateTenantContent() {
                    
                    {/* Final Rent Amount Display */}
                    <div className="mt-4 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                     <div className="flex justify-between items-center">
-                       <div className="flex flex-row items-center gap-2 text-md font-medium text-gray-900 dark:text-white">
+                     <div className="flex  justify-between items-center">
+                       <div className="flex flex-row items-center gap-2 text-sm md:text-md font-medium text-gray-900 dark:text-white">
                          Final Monthly Rent:
                          {formData.includeFood && (
-                       <div className="text-sm text-gray-600 dark:text-gray-400">
+                       <div className="hidden md:block text-sm text-gray-600 dark:text-gray-400">
                          Base Rent: ₹{formData.monthlyRent} + Food: ₹{selectedProperty?.foodAmount || 0}
                        </div>
                      )}
@@ -502,12 +507,12 @@ function CreateTenantContent() {
                </div>
 
                {/* Amount Paid Information */}
-               <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+               <div className="bg-white dark:bg-gray-800 rounded-lg p-3 md:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                 <h2 className="md:text-xl text-lg font-semibold text-gray-900 dark:text-white md:mb-6 mb-4 flex items-center">
                    <CurrencyRupeeIcon className="mr-2"/>
                    Amount Paid
                  </h2>
-                 <div className="flex flex-col md:flex-row gap-6">
+                 <div className="flex flex-col md:flex-row gap-4 md:gap-6">
                    <div>
                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                        Rent Paid
@@ -553,8 +558,8 @@ function CreateTenantContent() {
 
                  {/* Document Uploads - Only show if any amount is paid */}
                 {(formData.rentPaid > 0 || formData.securityDepositPaid > 0) && (
-                  <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-3 md:p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                    <h2 className="md:text-xl text-lg font-semibold text-gray-900 dark:text-white md:mb-6 mb-4 flex items-center">
                       <CloudUploadIcon className="mr-2"/>
                       Document Uploads
                     </h2>
@@ -590,7 +595,7 @@ function CreateTenantContent() {
                  <button
                    onClick={handleSubmit}
                    disabled={createTenantMutation.isPending || !isFormValid()}
-                   className="px-6 py-2 bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 rounded-[30px] cursor-pointer text-white font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-1 md:flex-none w-fit"
+                   className="px-6 py-2 bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 rounded-[30px] cursor-pointer text-white font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-1 md:flex-none md:w-fit w-full"
                  >
                    {createTenantMutation.isPending ? (
                      <div className="flex items-center justify-center">

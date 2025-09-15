@@ -22,10 +22,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <CssBaseline />
         
         {/* Sidebar */}
+        <div className='hidden md:block'>
         <DashboardSidebar 
           open={sidebarOpen} 
           onToggle={handleSidebarToggle} 
         />
+        </div>
         
         {/* Main Content */}
         <Box

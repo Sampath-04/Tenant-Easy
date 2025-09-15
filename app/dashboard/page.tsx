@@ -10,7 +10,7 @@ import { AppHeader } from '@/components/AppHeader';
 function DashboardContent() {
   const { user } = useAuth();
 
-  const { selectedProperty, refreshProperties } = useProperty();
+  const { selectedProperty, refreshProperties, isLoading } = useProperty();
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -182,7 +182,7 @@ function DashboardContent() {
     refreshProperties();
   }, []);
 
-  if (!selectedProperty) {
+  if (!selectedProperty && isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="p-6">
@@ -224,6 +224,18 @@ function DashboardContent() {
     );
   }
 
+  if(!selectedProperty && !isLoading) {
+    return (
+      <div>
+         {/* Header */}
+      <AppHeader 
+        title="Property Dashboard" 
+        subtitle={`Welcome, ${user?.name}`}
+      />
+        You don't have any properties yet.
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header */}
@@ -242,14 +254,14 @@ function DashboardContent() {
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                   Current Property
                 </h2>
-                <h3 className="font-semibold text-gray-900 dark:text-white">{selectedProperty.name}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{selectedProperty.address}</p>
+                <h3 className="font-semibold text-gray-900 dark:text-white">{selectedProperty?.name}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{selectedProperty?.address}</p>
               </div>
               
               <div className="text-right">
                 <p className="text-sm text-gray-600 dark:text-gray-400">Monthly Revenue</p>
                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {formatCurrency(selectedProperty.monthlyRevenue)}
+                  {formatCurrency(selectedProperty?.monthlyRevenue || 0)}
                 </p>
               </div>
             </div>

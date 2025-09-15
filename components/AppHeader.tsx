@@ -4,8 +4,17 @@ import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
 import { PropertySelector } from './ui/PropertySelector';
 import ThemeToggle from './ui/ThemeSwitcher';
-import { LogoutOutlined, Menu as MenuIcon, Close as CloseIcon, ChevronRight as ChevronRightIcon } from '@mui/icons-material';
+import { 
+  LogoutOutlined, 
+  Menu as MenuIcon, 
+  Close as CloseIcon, 
+  ChevronRight as ChevronRightIcon,
+  ExpandLess,
+  ExpandMore
+} from '@mui/icons-material';
 import { useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { MenuItem, menuItems, actionItems } from './DashboardSidebar';
 
 interface AppHeaderProps {
   title: string;
@@ -18,9 +27,30 @@ export function AppHeader({
 }: AppHeaderProps) {
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const router = useRouter();
+  const pathname = usePathname();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleExpandToggle = (itemId: string) => {
+    setExpandedItems(prev => 
+      prev.includes(itemId) 
+        ? prev.filter(id => id !== itemId)
+        : [...prev, itemId]
+    );
+  };
+
+  const handleNavigate = (href: string) => {
+    router.push(href);
+    setIsMobileMenuOpen(false);
+  };
+
+  const isActive = (href?: string) => {
+    if (!href) return false;
+    return pathname === href || pathname.startsWith(href + '/');
   };
 
   // Block scrolling when mobile sidebar is open
@@ -51,7 +81,7 @@ export function AppHeader({
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
             <div className="flex flex-col gap-2">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
                 {title}
               </h1>
               {subtitle && (
@@ -139,54 +169,109 @@ export function AppHeader({
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* Navigation Links */}
-              <nav className="space-y-2">
+              {/* Property Selector - Mobile */}
+              <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+                  Property
+                </h3>
+                <PropertySelector />
+              </div>
+
+              {/* Main Navigation */}
+              <nav>
                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                   Navigation
                 </h3>
-                <Link 
-                  href="/dashboard" 
-                  className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z" />
-                  </svg>
-                  Dashboard
-                </Link>
-                <Link 
-                  href="/dashboard/tenants" 
-                  className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  Tenants
-                </Link>
-                <Link 
-                  href="/dashboard/properties" 
-                  className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m11 0H5.5a2.5 2.5 0 010-5H8" />
-                  </svg>
-                  Properties
-                </Link>
-                <Link 
-                  href="/dashboard/settings" 
-                  className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  Settings
-                </Link>
+                <div className="space-y-1">
+                  {menuItems.map((item) => (
+                    <div key={item.id}>
+                      {item.children ? (
+                        <>
+                          <button
+                            onClick={() => handleExpandToggle(item.id)}
+                            className={`w-full flex items-center justify-between px-4 py-3 text-left rounded-lg transition-colors ${
+                              expandedItems.includes(item.id)
+                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            }`}
+                          >
+                            <div className="flex items-center">
+                              <span className="w-5 h-5 mr-3 text-current">
+                                {item.icon}
+                              </span>
+                              {item.label}
+                            </div>
+                            {expandedItems.includes(item.id) ? (
+                              <ExpandLess className="w-5 h-5" />
+                            ) : (
+                              <ExpandMore className="w-5 h-5" />
+                            )}
+                          </button>
+                          {expandedItems.includes(item.id) && (
+                            <div className="ml-8 space-y-1 mt-1">
+                              {item.children.map((child) => (
+                                <button
+                                  key={child.id}
+                                  onClick={() => child.href && handleNavigate(child.href)}
+                                  className={`w-full flex items-center px-4 py-2 text-left rounded-lg transition-colors ${
+                                    isActive(child.href)
+                                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                  }`}
+                                >
+                                  <span className="w-4 h-4 mr-3 text-current">
+                                    {child.icon}
+                                  </span>
+                                  {child.label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => item.href && handleNavigate(item.href)}
+                          className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
+                            isActive(item.href)
+                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                          }`}
+                        >
+                          <span className="w-5 h-5 mr-3 text-current">
+                            {item.icon}
+                          </span>
+                          {item.label}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </nav>
+
+              {/* Quick Actions */}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+                  Quick Actions
+                </h3>
+                <div className="space-y-1">
+                  {actionItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => item.href && handleNavigate(item.href)}
+                      className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
+                        isActive(item.href)
+                          ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <span className="w-5 h-5 mr-3 text-current">
+                        {item.icon}
+                      </span>
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Footer */}

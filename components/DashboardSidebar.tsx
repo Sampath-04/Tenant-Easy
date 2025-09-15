@@ -36,7 +36,7 @@ import {
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
 
-interface MenuItem {
+export interface MenuItem {
   id: string;
   label: string;
   icon: React.ReactNode;
@@ -44,7 +44,7 @@ interface MenuItem {
   children?: MenuItem[];
 }
 
-const menuItems: MenuItem[] = [
+export const menuItems: MenuItem[] = [
   {
     id: 'dashboard',
     label: 'Dashboard',
@@ -111,6 +111,12 @@ const menuItems: MenuItem[] = [
         icon: <ReceiptIcon />,
         href: '/dashboard/tenant-onboard-payments/pending',
       },
+      {
+        id: 'completed',
+        label: 'Completed',
+        icon: <ReceiptIcon />,
+        href: '/dashboard/tenant-onboard-payments/completed',
+      },
     ],
   },
   {
@@ -135,7 +141,7 @@ const menuItems: MenuItem[] = [
 
 ];
 
-const actionItems: MenuItem[] = [
+export const actionItems: MenuItem[] = [
   {
     id: 'add-tenant',
     label: 'Add Tenant',

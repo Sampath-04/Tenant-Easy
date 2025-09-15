@@ -263,7 +263,7 @@ function TenantsContent() {
         subtitle={`Manage tenants for ${selectedProperty.name}`}
       />
 
-      <div className='px-6 pt-6 flex flex-row justify-between items-center'>
+      <div className='px-4 md:px-6 pt-3  md:pt-6 flex flex-row justify-between items-center'>
         <BreadCrumbs items={breadcrumbs} />
         <div className="flex items-center gap-2">
           {tenants.length > 0 && (
@@ -292,16 +292,16 @@ function TenantsContent() {
         <div className={`overflow-hidden transition-all duration-300 ${
           showFilters ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
         }`}>
-          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-lg p-4 border border-white/20 dark:border-gray-700/50 mb-4">
+          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-lg p-3 md:p-4 border border-white/20 dark:border-gray-700/50 mb-4">
           <div className="flex flex-row justify-between md:flex-col lg:flex-row lg:items-center lg:justify-between mb-3">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              <h2 className="md:text-xl text-lg font-bold text-gray-900 dark:text-white mb-2">
                 Filter Tenants
               </h2>
             </div>
             <button
               onClick={clearFilters}
-              className="md:mt-4 lg:mt-0 text-sm border border-gray-300 dark:border-gray-700 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-[30px] cursor-pointer font-medium transition-colors flex items-center space-x-1 w-fit"
+              className="md:mt-4 lg:mt-0 text-sm border border-gray-300 dark:border-gray-700 px-4 md:py-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-[30px] cursor-pointer font-medium transition-colors flex items-center space-x-1 w-fit"
             >
               <span className="hidden md:block">Clear All Filters</span>
               <span className="md:hidden">Clear Filters</span>
@@ -309,7 +309,7 @@ function TenantsContent() {
           </div>
 
           {/* Filter Controls */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-4">
             {/* Search */}
             <div className="space-y-2 self-end">
               <SearchInput
@@ -621,32 +621,28 @@ function TenantsContent() {
                       className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-all duration-200"
                     >
                       <div className="flex items-center justify-between w-full pr-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                            {tenant.tenantName.charAt(0).toUpperCase()}
-                          </div>
-                          <div className='flex flex-row items-center gap-2'>
-                            <Typography variant="subtitle1" className="font-semibold text-gray-900 dark:text-white">
+                        <div className="flex items-center space-x-3 w-full justify-between">
+                          <div className='flex flex-row items-center gap-3 justify-between w-full'>
+                            <p className="font-semibold text-gray-900 dark:text-white text-sm md:text-base max-w-[180px] md:max-w-none truncate">
                               {tenant.tenantName}
-                            </Typography>
-                            <div className="flex items-center gap-4">
-                              <Typography variant="body2" className="text-green-700 dark:text-green-400 font-medium">
-                                {formatCurrency(tenant.monthlyRent)}
-                              </Typography>
-                              <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${tenant.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'}`}>
-                                <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${tenant.isActive ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-                                {tenant.isActive ? 'Active' : 'Inactive'}
-                              </div>
+                            </p>
+                            <div className='flex flex-row items-center gap-2'>
+                              <p className="text-gray-600 dark:text-gray-400 text-sm">
+                                R - {tenant.room?.roomNo}
+                              </p>
+                              <span className={`w-2 h-2 rounded-full ${tenant.isActive ? 'bg-green-500' : 'bg-gray-400'}`}></span>
                             </div>
                           </div>
                         </div>
                       </div>
                     </AccordionSummary>
-                    <AccordionDetails className="bg-gray-50/30 dark:bg-gray-700/30">
+                    <AccordionDetails className="bg-gray-50/30 dark:bg-gray-700/30" sx={{
+                      padding: '8px 16px',
+                    }}>
                       <div className="space-y-4">
                   
                         {/* Details Grid */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-2">
                           <div>
                             <Typography variant="caption" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                               Phone Number
@@ -656,11 +652,11 @@ function TenantsContent() {
                             </Typography>
                           </div>
                           <div>
-                            <Typography variant="caption" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider ">
-                              Room
+                            <Typography variant="caption" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              Monthly Rent
                             </Typography>
-                            <Typography variant="body2" className="text-gray-900 dark:text-white font-medium">
-                              Room {tenant.room.roomNo}
+                            <Typography variant="body2" className="text-green-700 dark:text-green-400 font-semibold">
+                              {formatCurrency(tenant.monthlyRent)}
                             </Typography>
                           </div>
                           <div>
@@ -671,7 +667,7 @@ function TenantsContent() {
                               {formatCurrency(tenant.securityDepositPaid || 0)}
                             </Typography>
                           </div>
-                          <div>
+                          <div className='flex gap-2 items-center'>
                             <Typography variant="caption" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                               Food
                             </Typography>
@@ -714,7 +710,7 @@ function TenantsContent() {
                           </div>
                         )}
 
-                            {/* Action Buttons */}
+                        {/* Action Buttons */}
                         <div className="flex justify-center space-x-3 pt-3 border-t border-gray-200 dark:border-gray-600">
                           <Link
                             href={`/dashboard/tenants/${tenant._id}`}
