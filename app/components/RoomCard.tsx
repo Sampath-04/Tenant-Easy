@@ -148,22 +148,22 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
   return (
     <>
       <Card className="transition-all duration-300 h-full bg-white/70 dark:bg-gray-900/70 backdrop-blur-md border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md" sx={{ borderRadius: "20px", boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.1)" }}>
-        <CardContent className="p-0 flex flex-col">
+        <CardContent className="p-0 flex flex-col" sx={{ padding:{xs: '12px', md: '24px'} }}>
           {/* Header */}
           <div>
-            <div className="flex items-center justify-between mb-4">
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <RoomIcon className="text-gray-500 dark:text-gray-400 mr-3 text-3xl" />
                 <div>
-                  <Typography variant="h6" className="font-bold text-gray-900 dark:text-white">
+                  <p className="font-bold text-gray-900 dark:text-white text-base md:text-lg">
                     Room {room.roomNo}
-                  </Typography>
+                  </p>
                   <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                     {room.roomType.charAt(0).toUpperCase() + room.roomType.slice(1)} Room
                   </Typography>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="justify-end flex items-center gap-2">
                 <div className={`font-medium shadow-sm rounded-full px-2 py-1 text-sm ${room.isOccupied ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'}`}>
                   {room.isOccupied ? 'Occupied' : 'Available'}
                 </div>
@@ -183,6 +183,7 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
                       fontSize: '0.75rem',
                       padding: '4px 12px',
                       minWidth: 'auto',
+                      display: {xs: 'none', md: 'flex'},
                     }}
                   >
                     Add Tenant
@@ -197,6 +198,29 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
                   <EditIcon />
                 </IconButton>
               </div>
+              {!room.isOccupied && (
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => setCreateTenantFormOpen(true)}
+                    size="small"
+                    sx={{
+                      backgroundColor: '#059669',
+                      '&:hover': {
+                        backgroundColor: '#059669',
+                      },
+                      borderRadius: '12px',
+                      textTransform: 'none',
+                      fontSize: '0.75rem',
+                      padding: '4px 12px',
+                      minWidth: 'auto',
+                      display: {xs: 'flex', md: 'none'},
+                      gridColumn: '2/3'
+                    }}
+                  >
+                    Add Tenant
+                  </Button>
+                )}
             </div>
 
             {/* Room Stats - Desktop Only */}
@@ -309,7 +333,7 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
             </Box>
 
             {/* Tab Content */}
-            <div className="min-h-[220px]">
+            <div className="md:min-h-[220px]">
               <TabPanel value={tabValue} index={0}>
                 {(room.tenants.length > 0 || (room.upcomingTenants?.length || 0) > 0) ? (
                   <List dense>
@@ -471,6 +495,8 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
               maxHeight: '90vh',
               display: 'flex',
               flexDirection: 'column',
+              margin:{xs: '12px', md: '32px'},
+              width:{xs: '100%', md: '100%'},
             })
           }
         }}
@@ -487,11 +513,13 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
             position: 'sticky',
             top: 0,
             zIndex: 10,
+            padding:{xs: '12px', md: '24px'}
           })}
         >
           <div style={{ display: "flex", alignItems: "center", fontWeight: 600 }}>
             <EditIcon sx={{ marginRight: 1 }} className='text-gray-500 dark:text-gray-400' />
-            Edit Room Details
+            
+            <p className="text-base md:text-lg">Edit Room Details</p>
           </div>
           <IconButton onClick={() => setEditDialogOpen(false)}>
             <CloseIcon />
@@ -499,8 +527,9 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
         </DialogTitle>
 
         <DialogContent sx={(theme) => ({ 
-           paddingTop: "24px !important",
-           paddingBottom: "24px !important",
+           paddingTop: {xs: '12px!important', md: '24px!important'},
+           paddingBottom: {xs: '12px!important', md: '24px!important'},
+           padding:{xs: '12px', md: '24px'},
            backgroundColor: theme.palette.mode === 'dark' ? '#1A202C' : '#f8fafc',
            overflow: 'auto',
            flex: 1,
@@ -521,9 +550,9 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
         >
         <div className="space-y-6">
           {/* Room Information */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-lg md:p-4 p-2 shadow-sm border border-gray-200 dark:border-gray-700">
             <p className="mb-4">Room Information</p>
-            <div className="space-y-4 grid grid-cols-2 gap-4">
+            <div className="space-y-4 grid md:grid-cols-2 gap-4">
         <TextField
           label="Room Number"
           value={editForm.roomNo}
@@ -564,7 +593,7 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
           </div>
 
           {/* Amenities */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-lg  md:p-4 p-2 shadow-sm border border-gray-200 dark:border-gray-700">
             <p className="mb-4">Amenities</p>
             <FormControl fullWidth>
           <InputLabel>Amenities</InputLabel>
@@ -602,9 +631,9 @@ export function RoomCard({ room, onRoomUpdate }: RoomCardProps) {
       </DialogContent>
 
       <DialogActions sx={(theme) => ({ 
-           px: 3, 
-           py: 2, 
-           gap: 2,
+           px:{xs: '12px', md: '24px'}, 
+           py:{xs: '12px', md: '24px'}, 
+           gap: {xs: '8px', md: '24px'},
            backgroundColor: theme.palette.mode === 'dark' ? '#1F2937' : '#F9FAFB',
            borderTop: theme.palette.mode === 'dark' ? '1px solid #4A5568' : '1px solid #e5e7eb',
            flexShrink: 0,

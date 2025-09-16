@@ -568,7 +568,7 @@ export default function PaymentRequestsPage() {
               </div>
 
               <div className="text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
                   Share the receipt with the tenant via WhatsApp
                 </p>
                 <button

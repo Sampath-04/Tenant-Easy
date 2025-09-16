@@ -274,14 +274,14 @@ export default function PaymentCollectionForm({
             alignItems: 'center',
             justifyContent: 'space-between',
             borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
-            pb: 2,
+            p:{xs: '12px', md: '24px'},
             backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
           })}
         >
           <Typography
             sx={(theme: Theme) => ({
               fontWeight: 600,
-              fontSize: '1.25rem',
+              fontSize:{xs: '1rem', md: '1.25rem'},
               color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
             })}
           >
@@ -305,7 +305,7 @@ export default function PaymentCollectionForm({
           sx={(theme: Theme) => ({
             flex: 1,
             overflow: 'auto',
-            padding: '24px',
+            padding:{xs: '12px', md: '24px'},
             backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
             minHeight: 0, // Important for flex child to shrink
             '&::-webkit-scrollbar': {
@@ -329,8 +329,8 @@ export default function PaymentCollectionForm({
             <Typography variant="subtitle2" className="text-blue-800 dark:text-blue-300 mb-3">
                   Rent Details
             </Typography>
-            <Box className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
+            <Box className="grid grid-cols-2 md:gap-4 gap-2 text-sm">
+                <div className="col-span-2 md:col-span-1">
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Period:</Typography>
                 <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
                       {formatDate(rentRecord.startDate)} - {formatDate(rentRecord.endDate)}
@@ -563,7 +563,7 @@ export default function PaymentCollectionForm({
           </Box>
 
 
-              {/* Comments */}
+          {/* Comments */}
           <TextField
             fullWidth
             label="Comments (Optional)"
@@ -589,9 +589,9 @@ export default function PaymentCollectionForm({
 
         <DialogActions
           sx={(theme: Theme) => ({
-            px: 2,
-            py: 2,
-            gap: 1,
+            px: {xs: '8px', md: '24px'},
+            py: {xs: '12px', md: '24px'},
+            gap: {xs: '8px', md: '24px'},
             backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
             borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
           })}
@@ -602,7 +602,7 @@ export default function PaymentCollectionForm({
             sx={(theme: Theme) => ({
               backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
               color: '#ffffff',
-              px: 3,
+              px: {xs: '12px', md: '24px'},
               py: 1.5,
               borderRadius: '30px',
               fontSize: '0.875rem',
@@ -614,7 +614,8 @@ export default function PaymentCollectionForm({
               },
               '&:disabled': {
                 opacity: 0.5,
-              }
+              },
+              display: {xs: 'none', md: 'flex'},
             })}
           >
             Cancel
@@ -625,7 +626,7 @@ export default function PaymentCollectionForm({
             sx={(theme: Theme) => ({
               backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
               color: '#ffffff',
-              px: 3,
+              px: {xs: '12px', md: '24px'},
               py: 1.5,
               borderRadius: '30px',
               fontSize: '0.875rem',
@@ -634,7 +635,7 @@ export default function PaymentCollectionForm({
               transition: 'all 0.2s ease',
               display: 'flex',
               alignItems: 'center',
-              gap: 1,
+              gap: {xs: '8px', md: '24px'},
               '&:hover': {
                 backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#4b5563',
               },
@@ -660,7 +661,7 @@ export default function PaymentCollectionForm({
               sx={(theme: Theme) => ({
                 backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
                 color: '#ffffff',
-                px: 3,
+                px: {xs: '12px', md: '24px'},
                 py: 1.5,
                 borderRadius: '30px',
                 fontSize: '0.875rem',
@@ -669,7 +670,7 @@ export default function PaymentCollectionForm({
                 transition: 'all 0.2s ease',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1,
+                gap: {xs: '8px', md: '24px'},
                 '&:hover': {
                   backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#4b5563',
                 },

@@ -271,6 +271,8 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
+          margin:{xs: '12px', md: '32px'},
+          width:{xs: '100%', md: '100%'},
         })
       }}
     >
@@ -280,15 +282,16 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
            alignItems: 'center',
            justifyContent: 'space-between',
            borderBottom: theme.palette.mode === 'dark' ? '1px solid #4A5568' : '1px solid #e5e7eb',
-           pb: 2,
+           pb: {xs: '12px', md: '24px'},
            color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#000000',
            backgroundColor: theme.palette.mode === 'dark' ? '#1F2937' : '#F9FAFB',
            position: 'sticky',
            top: 0,
            zIndex: 10,
+           padding:{xs: '12px', md: '24px'},
          })}
        >
-        <p className="font-semibold text-lg">
+        <p className="font-semibold text-base md:text-lg">
           Add New Tenant
         </p>
         <IconButton onClick={handleClose} disabled={createTenantMutation.isPending}>
@@ -298,8 +301,9 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
 
       <form onSubmit={handleSubmit}>
         <DialogContent sx={(theme: Theme) => ({ 
-           pt: 3,
-           pb: 2,
+           pt: {xs: '12px', md: '24px'},
+           pb: {xs: '12px', md: '24px'},
+           padding:{xs: '12px', md: '24px'},
            backgroundColor: theme.palette.mode === 'dark' ? '#1A202C' : '#f8fafc',
            overflow: 'auto',
            flex: 1,
@@ -319,7 +323,7 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
          })}>
           <div className="space-y-6">
            {/* Room Selection */}
-             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+             <div className="bg-white dark:bg-gray-800 rounded-lg md:p-4 p-2 shadow-sm border border-gray-200 dark:border-gray-700">
                <p className="mb-4">Room Selection</p>
               <FormControl fullWidth>
                 <InputLabel>Room *</InputLabel>
@@ -339,7 +343,7 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
             </div>
 
               {/* Basic Information */}
-             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+             <div className="bg-white dark:bg-gray-800 rounded-lg md:p-4 p-2 shadow-sm border border-gray-200 dark:border-gray-700">
                <p className="mb-4">Basic Information</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TextField
@@ -442,7 +446,7 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
             </div>
 
           {/* Financial Information */}
-             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+             <div className="bg-white dark:bg-gray-800 rounded-lg md:p-4 p-2 shadow-sm border border-gray-200 dark:border-gray-700">
               <p className="mb-4">Financial Information</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -516,7 +520,7 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
             </div>
 
              {/* Amount Paid Information */}
-             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+             <div className="bg-white dark:bg-gray-800 rounded-lg md:p-4 p-2 shadow-sm border border-gray-200 dark:border-gray-700">
                <p className="mb-4">Amount Paid</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -571,8 +575,8 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
                  : 'opacity-0 max-h-0 overflow-hidden'
              }`}>
                {((formData.rentPaid || 0) > 0 || (formData.securityDepositPaid || 0) > 0) && (
-                 <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-                   <Typography variant="h6" className="mb-4">Document Uploads</Typography>
+                 <div className="bg-white dark:bg-gray-800 rounded-lg md:p-4 p-2 shadow-sm border border-gray-200 dark:border-gray-700">
+                   <p className="mb-4 text-base md:text-lg">Document Uploads</p>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Payment Proofs *
@@ -600,9 +604,9 @@ export default function CreateTenantForm({ open, onClose, onSuccess, defaultRoom
       </form>
       
       <DialogActions sx={(theme: Theme) => ({ 
-           px: 3, 
-           py: 2, 
-           gap: 2,
+           px:{xs: '12px', md: '24px'}, 
+           py:{xs: '12px', md: '24px'}, 
+           gap: {xs: '8px', md: '24px'},
            backgroundColor: theme.palette.mode === 'dark' ? '#1F2937' : '#F9FAFB',
            borderTop: theme.palette.mode === 'dark' ? '1px solid #4A5568' : '1px solid #e5e7eb',
            flexShrink: 0,

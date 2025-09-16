@@ -176,7 +176,7 @@ function RoomsContent() {
 
       <div  className='relative'>
       
-      <div className='sticky top-22 z-40 px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700'>
+      <div className='md:sticky md:top-22 top-16 z-40 md:px-6 px-4 md:py-4 py-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700'>
         <div className='flex justify-between items-center'>
           <BreadCrumbs items={breadcrumbs} />
           <div className="flex items-center gap-2">
@@ -200,12 +200,11 @@ function RoomsContent() {
               )}
           </div>
         </div>
-        {/* Filters Section */}
         <div  className={`overflow-hidden transition-all duration-300 ${
-          showFilters ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+          showFilters ? "block max-h-[500px] opacity-100" : "max-h-0 opacity-0"
         }`}>
-          <div className="bg-white dark:bg-gray-800 mt-4 rounded-lg p-4 mb-2 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-2">
+          <div className="bg-white dark:bg-gray-800 mt-4 rounded-lg md:p-4 p-3 mb-2 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between md:mb-2 mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Filters</h3>
               <button
                 onClick={handleClearFilters}
@@ -215,9 +214,9 @@ function RoomsContent() {
               </button>
             </div>
             
-            <div className="flex gap-4">
-               {/* Room Type Filter */}
-               <div className="space-y-2 w-[150px]">
+            <div className="grid grid-cols-2 md:flex gap-4">
+               
+               <div className="space-y-2 md:w-[150px]">
                  <CustomSelect
                    label="Room Type"
                    value={filters.roomType}
@@ -230,8 +229,7 @@ function RoomsContent() {
                  />
                </div>
 
-               {/* Availability Filter */}
-               <div className="space-y-2 w-[150px]">
+               <div className="space-y-2 md:w-[150px]">
                  <CustomSelect
                    label="Availability"
                    value={filters.availability}
@@ -244,8 +242,7 @@ function RoomsContent() {
                  />
                </div>
 
-               {/* Room Selection Filter */}
-               <div className="space-y-2 w-[150px]">
+               <div className="space-y-2 md:w-[150px]">
                  <CustomSelect
                    label="Specific Room"
                    value={filters.roomId}
@@ -278,13 +275,13 @@ function RoomsContent() {
             </div>
           </div>
         </main>: 
-        <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
+        <main className={LAYOUT_CLASSES.MAIN_CONTAINER + " px-1 md:px-4"}>
           <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
             <div className="md:p-4 p-3">
               {/* Rooms Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {rooms.map((room) => (
-                  <div key={room._id} className="w-full h-[555px]">
+                  <div key={room._id} className="w-full md:h-[555px]">
                     <RoomCard 
                       room={room} 
                       onRoomUpdate={handleRoomUpdate}

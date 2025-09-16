@@ -63,7 +63,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       
           // padding
           "& .MuiSelect-select": {
-            padding: "14px",
+            padding:{xs: "8px", md: "14px"},
             borderRadius: "8px", // needed so text area matches
           },
       
