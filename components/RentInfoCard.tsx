@@ -183,10 +183,10 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
   return (
     <div className="flex-1">
       {/* Tenant and Room Info */}
-      <div className="flex items-center gap-6 mb-4">
+      <div className="grid grid-cols-2 md:flex items-center md:gap-6 gap-2 mb-4">
         <div className="flex items-center gap-2">
           <PersonIcon className="text-gray-400 dark:text-gray-500" />
-          <Typography variant="body1" className="font-semibold text-gray-600 dark:text-gray-400">
+          <Typography variant="body1" className="font-semibold text-gray-600 dark:text-gray-400 truncate max-w-[200px] md:max-w-none">
             {record.tenant.tenantName}
           </Typography>
         </div>

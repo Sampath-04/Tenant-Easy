@@ -278,7 +278,7 @@ function TenantsContent() {
           )}
           <button 
             onClick={() => router.push('/dashboard/tenants/create')}
-            className="text-sm border border-gray-300 dark:border-gray-700 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-[30px] cursor-pointer font-medium transition-colors flex items-center space-x-1 w-fit"
+            className="text-sm border border-gray-300 dark:border-gray-700 md:px-4 px-2 py-2 bg-gray-100 dark:bg-gray-700 rounded-[30px] cursor-pointer font-medium transition-colors flex items-center space-x-1 w-fit"
           >
             <span className="hidden md:block">Add Tenant</span>
             <span className="md:hidden">Add Tenant</span>

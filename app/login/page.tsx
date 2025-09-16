@@ -81,8 +81,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo/Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="text-center md:mb-8 mb-4">
+          <h1 className="md:text-4xl text-2xl font-bold text-gray-900 dark:text-white mb-2">
             Easy Tenant
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
@@ -91,9 +91,9 @@ export default function LoginPage() {
         </div>
 
         {/* Login Form */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl md:p-8 p-4 border border-gray-200 dark:border-gray-700">
+          <div className="md:mb-6 mb-4">
+            <h2 className="md:text-2xl text-xl font-bold text-gray-900 dark:text-white mb-2">
               Welcome Back
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
@@ -109,7 +109,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="md:space-y-6 space-y-4">
             {/* Phone Field */}
             <div>
               <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
@@ -173,7 +173,7 @@ export default function LoginPage() {
             </div>
 
             {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
+            {/* <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <input
                   id="remember-me"
@@ -191,7 +191,7 @@ export default function LoginPage() {
                   Forgot your password?
                 </Link>
               </div>
-            </div>
+            </div> */}
 
             {/* Submit Button */}
             <button
@@ -216,7 +216,7 @@ export default function LoginPage() {
         <div className="text-center mt-8">
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Don't have an account?{' '}
-            <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+            <Link href="tel:9361924485" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
               Contact your administrator
             </Link>
           </p>

@@ -245,33 +245,35 @@ export default function RentRecordsPage() {
         <BreadCrumbs items={breadcrumbs} />
       </div>
 
-      <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
+      <main className={LAYOUT_CLASSES.MAIN_CONTAINER + ' md:px-6 !px-2 pt-4'}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
-          <div className="p-4">
+          <div className="md:p-4 p-2">
 
             {/* Summary Cards */}
             {
               summaryLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
-                  <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
-                  <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
-                  <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} /> 
-                  <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
-                  <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-6 mb-6">
+                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: {xs:150, md: 290}, height: 142 }} />
+                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: {xs:150, md: 290}, height: 142 }} />
+                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: {xs:150, md: 290}, height: 142 }} />
+                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: {xs:150, md: 290}, height: 142 }} />
+                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: {xs:150, md: 290}, height: 142 }} />
                 </div>
               ) : (
                 (summary || !summaryLoading) && (
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-6 mb-6">
                     <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
                       borderRadius: '12px',
                       boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
                     }}>
                       <CardContent sx={{
-                        padding: '16px!important',
+                        padding: {md: '16px!important', xs: '12px!important'},
+                        display: {xs: 'flex', md: 'block'},
+                        height: {xs: '100%', md: 'auto'},
                       }}>
-                        <div className="flex items-center justify-between">
+                        <div className="flex gap-2 justify-between">
                           <div>
-                            <p className="text-gray-900 dark:text-white text-3xl">
+                            <p className="text-gray-900 dark:text-white text-xl md:text-3xl">
                               {formatCurrency(summary?.totalAmount || 0)}
                             </p>
                             <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
@@ -288,20 +290,21 @@ export default function RentRecordsPage() {
                       boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
                     }}>
                       <CardContent sx={{
-                        padding: '16px!important',
+                        padding: {md: '16px!important', xs: '12px!important'},  
                       }}>
                           <div>
                             <div className='flex justify-between gap-2 items-center'>
                               <div>
-                                <p className="text-red-600 dark:text-red-400 text-3xl">
+                                <p className="text-red-600 dark:text-red-400 text-xl md:text-3xl">
                                   {formatCurrency(summary?.overdueAmount || 0)}
                                 </p>
-                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
-                                  Overdue Amount
-                                </Typography>
+                               
                               </div>
                               <WarningIcon className="text-3xl text-red-500 dark:text-red-400 self-start" />
                             </div>
+                            <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                                  Overdue Amount
+                              </Typography>
                             <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
                               {summary?.overdueCount || 0}
                             </Typography>
@@ -317,20 +320,21 @@ export default function RentRecordsPage() {
                       boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
                     }}>
                       <CardContent sx={{
-                        padding: '16px!important',
+                        padding: {md: '16px!important', xs: '12px!important'},
                       }}>
                           <div>
                             <div className='flex justify-between gap-2 items-center'>
                               <div>
-                                <p className="text-green-600 dark:text-green-400 text-3xl">
+                                <p className="text-green-600 dark:text-green-400 text-xl md:text-3xl">
                                   {formatCurrency(summary?.pendingAmount || 0)}
                                 </p>
-                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
-                                  Pending Amount
-                                </Typography>
+                                
                               </div>
                               <ScheduleIcon className="text-3xl text-green-600 dark:text-green-400 self-start" />
                             </div>
+                            <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                                  Pending Amount
+                            </Typography>
                             <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
                               {summary?.pendingCount || 0}
                             </Typography>
@@ -346,20 +350,21 @@ export default function RentRecordsPage() {
                       boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
                     }}>
                       <CardContent sx={{
-                        padding: '16px!important',
+                        padding: {md: '16px!important', xs: '12px!important'},
                       }}>
                           <div>
                             <div className='flex justify-between gap-2 items-center'>
                               <div>
-                                <p className="text-blue-600 dark:text-blue-400 text-3xl">
+                                <p className="text-blue-600 dark:text-blue-400 text-xl md:text-3xl">
                                   {formatCurrency(summary?.upcomingAmount || 0)}
                                 </p>
-                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
-                                  Upcoming Amount
-                                </Typography>
+                                
                               </div>
                               <ScheduleIcon className="text-3xl text-blue-600 dark:text-blue-400 self-start" />
                             </div>
+                            <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                                  Upcoming Amount
+                            </Typography>
                             <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
                               {summary?.upcomingCount || 0}
                             </Typography>
@@ -375,20 +380,21 @@ export default function RentRecordsPage() {
                       boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
                     }}>
                       <CardContent sx={{
-                        padding: '16px!important',
+                        padding: {md: '16px!important', xs: '12px!important'},
                       }}>
                           <div>
                             <div className='flex justify-between gap-2 items-center'>
                               <div>
-                                <p className="text-emerald-600 dark:text-emerald-400 text-3xl">
+                                <p className="text-emerald-600 dark:text-emerald-400 text-xl md:text-3xl">
                                   {formatCurrency(summary?.collectedAmount || 0)}
                                 </p>
-                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
-                                  Collected Amount
-                                </Typography>
+                                
                               </div>
                               <CurrencyIcon className="text-3xl text-emerald-600 dark:text-emerald-400 self-start" />
                             </div>
+                            <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                                  Collected Amount
+                            </Typography>
                             <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
                               {summary?.collectedCount || 0}
                             </Typography>
@@ -402,7 +408,7 @@ export default function RentRecordsPage() {
                 ))}
 
             {/* Filter Toggle and Export Button */}
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center md:mb-6 mb-4">
               <div className="flex items-center gap-2">
                 <Tooltip title="Toggle Filters">
                   <IconButton
@@ -455,9 +461,9 @@ export default function RentRecordsPage() {
             <div className={`overflow-hidden transition-all duration-300 ${
               showFilters ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
             }`}>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
-                <div className="flex flex-col md:flex-row gap-4 items-center">
-                  <div className="flex-1 w-full">
+              <div className="bg-white dark:bg-gray-800 rounded-lg md:p-3 p-2 shadow-sm border border-gray-200 dark:border-gray-700 md:mb-6 mb-4">
+                <div className="md:flex grid grid-cols-2 md:flex-row md:gap-4 gap-2 items-center">
+                  <div className="flex-1 w-full col-span-2">
                     <TextField
                       fullWidth
                       placeholder="Search by tenant name, phone number..."
@@ -471,11 +477,12 @@ export default function RentRecordsPage() {
                         "& .MuiInputBase-root": {
                           borderRadius: '12px',
                           padding: '4px 10px',
+                          fontSize: {xs: '0.875rem', md: '1rem'},
                         }
                       }}
                     />
                   </div>
-                  <div className="w-full md:w-48">
+                  <div className="w-full md:w-48 col-start-1 rows-start-2">
                     <TextField
                       select
                       fullWidth
@@ -495,7 +502,7 @@ export default function RentRecordsPage() {
                     </TextField>
                   </div>
 
-                  <div className="w-full md:w-48">
+                  <div className="w-full md:w-48 col-span-2">
                     <TextField
                       select
                       label="Payment Status"
@@ -519,6 +526,10 @@ export default function RentRecordsPage() {
                       onChange={(e) => handleFilterChange('rentStatus', e.target.value)}
                       className="w-full md:w-48"
                       size="small"
+                      sx={{
+                        gridRowStart:2,
+                        gridColumn: "2/3"
+                      }}
                     >
                       <MenuItem value="">
                         <em>All Rent Status</em>
@@ -528,7 +539,7 @@ export default function RentRecordsPage() {
                       <MenuItem value="upcoming">Upcoming</MenuItem>
                   </TextField>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <div className="w-full md:w-48">
+                    <div className="w-full md:w-48 row-start-4">
                       <DatePicker
                         label="Start Date"
                         value={startDate || null}
@@ -542,7 +553,7 @@ export default function RentRecordsPage() {
                         }}
                       />
                     </div>
-                    <div className="w-full md:w-48">
+                    <div className="w-full md:w-48 row-start-4">
                       <DatePicker
                         label="End Date"
                         value={endDate || null}

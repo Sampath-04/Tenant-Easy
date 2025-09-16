@@ -234,7 +234,7 @@ function TenantViewContent() {
         subtitle={`Viewing details for ${localTenant.tenantName}`}
       />
       
-      <div className='px-6 pt-6'>
+      <div className='px-6 md:pt-6 pt-3'>
       <BreadCrumbs items={breadcrumbs} />
       </div>
 
@@ -466,6 +466,7 @@ function TenantViewContent() {
                     borderRadius: '12px',
                     textTransform: 'none',
                     fontWeight: 500,
+                    padding: { xs: '6px 12px', md: '6px 12px' },
                   }}
                 >
                   Delete Tenant
@@ -711,10 +712,10 @@ function TenantViewContent() {
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
           <div className="p-0">
             <div className="border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-center md:justify-start px-6">
+              <div className="flex items-center justify-center md:justify-start md:px-6 px-2">
                 <button
                   onClick={() => setActiveTab('rent')}
-                  className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors duration-200 cursor-pointer ${activeTab === 'rent'
+                  className={`md:px-4 px-2 py-3 text-sm font-medium border-b-2 transition-colors duration-200 cursor-pointer ${activeTab === 'rent'
                       ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                       : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                     }`}

@@ -23,7 +23,7 @@ const RentHistoryTable: React.FC<RentHistoryTableProps> = ({
     <div className="p-2">
       {records?.length === 0 ? (
         <div className="text-center py-8">
-          <h3 className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">
+          <h3 className="md:text-lg text-base font-medium text-gray-600 dark:text-gray-400 mb-2">
             {emptyMessage}
           </h3>
         </div>
@@ -138,14 +138,17 @@ const RentHistoryTable: React.FC<RentHistoryTableProps> = ({
                 sx={{
                   "&.Mui-expanded": {
                     margin: 0,
-                  }
+                  },
                 }}
               >
                 <AccordionSummary
                   expandIcon={<ExpandMore />}
+                  sx={{
+                    padding: { xs: '4px 12px', md: '4px 12px' },
+                  }}
                   className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-all duration-200"
                 >
-                  <div className="flex items-center justify-between w-full pr-4">
+                  <div className="flex items-center justify-between w-full md:pr-4 pr-2">
                     <div className="flex items-center space-x-3 w-full justify-between">
                       <div className='flex flex-row items-center gap-3 justify-between w-full'>
                         <p className="font-semibold text-gray-900 dark:text-white text-sm max-w-[200px] truncate">
