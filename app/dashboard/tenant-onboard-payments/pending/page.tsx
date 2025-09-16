@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -10,7 +10,7 @@ import {
   CircularProgress,
   TextField,
   Box,
-  Pagination,
+  TablePagination,
   MenuItem,
   Chip,
   FormControl,
@@ -34,6 +34,7 @@ import { useOnboardedPendingPayments, useCollectPendingPayments } from '@/hooks/
 import { useRooms } from '@/hooks/useRooms';
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatDate, formatCurrency, formatDateForAPI } from '@/lib/utils/formatters';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { generatePendingTenantOnboardExcel } from '@/lib/utils/excelExport';
 import { useProperty } from '@/contexts/PropertyContext';
 import TenantOnboardSummaryCards from '@/components/TenantOnboardSummaryCards';
@@ -53,8 +54,11 @@ import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
 export default function TenantOnboardPaymentsPage() {
   const { selectedProperty } = useProperty();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [filters, setFilters] = useState({
     search: '',
     roomId: '',
@@ -70,6 +74,42 @@ export default function TenantOnboardPaymentsPage() {
 
   // Debounce search value to prevent excessive API calls
   const debouncedSearch = useDebounce(filters.search, 500);
+
+  // Read from URL params on mount
+  useEffect(() => {
+    setFilters({
+      search: searchParams.get("search") || "",
+      roomId: searchParams.get("roomId") || "",
+      startCheckInDate: searchParams.get("startCheckInDate") ? new Date(searchParams.get("startCheckInDate")!) : null,
+      endCheckInDate: searchParams.get("endCheckInDate") ? new Date(searchParams.get("endCheckInDate")!) : null,
+    });
+    setPage(parseInt(searchParams.get("page") || "1"));
+    setLimit(parseInt(searchParams.get("limit") || "10"));
+  }, []);
+
+  // Write to URL params when state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    // Add pagination
+    params.set("page", page.toString());
+    params.set("limit", limit.toString());
+
+    // Add filters
+    if (filters.search) params.set("search", filters.search);
+    if (filters.roomId) params.set("roomId", filters.roomId);
+
+    // Add dates
+    if (filters.startCheckInDate) {
+      params.set("startCheckInDate", formatDateForAPI(filters.startCheckInDate));
+    }
+    if (filters.endCheckInDate) {
+      params.set("endCheckInDate", formatDateForAPI(filters.endCheckInDate));
+    }
+
+    // Update the URL (shallow = true to avoid full reload)
+    router.push(`/dashboard/tenant-onboard-payments/pending?${params.toString()}`);
+  }, [filters, page, limit, router]);
 
   // Get onboarding pending payments
   const { data: onboardedResponse, isLoading, error } = useOnboardedPendingPayments(selectedProperty?.id || '', {
@@ -117,9 +157,6 @@ export default function TenantOnboardPaymentsPage() {
   // Use the data directly from the API since filtering is now handled by the backend
   const filteredTenants = onboardedTenants;
 
-  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
-  };
 
   const handleFilterChange = (field: string, value: string | Date | null) => {
     setFilters(prev => ({ ...prev, [field]: value }));
@@ -183,9 +220,9 @@ export default function TenantOnboardPaymentsPage() {
      <BreadCrumbs items={breadcrumbs} />
      </div>
       
-      <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
+      <main className={LAYOUT_CLASSES.MAIN_CONTAINER + ' pt-4'}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
-          <div className="p-6">
+          <div className="md:p-6 p-2">
 
             {/* Summary Cards */}
             <TenantOnboardSummaryCards 
@@ -195,7 +232,7 @@ export default function TenantOnboardPaymentsPage() {
             />
 
             {/* Filter Toggle and Export Button */}
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center md:mb-6 mb-4">
               <div className="flex items-center gap-2">
                 <Tooltip title="Toggle Filters">
                   <IconButton
@@ -247,9 +284,9 @@ export default function TenantOnboardPaymentsPage() {
             {/* Search and Filter */}
             <div className={`overflow-hidden transition-all duration-300 ${showFilters ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
               }`}>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
-                <div className="flex gap-4 items-center">
-                  <div className="w-[380px]">
+              <div className="bg-white dark:bg-gray-800 rounded-lg md:p-3 p-2 shadow-sm border border-gray-200 dark:border-gray-700 md:mb-6 mb-4">
+                <div className="grid grid-cols-2 md:flex md:gap-4 gap-2 items-center">
+                  <div className="md:w-[380px] col-span-2">
                     <TextField
                       fullWidth
                       placeholder="Search by tenant name, phone number..."
@@ -267,7 +304,7 @@ export default function TenantOnboardPaymentsPage() {
                       }}
                     />
                   </div>
-                  <div className='w-full md:w-48'>
+                  <div className='w-full md:w-48 col-span-2'>
                     <TextField
                       select
                       fullWidth
@@ -353,13 +390,13 @@ export default function TenantOnboardPaymentsPage() {
                 ) : (
                   filteredTenants.map((tenant) => (
                     <Card key={tenant._id} className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
-                      <CardContent className="p-6">
-                        <div className="flex flex-col justify-between items-start gap-3">
-                            <div className="flex w-full items-center gap-8 mb-2">
+                      <CardContent sx={{p: {xs: 0.8, md: 2}}}>
+                        <div className="flex flex-col justify-between items-start md:gap-3 gap-1">
+                            <div className=" grid md:flex w-full items-center md:gap-8 gap-2 mb-2">
                               <div className="flex items-center gap-3">
-                                <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
+                                <p className="font-semibold text-gray-900 dark:text-white md:text-xl text-base">
                                   {tenant.tenantName}
-                                </Typography>
+                                </p>
                                 <Chip 
                                   label="Pending" 
                                   size="small" 
@@ -370,7 +407,8 @@ export default function TenantOnboardPaymentsPage() {
                                   icon={<ScheduleIcon color="inherit" />}
                                 />
                               </div>
-                              <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                             <div className="flex gap-4 justify-between items-center">
+                             <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                                   Phone: {tenant.tenantNumber}
                                 </Typography>
                                 {tenant.tenantEmail && (
@@ -381,13 +419,15 @@ export default function TenantOnboardPaymentsPage() {
                                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                                   Room: {tenant.room.roomNo} ({tenant.room.roomType})
                                 </Typography>
-                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400 hidden md:block">
                                   Check-in: {formatDate(tenant.checkInDate)}
                                 </Typography>
+                             </div>
+                               
                             </div>
                             
-                            <div className="flex w-full gap-8 items-center">
-                               <div className="grid gap-2">
+                            <div className="grid gap-2 md:flex w-full md:gap-4 items-center">
+                               <div className="flex justify-between md:grid gap-2">
                                   <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                                     Monthly Rent: {formatCurrency(tenant.monthlyRent)}
                                   </Typography>
@@ -395,7 +435,7 @@ export default function TenantOnboardPaymentsPage() {
                                     Security Deposit: {formatCurrency(tenant.securityDepositTotal)}
                                   </Typography>
                                </div>
-                               <div className="grid gap-2">
+                               <div className="flex justify-between md:grid gap-2">
                                   <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                                     Rent Paid: {formatCurrency(tenant.totalOnboardingRentPaid)}
                                   </Typography>   
@@ -431,12 +471,17 @@ export default function TenantOnboardPaymentsPage() {
                                     )}
                                   </div>
                                 </div>
-                                <div className="flex flex-col ml-auto items-end justify-end gap-2">
-                                  <div className="flex items-end gap-2">
-                                    <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                                      Total Pending: <span className="font-bold text-lg text-red-600 dark:text-red-400">{formatCurrency(tenant.totalPendingAmount)}</span>
-                                    </Typography>
-                                  </div> 
+                                <div className="flex flex-col ml-auto items-end justify-end md:gap-2 gap-1 w-full md:w-auto">
+                                <div className="flex justify-between gap-2 w-full items-center">
+                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400 block md:hidden">
+                                  Check-in: {formatDate(tenant.checkInDate)}
+                                </Typography>
+                                <div className="flex items-end gap-2">
+                                  <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                    Total Pending: <span className="font-bold text-lg text-red-600 dark:text-red-400">{formatCurrency(tenant.totalPendingAmount)}</span>
+                                  </Typography>
+                                </div> 
+                                </div>
                                   <Button
                                     variant="contained"
                                     size="small"
@@ -464,17 +509,35 @@ export default function TenantOnboardPaymentsPage() {
             )}
 
             {/* Pagination */}
-            {!isLoading && onboardedResponse && onboardedResponse.pagination.totalPages > 1 && (
-              <Box className="flex justify-center mt-6">
-                <Pagination
-                    count={onboardedResponse.pagination.totalPages}
-                  page={page}
-                  onChange={handlePageChange}
-                  color="primary"
-                  showFirstButton
-                  showLastButton
+            {!isLoading && onboardedResponse && onboardedResponse.total > 0 && (
+              <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50 mt-6">
+                <TablePagination
+                  component="div"
+                  count={onboardedResponse.total || 0}
+                  page={page - 1} // MUI uses 0-based indexing
+                  onPageChange={(_, newPage) => setPage(newPage + 1)} // Convert back to 1-based
+                  rowsPerPage={limit}
+                  onRowsPerPageChange={(e) => {
+                    const newPageSize = parseInt(e.target.value, 10);
+                    setLimit(newPageSize);
+                    setPage(1); // Reset to first page when changing page size
+                  }}
+                  rowsPerPageOptions={[10, 25, 50, 100]}
+                  labelRowsPerPage="Rows per page:"
+                  labelDisplayedRows={({ from, to, count }) =>
+                    `${from}-${to} of ${count !== -1 ? count : `more than ${to}`}`
+                  }
+                  sx={{
+                    backgroundColor: 'transparent',
+                    '& .MuiTablePagination-toolbar': {
+                      padding: '8px',
+                    },
+                    '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                      color: 'inherit',
+                    },
+                  }}
                 />
-              </Box>
+              </div>
             )}
 
           </div>
@@ -490,6 +553,8 @@ export default function TenantOnboardPaymentsPage() {
         sx={(theme) => ({
           '& .MuiDialog-paper': {
             borderRadius: '16px',
+            width: {xs: '100%', md: '100%'},
+            margin: {xs: '16px', md: '32px'},
             backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
             boxShadow: theme.palette.mode === 'dark'
               ? '0 10px 40px rgba(0, 0, 0, 0.3)'
@@ -504,13 +569,15 @@ export default function TenantOnboardPaymentsPage() {
             justifyContent: 'space-between',
             borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
             pb: 2,
+            px: {xs: 2},
+            py: {xs: 1, md: 2},
             backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
           })}
         >
           <Typography
             sx={(theme) => ({
               fontWeight: 600,
-              fontSize: '1.25rem',
+              fontSize: {xs: '1rem', md: '1.25rem'},  
               color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
             })}
           >
@@ -532,15 +599,17 @@ export default function TenantOnboardPaymentsPage() {
 
         <DialogContent
           sx={(theme) => ({
-            paddingTop: "24px !important",
+            paddingTop: {xs: "12px !important", md: "24px !important"},
             backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
+            padding: {xs: '12px', md: '24px'},
           })}
         >
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb:{xs: 0, md: 2} }}>
             <Typography
               variant="body1"
               sx={(theme) => ({
                 mb: 2,
+                fontSize: {xs: '0.875rem', md: '1rem'},
                 color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
               })}
             >
@@ -551,7 +620,7 @@ export default function TenantOnboardPaymentsPage() {
               sx={(theme) => ({
                 backgroundColor: theme.palette.mode === 'dark' ? '#111827' : '#f9fafb',
                 borderRadius: '8px',
-                p: 2.5,
+                p: {xs: 1.5, md: 2.5},
                 border: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
               })}
             >
@@ -566,7 +635,7 @@ export default function TenantOnboardPaymentsPage() {
                 Export Summary:
               </Typography>
               
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: {xs: '1fr 1fr', md: '1fr 1px 1fr'}, alignItems: 'center', justifyContent: 'center', gap: {xs: 1, md: 2} }}>
                 <Box>
                   <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
                     <Typography
@@ -614,7 +683,7 @@ export default function TenantOnboardPaymentsPage() {
                 </Box>
 
                 {/* vertical divider */}
-                <div className="h-full w-px bg-gray-200 dark:bg-gray-700"></div>
+                <div className="h-full w-px bg-gray-200 dark:bg-gray-700 hidden md:block"></div>
                 
                 <Box>
                   <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
@@ -668,7 +737,7 @@ export default function TenantOnboardPaymentsPage() {
 
         <DialogActions
           sx={(theme) => ({
-            px: 3,
+            px:{xs: 1, md: 3},
             py: 2,
             gap: 2,
             backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',

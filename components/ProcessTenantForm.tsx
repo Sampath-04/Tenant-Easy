@@ -14,11 +14,16 @@ import {
   CardContent,
   Chip,
   Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { Close as CloseIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 import { CircularProgress } from '@mui/material';
 import { useDropzone } from 'react-dropzone';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
+import { PAYMENT_METHOD_OPTIONS } from '@/lib/constants/paymentConstants';
 
 interface ProcessTenantFormProps {
   open: boolean;
@@ -55,8 +60,8 @@ export default function ProcessTenantForm({
 
   // Handle file uploads
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (formData.paymentProof.length + acceptedFiles.length > 4) {
-      alert('You can only upload up to 4 files');
+    if (formData.paymentProof.length + acceptedFiles.length > 2) {
+      alert('You can only upload up to 2 files');
       return;
     }
 
@@ -72,8 +77,8 @@ export default function ProcessTenantForm({
       'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp'],
       'application/pdf': ['.pdf']
     },
-    maxFiles: 4 - formData.paymentProof.length,
-    disabled: formData.paymentProof.length >= 4
+    maxFiles: 2 - formData.paymentProof.length,
+    disabled: formData.paymentProof.length >= 2
   });
 
   const removeFile = (index: number) => {
@@ -105,12 +110,14 @@ export default function ProcessTenantForm({
       newErrors.currentReading = 'Current reading is required and must be greater than 0';
     }
 
+    // Payment method is always required
+    if (!formData.paymentMethod?.trim()) {
+      newErrors.paymentMethod = 'Payment method is required';
+    }
+
     const hasRemainingAmount = formData.remainingSecurity || formData.remainingRent;
     
     if (hasRemainingAmount) {
-      if (!formData.paymentMethod?.trim()) {
-        newErrors.paymentMethod = 'Payment method is required when there are remaining amounts';
-      }
       if (formData.paymentProof.length === 0) {
         newErrors.paymentProof = 'Payment proof is required when there are remaining amounts';
       }
@@ -152,27 +159,82 @@ export default function ProcessTenantForm({
         '& .MuiDialog-paper': {
           borderRadius: '20px',
           backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+          maxHeight: '90vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
           '@media (max-width: 600px)': {
             margin: '16px',
             width: '100%',
+            maxHeight: '95vh',
           }
         }
       })}
     >
-      <DialogTitle className="flex items-center justify-between">
-        <p className="font-semibold text-lg">Process Tenant - {tenant?.tenantName}</p>
-        <IconButton onClick={handleClose} disabled={isSubmitting}>
+      <DialogTitle
+        sx={(theme: Theme) => ({
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+          pb: {xs: 1, md: 2},
+          px: {xs: 2},
+          backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+        })}
+      >
+        <Typography
+          sx={(theme: Theme) => ({
+            fontWeight: {xs: 500, md: 600},
+            fontSize: {xs: '1rem', md: '1.25rem'},
+            color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
+          })}
+        >
+          Process Tenant - {tenant?.tenantName}
+        </Typography>
+        <IconButton 
+          onClick={handleClose} 
+          disabled={isSubmitting}
+          sx={(theme: Theme) => ({
+            color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f3f4f6',
+            }
+          })}
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       
-      <DialogContent>
+      <DialogContent
+        sx={(theme: Theme) => ({
+          flex: 1,
+          overflow: 'auto',
+          backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+          minHeight: 0, // Important for flex child to shrink
+          '&::-webkit-scrollbar': {
+            width: '6px',
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f1f5f9',
+            borderRadius: '3px',
+          },
+          padding: {xs: '12px', md: '24px'},
+          paddingTop: {xs: '12px!important', md: '24px!important'},
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: theme.palette.mode === 'dark' ? '#6b7280' : '#cbd5e1',
+            borderRadius: '3px',
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#9ca3af' : '#94a3b8',
+            },
+          },
+        })}
+      >
         {/* Tenant Information */}
-        <Box className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-          <Typography variant="subtitle2" className="text-blue-800 dark:text-blue-300 mb-3">
+        <Box className="mb-4 md:p-4 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <p className="text-blue-800 dark:text-blue-300 mb-3">
             Tenant Information
-          </Typography>
-          <Box className="grid grid-cols-2 gap-4 text-sm">
+          </p>
+          <Box className="grid grid-cols-2 md:gap-4 gap-2 text-sm">
             <div>
               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Name:</Typography>
               <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
@@ -201,11 +263,11 @@ export default function ProcessTenantForm({
         </Box>
 
         {/* Payment Status */}
-        <Box className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-          <Typography variant="subtitle2" className="text-green-800 dark:text-green-300 mb-3">
-            Payment Status
-          </Typography>
-          <Box className="grid grid-cols-2 gap-4 text-sm">
+        <Box className="mb-4 md:p-4 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+          <p className="text-green-800 dark:text-green-300 mb-3">
+             Payment Status
+          </p>
+          <Box className="grid grid-cols-2 md:gap-4 gap-2 text-sm">
             <div>
               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Monthly Rent:</Typography>
               <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
@@ -246,11 +308,11 @@ export default function ProcessTenantForm({
         </Box>
 
         {/* Processing Details */}
-        <Box className="mt-4 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-          <Typography variant="subtitle2" className="text-amber-800 dark:text-amber-300 mb-3">
+        <Box className="mt-4 md:p-4 p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+          <p className="text-amber-800 dark:text-amber-300 mb-3">
             Processing Details
-          </Typography>
-          <Box className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          </p>
+          <Box className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
             <TextField
               fullWidth
               label="Current Electricity Reading *"
@@ -301,33 +363,45 @@ export default function ProcessTenantForm({
                 },
               })}
             />
-            {hasRemainingAmount && (
-              <TextField
-                fullWidth
-                label="Payment Method *"
+            <FormControl fullWidth variant="outlined">
+              <InputLabel>Payment Method *</InputLabel>
+              <Select
                 value={formData.paymentMethod}
                 onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
+                label="Payment Method *"
                 error={!!errors.paymentMethod}
-                helperText={errors.paymentMethod || "e.g., UPI, Cash, Bank Transfer"}
-                placeholder="Enter payment method"
-                variant="outlined"
                 sx={(theme: Theme) => ({
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
-                    },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme.palette.mode === 'dark' ? '#3b82f6' : '#2563eb',
                   },
                 })}
-              />
-            )}
+              >
+                {PAYMENT_METHOD_OPTIONS.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.paymentMethod && (
+                <Typography variant="caption" className="text-red-500 mt-1">
+                  {errors.paymentMethod}
+                </Typography>
+              )}
+            </FormControl>
           </Box>
         </Box>
 
         {/* Payment Proof Upload */}
-        {hasRemainingAmount && (
+        {hasRemainingAmount ? (
           <Box className="mt-4">
             <p className='text-gray-600 dark:text-gray-400 text-md mb-2'>
-              Payment Proof * - Max 4 files
+              Payment Proof * - Max 2 files
             </p>
             
             <div
@@ -335,7 +409,7 @@ export default function ProcessTenantForm({
               className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
                 isDragActive 
                   ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                  : formData.paymentProof.length >= 4
+                  : formData.paymentProof.length >= 2
                   ? 'border-gray-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600 cursor-not-allowed'
                   : 'border-gray-300 hover:border-gray-400 dark:border-gray-400 dark:hover:border-gray-500'
               }`}
@@ -344,7 +418,7 @@ export default function ProcessTenantForm({
               <CloudUploadIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               {isDragActive ? (
                 <p className="text-blue-600 dark:text-blue-400">Drop the files here...</p>
-              ) : formData.paymentProof.length >= 4 ? (
+              ) : formData.paymentProof.length >= 2 ? (
                 <p className="text-gray-500 dark:text-gray-400">Maximum 4 files reached</p>
               ) : (
                 <div>
@@ -365,7 +439,7 @@ export default function ProcessTenantForm({
             )}
 
             <p className="mt-2 text-gray-600 dark:text-gray-400 text-sm">
-              {formData.paymentProof.length}/4 files selected
+              {formData.paymentProof.length}/2 files selected
             </p>
 
             {/* File Preview */}
@@ -425,39 +499,81 @@ export default function ProcessTenantForm({
               </Box>
             )}
           </Box>
-        )}
+        ): null}
 
         {/* Info Alert */}
-        {hasRemainingAmount && (
-          <Alert severity="info" className="mt-4">
-            <Typography variant="body2">
-              <strong>Note:</strong> Since you've entered remaining amounts, payment method and proof are required.
-            </Typography>
-          </Alert>
-        )}
+        <Alert severity="info" className="mt-4">
+          <Typography variant="body2">
+            <strong>Note:</strong> Payment method is always required. Payment proof is required only when there are remaining amounts to collect.
+          </Typography>
+        </Alert>
       </DialogContent>
 
-      <DialogActions sx={{
-        padding: '20px',
-        paddingTop: '16px',
-        borderTop: '1px solid #e0e0e0',
-        gap: '10px',
-        '@media (max-width: 600px)': {
-          justifyContent: 'center',
-          gap: '8px',
-        }
-      }}>
-        <button onClick={handleClose} disabled={isSubmitting} className='hidden md:block border-2 border-gray-300 text-gray-600 px-4 py-2 rounded-[30px] cursor-pointer dark:border-gray-400 dark:text-gray-200'>
+      <DialogActions
+        sx={(theme: Theme) => ({
+          px: 2,
+          py: 2,
+          gap: 1,
+          backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+          borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+        })}
+      >
+        <Button
+          onClick={handleClose}
+          disabled={isSubmitting}
+          sx={(theme: Theme) => ({
+            backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
+            color: '#ffffff',
+            px: {xs: 2, md: 3},
+            py: {xs: 1, md: 1.5},
+            borderRadius: '30px',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            textTransform: 'none',
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#4b5563',
+            },
+            '&:disabled': {
+              opacity: 0.5,
+            }
+          })}
+        >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={handleSubmit}
           disabled={isSubmitting || !formData.currentReading || formData.currentReading <= 0}
-          className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-[30px] text-sm md:text-base !ml-0 cursor-pointer flex items-center justify-center gap-2 dark:text-gray-200"
+          sx={(theme: Theme) => ({
+            backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
+            color: '#ffffff',
+            px: {xs: 2, md: 3},
+            py: {xs: 1, md: 1.5},
+            borderRadius: '30px',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            textTransform: 'none',
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#4b5563',
+            },
+            '&:disabled': {
+              opacity: 0.5,
+            }
+          })}
         >
-          {isSubmitting && <CircularProgress size={16} color="inherit" />}
-          {isSubmitting ? 'Processing...' : 'Process Tenant'}
-        </button>
+          {isSubmitting ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Processing...
+            </>
+          ) : (
+            'Process Tenant'
+          )}
+        </Button>
       </DialogActions>
     </Dialog>
   );

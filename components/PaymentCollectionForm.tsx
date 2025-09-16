@@ -332,31 +332,31 @@ export default function PaymentCollectionForm({
             <Box className="grid grid-cols-2 md:gap-4 gap-2 text-sm">
                 <div className="col-span-2 md:col-span-1">
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Period:</Typography>
-                <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
+                <Typography variant="body1" className="font-medium text-gray-900 dark:text-white" sx={{fontSize: {xs: '0.875rem', md: '1rem'}}}>
                       {formatDate(rentRecord.startDate)} - {formatDate(rentRecord.endDate)}
                 </Typography>
                   </div>
                   <div>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Room:</Typography>
-                <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
+                <Typography variant="body1" className="font-medium text-gray-900 dark:text-white" sx={{fontSize: {xs: '0.875rem', md: '1rem'}}} >
                       {rentRecord.room?.roomNo || '-'}
                 </Typography>
                   </div>
                   <div>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Rent:</Typography>
-                <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
+                <Typography variant="body1" className="font-medium text-gray-900 dark:text-white" sx={{fontSize: {xs: '0.875rem', md: '1rem'}}}>
                       {formatCurrency(rentRecord.rent)}
                 </Typography>
                   </div>
                   <div>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Electricity:</Typography>
-                <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
+                <Typography variant="body1" className="font-medium text-gray-900 dark:text-white" sx={{fontSize: {xs: '0.875rem', md: '1rem'}}}>
                       {formatCurrency(rentRecord.electricityBill)}
                 </Typography>
                   </div>
                   <div className="col-span-2">
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Total Amount:</Typography>
-                <Typography variant="h6" className="font-bold text-green-600 dark:text-green-400">
+                <Typography variant="h6" className="font-bold text-green-600 dark:text-green-400" sx={{fontSize: {xs: '0.875rem', md: '1rem'}}}>
                       {formatCurrency(rentRecord.totalAmount)}
                 </Typography>
                     </div>
@@ -629,7 +629,7 @@ export default function PaymentCollectionForm({
               px: {xs: '12px', md: '24px'},
               py: 1.5,
               borderRadius: '30px',
-              fontSize: '0.875rem',
+              fontSize: {xs: '0.75rem', md: '0.875rem'},
               fontWeight: 500,
               textTransform: 'none',
               transition: 'all 0.2s ease',
@@ -664,7 +664,7 @@ export default function PaymentCollectionForm({
                 px: {xs: '12px', md: '24px'},
                 py: 1.5,
                 borderRadius: '30px',
-                fontSize: '0.875rem',
+                fontSize: {xs: '0.75rem', md: '0.875rem'},
                 fontWeight: 500,
                 textTransform: 'none',
                 transition: 'all 0.2s ease',

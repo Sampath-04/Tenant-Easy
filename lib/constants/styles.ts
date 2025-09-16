@@ -2,7 +2,7 @@
 
 export const LAYOUT_CLASSES = {
   // Main container layout with responsive padding and max width
-  MAIN_CONTAINER: " mx-auto px-4 md:px-6 py-4",
+  MAIN_CONTAINER: " mx-auto px-2 md:px-6 py-4",
   
   // Common card/container styling with backdrop blur and borders
   CARD_CONTAINER: "bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-lg border border-white/20 dark:border-gray-700/50",

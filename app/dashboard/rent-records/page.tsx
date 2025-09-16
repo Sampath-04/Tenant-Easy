@@ -245,19 +245,19 @@ export default function RentRecordsPage() {
         <BreadCrumbs items={breadcrumbs} />
       </div>
 
-      <main className={LAYOUT_CLASSES.MAIN_CONTAINER + ' md:px-6 !px-2 pt-4'}>
+      <main className={LAYOUT_CLASSES.MAIN_CONTAINER + ' pt-4'}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
           <div className="md:p-4 p-2">
 
             {/* Summary Cards */}
             {
               summaryLoading ? (
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-6 mb-6">
-                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: {xs:150, md: 290}, height: 142 }} />
-                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: {xs:150, md: 290}, height: 142 }} />
-                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: {xs:150, md: 290}, height: 142 }} />
-                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: {xs:150, md: 290}, height: 142 }} />
-                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: {xs:150, md: 290}, height: 142 }} />
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-6 mb-6 h-[402px] md:h-[142px]">
+                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: '100%', height: '100%'}} />
+                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: '100%', height: '100%'}} />
+                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: '100%', height: '100%'}} />
+                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: '100%', height: '100%'}} />
+                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: '100%', height: '100%'}} />
                 </div>
               ) : (
                 (summary || !summaryLoading) && (

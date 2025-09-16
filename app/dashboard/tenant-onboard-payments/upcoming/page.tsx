@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -10,7 +10,7 @@ import {
   CircularProgress,
   TextField,
   Box,
-  Pagination,
+  TablePagination,
   MenuItem,
   Chip,
   Tooltip,
@@ -29,6 +29,7 @@ import { useUpcomingTenants, useProcessTenant } from '@/hooks/useTenants';
 import { useRooms } from '@/hooks/useRooms';
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatDate, formatCurrency, getCurrentDate, formatDateForAPI } from '@/lib/utils/formatters';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { generateUpcomingTenantOnboardExcel } from '@/lib/utils/excelExport';
 import { useProperty } from '@/contexts/PropertyContext';
 import TenantOnboardSummaryCards from '@/components/TenantOnboardSummaryCards';
@@ -46,8 +47,11 @@ import BreadCrumbs from '@/components/ui/BreadCrumbs';
 
 export default function UpcomingTenantsPage() {
   const { selectedProperty } = useProperty();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [filters, setFilters] = useState({
     search: '',
     roomId: '',
@@ -61,6 +65,33 @@ export default function UpcomingTenantsPage() {
 
   // Debounce search value to prevent excessive API calls
   const debouncedSearch = useDebounce(filters.search, 500);
+
+  // Read from URL params on mount
+  useEffect(() => {
+    setFilters({
+      search: searchParams.get("search") || "",
+      roomId: searchParams.get("roomId") || "",
+    });
+    setPage(parseInt(searchParams.get("page") || "1"));
+    setLimit(parseInt(searchParams.get("limit") || "10"));
+  }, []);
+
+  // Write to URL params when state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    // Add pagination
+    params.set("page", page.toString());
+    params.set("limit", limit.toString());
+
+    // Add filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+    });
+
+    // Update the URL (shallow = true to avoid full reload)
+    router.push(`/dashboard/tenant-onboard-payments/upcoming?${params.toString()}`);
+  }, [filters, page, limit, router]);
 
   // Get upcoming tenants
   const { data: upcomingResponse, isLoading, error } = useUpcomingTenants(selectedProperty?.id || '', {
@@ -118,9 +149,6 @@ export default function UpcomingTenantsPage() {
     });
   }, [upcomingTenants, debouncedSearch, filters.roomId]);
 
-  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
-  };
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({ ...prev, [field]: value }));
@@ -186,9 +214,9 @@ export default function UpcomingTenantsPage() {
       <div className='px-4 md:px-6 pt-3  md:pt-6 flex flex-row justify-between items-center'>
       <BreadCrumbs items={breadcrumbs} />
       </div>
-      <main className={LAYOUT_CLASSES.MAIN_CONTAINER + ' px-6 pt-4'}>
+      <main className={LAYOUT_CLASSES.MAIN_CONTAINER + ' md:px-6 pt-4'}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
-          <div className="p-6">
+          <div className="md:p-6 p-2">
 
             {/* Summary Cards */}
             <TenantOnboardSummaryCards 
@@ -198,7 +226,7 @@ export default function UpcomingTenantsPage() {
             />
 
             {/* Filter Toggle and Export Button */}
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center md:mb-6 mb-4">
               <div className="flex items-center gap-2">
                 <Tooltip title="Toggle Filters">
                   <IconButton
@@ -250,9 +278,9 @@ export default function UpcomingTenantsPage() {
             {/* Search and Filter */}
             <div className={`overflow-hidden transition-all duration-300 ${showFilters ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
               }`}>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
-                <div className="flex flex-col md:flex-row gap-4 items-center">
-                  <div className="w-[30%]">
+              <div className="bg-white dark:bg-gray-800 rounded-lg md:p-3 p-2 shadow-sm border border-gray-200 dark:border-gray-700 md:mb-6 mb-4">
+                <div className="flex flex-col md:flex-row md:gap-4 gap-2 items-center">
+                  <div className="md:w-[30%] w-full">
                     <TextField
                       fullWidth
                       placeholder="Search by tenant name, phone number..."
@@ -302,18 +330,18 @@ export default function UpcomingTenantsPage() {
               <div className="space-y-4">
                 {filteredTenants.length === 0 ? (
                   <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700">
-                    <CardContent className="p-6 text-center">
-                      <Typography variant="h6" className="text-gray-500 dark:text-gray-400">
+                    <CardContent className="md:p-6 p-2 text-center">
+                      <p className="text-gray-500 dark:text-gray-400 text-base md:text-lg">
                         No upcoming tenants found
-                      </Typography>
+                      </p>
                     </CardContent>
                   </Card>
                 ) : (
                   filteredTenants.map((tenant) => (
                     <Card key={tenant._id} className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
-                      <CardContent className="p-6">
-                        <div className="flex flex-col justify-between items-start gap-3">
-                            <div className="flex w-full items-center gap-8 mb-2">
+                      <CardContent sx={{p: {xs: 0.8, md: 2}}} className="p-6">
+                        <div className="flex flex-col justify-between items-start md:gap-3 gap-1">
+                            <div className="grid gap-2 md:flex w-full items-center md:gap-8 md:mb-2 mb-1">
                               <div className="flex items-center gap-3">
                                 <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
                                   {tenant.tenantName}
@@ -328,6 +356,7 @@ export default function UpcomingTenantsPage() {
                                   icon={<ScheduleIcon color="inherit" />}
                                 />
                               </div>
+                              <div className='flex gap-4 justify-between items-center'>
                               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                                   Phone: {tenant.tenantNumber}
                                 </Typography>
@@ -339,13 +368,14 @@ export default function UpcomingTenantsPage() {
                                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                                   Room: {tenant.room.roomNo} ({tenant.room.roomType})
                                 </Typography>
-                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                                <Typography variant="body2" className="text-gray-600 dark:text-gray-400 hidden md:block">
                                   Check-in: {formatDate(tenant.checkInDate)}
                                 </Typography>
+                              </div>
                             </div>
                             
-                            <div className="flex w-full gap-8 items-center">
-                               <div className="grid gap-2">
+                            <div className="md:flex w-full grid gap-2 md:gap-8 items-center">
+                               <div className="flex justify-between md:grid gap-2">
                                   <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                                     Monthly Rent: {formatCurrency(tenant.monthlyRent)}
                                   </Typography>
@@ -353,7 +383,7 @@ export default function UpcomingTenantsPage() {
                                     Security Deposit: {formatCurrency(tenant.securityDepositTotal)}
                                   </Typography>
                                </div>
-                               <div className="grid gap-2">
+                               <div className="flex justify-between md:grid gap-2">
                                   <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
                                     Rent Paid: {formatCurrency(tenant.totalOnboardingRentPaid)}
                                   </Typography>   
@@ -390,11 +420,16 @@ export default function UpcomingTenantsPage() {
                                   </div>
                                 </div>
                                 <div className="flex flex-col ml-auto items-end justify-end gap-2">
-                                  <div className="flex items-end gap-2">
-                                    <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
-                                      Total Pending: <span className="font-bold text-lg text-red-600 dark:text-red-400">{formatCurrency(tenant.totalPendingAmount)}</span>
-                                    </Typography>
-                                  </div> 
+                                <div className="flex justify-between gap-2">
+                                <p className="text-gray-600 dark:text-gray-400 block md:hidden text-sm">
+                                  Check-in: {formatDate(tenant.checkInDate)}
+                                </p>
+                                <div className="flex items-end gap-2">
+                                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                                    Total Pending: <span className="font-bold md:text-lg text-base text-red-600 dark:text-red-400 text-right">{formatCurrency(tenant.totalPendingAmount)}</span>
+                                  </p>
+                                </div> 
+                                </div>
                                   <Button
                                     variant="contained"
                                     size="small"
@@ -421,19 +456,37 @@ export default function UpcomingTenantsPage() {
               </div>
             )}
 
-            {/* Pagination */}
-            {!isLoading && upcomingResponse && upcomingResponse.pagination.totalPages > 1 && (
-              <Box className="flex justify-center mt-6">
-                <Pagination
-                  count={upcomingResponse.pagination.totalPages}
-                  page={page}
-                  onChange={handlePageChange}
-                  color="primary"
-                  showFirstButton
-                  showLastButton
-                />
-              </Box>
-            )}
+             {/* Pagination */}
+             {!isLoading && upcomingResponse && upcomingResponse.total > 0 && (
+               <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50 mt-6">
+                 <TablePagination
+                   component="div"
+                   count={upcomingResponse.total || 0}
+                   page={page - 1} // MUI uses 0-based indexing
+                   onPageChange={(_, newPage) => setPage(newPage + 1)} // Convert back to 1-based
+                   rowsPerPage={limit}
+                   onRowsPerPageChange={(e) => {
+                     const newPageSize = parseInt(e.target.value, 10);
+                     setLimit(newPageSize);
+                     setPage(1); // Reset to first page when changing page size
+                   }}
+                   rowsPerPageOptions={[10, 25, 50, 100]}
+                   labelRowsPerPage="Rows per page:"
+                   labelDisplayedRows={({ from, to, count }) =>
+                     `${from}-${to} of ${count !== -1 ? count : `more than ${to}`}`
+                   }
+                   sx={{
+                     backgroundColor: 'transparent',
+                     '& .MuiTablePagination-toolbar': {
+                       padding: '8px',
+                     },
+                     '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                       color: 'inherit',
+                     },
+                   }}
+                 />
+               </div>
+             )}
 
           </div>
         </div>
@@ -448,6 +501,8 @@ export default function UpcomingTenantsPage() {
         sx={(theme) => ({
           '& .MuiDialog-paper': {
             borderRadius: '16px',
+            width: {xs: '100%', md: '100%'},
+            margin: {xs: '16px', md: '32px'},
             backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
             boxShadow: theme.palette.mode === 'dark'
               ? '0 10px 40px rgba(0, 0, 0, 0.3)'
@@ -462,13 +517,15 @@ export default function UpcomingTenantsPage() {
             justifyContent: 'space-between',
             borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
             pb: 2,
+            px: {xs: 2},
+            py: {xs: 1, md: 2},
             backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
           })}
         >
           <Typography
             sx={(theme) => ({
               fontWeight: 600,
-              fontSize: '1.25rem',
+              fontSize: {xs: '1rem', md: '1.25rem'},
               color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
             })}
           >
@@ -481,24 +538,26 @@ export default function UpcomingTenantsPage() {
               color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
               '&:hover': {
                 backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f3f4f6',
-          }
-        })}
-      >
+              }
+            })}
+          >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
         
         <DialogContent
           sx={(theme) => ({
-            paddingTop: "24px !important",
+            paddingTop: {xs: "12px !important", md: "24px !important"},
             backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
+            padding: {xs: '12px', md: '24px'},
           })}
         >
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb:{xs: 0, md: 2} }}>
             <Typography
               variant="body1"
               sx={(theme) => ({
                 mb: 2,
+                fontSize: {xs: '0.875rem', md: '1rem'},
                 color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
               })}
             >
@@ -509,7 +568,7 @@ export default function UpcomingTenantsPage() {
               sx={(theme) => ({
                 backgroundColor: theme.palette.mode === 'dark' ? '#111827' : '#f9fafb',
                 borderRadius: '8px',
-                p: 2.5,
+                p: {xs: 1.5, md: 2.5},
                 border: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
               })}
             >
@@ -524,7 +583,7 @@ export default function UpcomingTenantsPage() {
                 Export Summary:
               </Typography>
               
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: {xs: '1fr 1fr', md: '1fr 1px 1fr'}, alignItems: 'center', justifyContent: 'center', gap: {xs: 1, md: 2} }}>
                 <Box>
                   <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
                     <Typography
@@ -572,7 +631,7 @@ export default function UpcomingTenantsPage() {
                 </Box>
 
                 {/* vertical divider */}
-                <div className="h-full w-px bg-gray-200 dark:bg-gray-700"></div>
+                <div className="h-full w-px bg-gray-200 dark:bg-gray-700 hidden md:block"></div>
                 
                 <Box>
                   <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
@@ -626,7 +685,7 @@ export default function UpcomingTenantsPage() {
         
         <DialogActions
           sx={(theme) => ({
-            px: 3,
+            px:{xs: 1, md: 3},
             py: 2,
             gap: 2,
             backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',

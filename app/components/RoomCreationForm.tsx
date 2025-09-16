@@ -98,8 +98,8 @@ export default function AddRoomForm({ onClose, onSubmit, isPending = false, erro
     <div className="bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Sticky Header */}
       <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="flex items-center justify-between p-4">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+        <div className="flex items-center justify-between md:p-4 p-2">
+          <h1 className="md:text-xl text-lg font-bold text-gray-900 dark:text-white">
             New Room
           </h1>
           {onClose && (
@@ -113,7 +113,7 @@ export default function AddRoomForm({ onClose, onSubmit, isPending = false, erro
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="md:p-6 p-4">
          {(error || createRoomMutation.error) && (
            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
              <div className="flex">
@@ -127,14 +127,14 @@ export default function AddRoomForm({ onClose, onSubmit, isPending = false, erro
            </div>
          )}
 
-        <form className="space-y-8">
+        <form className="md:space-y-8 space-y-4">
           {/* Basic Information */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-lg md:p-6 p-4 shadow-sm border border-gray-200 dark:border-gray-700">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
               <HomeIcon className="mr-2"/>
               Basic Information
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 md:gap-6 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Room Number *
@@ -261,8 +261,8 @@ export default function AddRoomForm({ onClose, onSubmit, isPending = false, erro
           </div>
 
             {/* Amenities */}
-           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+           <div className="bg-white dark:bg-gray-800 rounded-lg md:p-6 p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+             <h2 className="md:text-xl text-lg font-semibold text-gray-900 dark:text-white md:mb-6 mb-4 flex items-center">
                <SettingsIcon className="mr-2"/>
                Amenities
              </h2>
@@ -344,12 +344,12 @@ export default function AddRoomForm({ onClose, onSubmit, isPending = false, erro
            </div>
 
           {/* Meter Readings */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg md:p-6 p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+            <h2 className="md:text-xl text-lg font-semibold text-gray-900 dark:text-white md:mb-6 mb-4 flex items-center">
               <RoomIcon className="mr-2"/>
               Meter Readings
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 md:gap-6 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Current Meter Reading *
@@ -371,7 +371,7 @@ export default function AddRoomForm({ onClose, onSubmit, isPending = false, erro
 
       {/* Sticky Bottom Action Buttons */}
       <div className="sticky bottom-0 z-10 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="flex items-center justify-end space-x-3 p-4">
+        <div className="flex items-center justify-end space-x-3 md:p-4 p-2">
           {onClose && (
             <button
               onClick={onClose}

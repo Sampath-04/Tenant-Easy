@@ -20,6 +20,7 @@ import { Close as CloseIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-m
 import { CircularProgress } from '@mui/material';
 import { useDropzone } from 'react-dropzone';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
+import { PAYMENT_METHOD_OPTIONS } from '@/lib/constants/paymentConstants';
 
 interface CollectOnboardPendingPaymentsFormProps {
   open: boolean;
@@ -200,14 +201,15 @@ export default function CollectOnboardPendingPaymentsForm({
           alignItems: 'center',
           justifyContent: 'space-between',
           borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
-          pb: 2,
+          pb: {xs: 1, md: 2},
+          px: {xs: 2},
           backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
         })}
       >
         <Typography
           sx={(theme: Theme) => ({
-            fontWeight: 600,
-            fontSize: '1.25rem',
+            fontWeight: {xs: 500, md: 600},
+            fontSize: {xs: '1rem', md: '1.25rem'},
             color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
           })}
         >
@@ -231,7 +233,6 @@ export default function CollectOnboardPendingPaymentsForm({
         sx={(theme: Theme) => ({
           flex: 1,
           overflow: 'auto',
-          padding: '24px',
           backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
           minHeight: 0, // Important for flex child to shrink
           '&::-webkit-scrollbar': {
@@ -241,6 +242,8 @@ export default function CollectOnboardPendingPaymentsForm({
             backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f1f5f9',
             borderRadius: '3px',
           },
+          padding: {xs: '12px', md: '24px'},
+          paddingTop: {xs: '12px!important', md: '24px!important'},
           '&::-webkit-scrollbar-thumb': {
             backgroundColor: theme.palette.mode === 'dark' ? '#6b7280' : '#cbd5e1',
             borderRadius: '3px',
@@ -251,11 +254,11 @@ export default function CollectOnboardPendingPaymentsForm({
         })}
       >
         {/* Tenant Information */}
-        <Box className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+        <Box className="mb-4 md:p-4 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
           <Typography variant="subtitle2" className="text-blue-800 dark:text-blue-300 mb-3">
             Tenant Information
           </Typography>
-          <Box className="grid grid-cols-2 gap-4 text-sm">
+          <Box className="grid grid-cols-2 md:gap-4 gap-2 text-sm">
             <div>
               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Name:</Typography>
               <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
@@ -284,11 +287,11 @@ export default function CollectOnboardPendingPaymentsForm({
         </Box>
 
         {/* Pending Payments Status */}
-        <Box className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+        <Box className="mb-4 md:p-4 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
           <Typography variant="subtitle2" className="text-red-800 dark:text-red-300 mb-3">
             Pending Payments
           </Typography>
-          <Box className="grid grid-cols-2 gap-4 text-sm">
+          <Box className="grid grid-cols-2 md:gap-4 gap-2 text-sm">
             <div>
               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">Security Pending:</Typography>
               <Typography variant="body1" className="font-medium text-amber-600 dark:text-amber-400">
@@ -311,11 +314,11 @@ export default function CollectOnboardPendingPaymentsForm({
         </Box>
 
         {/* Collection Details */}
-        <Box className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+        <Box className="mt-4 md:p-4 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
           <Typography variant="subtitle2" className="text-green-800 dark:text-green-300 mb-3">
             Collection Details
           </Typography>
-          <Box className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Box className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
             <TextField
               fullWidth
               label="Security Deposit Amount"
@@ -371,11 +374,11 @@ export default function CollectOnboardPendingPaymentsForm({
                   },
                 })}
               >
-                <MenuItem value="CASH">Cash</MenuItem>
-                <MenuItem value="UPI">UPI</MenuItem>
-                <MenuItem value="BANK_TRANSFER">Bank Transfer</MenuItem>
-                <MenuItem value="CHEQUE">Cheque</MenuItem>
-                <MenuItem value="CARD">Card</MenuItem>
+                {PAYMENT_METHOD_OPTIONS.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
             {errors.paymentMethod && (
@@ -512,8 +515,8 @@ export default function CollectOnboardPendingPaymentsForm({
           sx={(theme: Theme) => ({
             backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
             color: '#ffffff',
-            px: 3,
-            py: 1.5,
+            px: {xs: 2, md: 3},
+            py: {xs: 1, md: 1.5},
             borderRadius: '30px',
             fontSize: '0.875rem',
             fontWeight: 500,
@@ -535,8 +538,8 @@ export default function CollectOnboardPendingPaymentsForm({
           sx={(theme: Theme) => ({
             backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
             color: '#ffffff',
-            px: 3,
-            py: 1.5,
+            px: {xs: 2, md: 3},
+            py: {xs: 1, md: 1.5},
             borderRadius: '30px',
             fontSize: '0.875rem',
             fontWeight: 500,

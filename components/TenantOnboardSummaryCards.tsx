@@ -37,12 +37,11 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
   // Show skeleton loading state
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
-        <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
-        <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
-        <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
-        <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
-        <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
+      <div className="h-[216px] md:h-[142px] grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-6 mb-6">
+        <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: "100%", height:"100%"}} />
+        <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: "100%", height:"100%"}} />
+        <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: "100%", height:"100%"}} />
+        <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: "100%", height:"100%"}} />
       </div>
     );
   }
@@ -50,18 +49,18 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
   
   if (isCompleted) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-6 mb-6">
         <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
           borderRadius: '12px',
           boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
         }}>
           <CardContent sx={{
             padding: '16px!important',
-            height: "140px"
+            height: {xs: '100px', md: '140px'}
           }}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-900 dark:text-white text-3xl">
+                <p className="text-gray-900 dark:text-white md:text-3xl text-xl">
                   {summary.totalTenants}
                 </p>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
@@ -79,11 +78,11 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
         }}>
           <CardContent sx={{
             padding: '16px!important',
-            height: "140px"
+            height: {xs: '100px', md: '140px'}
           }}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-900 dark:text-white text-3xl">
+                <p className="text-gray-900 dark:text-white md:text-3xl text-xl">
                   {formatCurrency(summary.totalAmountCollected || 0)}
                 </p>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
@@ -101,11 +100,11 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
         }}>
           <CardContent sx={{
             padding: '16px!important',
-            height: "140px"
+            height: {xs: '100px', md: '140px'}
           }}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-900 dark:text-white text-3xl">
+                <p className="text-gray-900 dark:text-white md:text-3xl text-xl">
                   {formatCurrency(summary.totalSecurityDepositCollected || 0)}
                 </p>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
@@ -123,11 +122,11 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
         }}>
           <CardContent sx={{
             padding: '16px!important',
-            height: "140px"
+            height: {xs: '100px', md: '140px'}
           }}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-900 dark:text-white text-3xl">
+                <p className="text-gray-900 dark:text-white md:text-3xl text-xl">
                   {formatCurrency(summary.totalOnboardingRentCollected || 0)}
                 </p>
                 <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
@@ -143,18 +142,18 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
   }
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-6 mb-6">
       <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
         borderRadius: '12px',
         boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
       }}>
         <CardContent sx={{
           padding: '16px!important',
-          height: "140px"
+          height: {xs: '100px', md: '140px'}
         }}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-900 dark:text-white text-3xl">
+              <p className="text-gray-900 dark:text-white md:text-3xl text-xl">
                 {summary.totalTenants}
               </p>
               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
@@ -172,11 +171,11 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
       }}>
         <CardContent sx={{
           padding: '16px!important',
-          height: "140px"
+          height: {xs: '100px', md: '140px'}
         }}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-900 dark:text-white text-3xl">
+              <p className="text-gray-900 dark:text-white md:text-3xl text-xl">
                 {formatCurrency(summary.totalPendingAmount || 0)}
               </p>
               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
@@ -194,11 +193,11 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
       }}>
         <CardContent sx={{
           padding: '16px!important',
-          height: "140px"
+          height: {xs: '100px', md: '140px'}
         }}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-900 dark:text-white text-3xl">
+              <p className="text-gray-900 dark:text-white md:text-3xl text-xl">
                 {formatCurrency(summary.totalSecurityPending || 0)}
               </p>
               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
@@ -220,11 +219,11 @@ export default function TenantOnboardSummaryCards({ summary, variant = 'pending'
       }}>
         <CardContent sx={{
           padding: '16px!important',
-          height: "140px"
+          height: {xs: '100px', md: '140px'}
         }}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-900 dark:text-white text-3xl">
+              <p className="text-gray-900 dark:text-white md:text-3xl text-xl">
                 {formatCurrency(summary.totalRentPending || 0)}
               </p>
               <Typography variant="body2" className="text-gray-600 dark:text-gray-400">

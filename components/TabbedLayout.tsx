@@ -58,7 +58,7 @@ export default function TabbedLayout({
             ? '0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2)'
             : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
           marginBottom: '0px',
-          padding: '0 24px',
+          padding: {xs: '0 12px', md: '0 24px'},
         })}
         
       >

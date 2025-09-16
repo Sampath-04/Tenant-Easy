@@ -22,7 +22,7 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
             )}
             <Link
               href={item.url}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 transition-colors max-w-[150px] truncate md:max-w-none"
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 transition-colors max-w-[200px] truncate md:max-w-none"
             >
               {item.label}
             </Link>

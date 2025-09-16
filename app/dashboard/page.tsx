@@ -247,20 +247,20 @@ function DashboardContent() {
       {/* Main Content */}
       <main className="mx-auto px-4 sm:px-6  py-6">
         {/* Current Property Info */}
-        <div className="mb-6">
+        <div className="md:mb-6 mb-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
+            <div className="md:flex gap-2 grid items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                <h2 className="md:text-lg text-base font-semibold text-gray-900 dark:text-white mb-2">
                   Current Property
                 </h2>
-                <h3 className="font-semibold text-gray-900 dark:text-white">{selectedProperty?.name}</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">{selectedProperty?.name}</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">{selectedProperty?.address}</p>
               </div>
               
               <div className="text-right">
                 <p className="text-sm text-gray-600 dark:text-gray-400">Monthly Revenue</p>
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                <p className="md:text-2xl text-lg font-bold text-green-600 dark:text-green-400">
                   {formatCurrency(selectedProperty?.monthlyRevenue || 0)}
                 </p>
               </div>
@@ -269,7 +269,7 @@ function DashboardContent() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-5 md:gap-6 gap-4 mb-8">
           {stats.map((stat, index) => (
             <Link
               key={index}
@@ -304,10 +304,10 @@ function DashboardContent() {
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+          <h2 className="md:text-xl text-lg font-semibold text-gray-900 dark:text-white md:mb-6 mb-4">
             Quick Actions
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 md:gap-6 gap-4">
             {quickActions.map((action, index) => (
               <Link
                 key={index}
