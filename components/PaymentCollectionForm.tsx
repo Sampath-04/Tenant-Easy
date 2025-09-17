@@ -591,7 +591,7 @@ export default function PaymentCollectionForm({
           sx={(theme: Theme) => ({
             px: {xs: '8px', md: '24px'},
             py: {xs: '12px', md: '24px'},
-            gap: {xs: '8px', md: '24px'},
+            gap: {xs: '8px', md: '0px'},
             backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
             borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
           })}

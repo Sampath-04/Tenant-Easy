@@ -140,6 +140,7 @@ export default function ProcessRefundForm({
             borderRadius: '20px',
             backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
             maxHeight: '90vh',
+            width: '35%',
             display: 'flex',
             flexDirection: 'column',
             '@media (max-width: 600px)': {
@@ -156,7 +157,9 @@ export default function ProcessRefundForm({
             alignItems: 'center',
             justifyContent: 'space-between',
             borderBottom: theme.palette.mode === 'dark' ? '1px solid #4A5568' : '1px solid #e5e7eb',
-            pb: 2,
+            pb: {xs: 1, md: 2},
+            px: {xs: 2, md: 2},
+            py: {xs: 1, md: 2},
             color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#000000',
             backgroundColor: theme.palette.mode === 'dark' ? '#1F2937' : '#F9FAFB',
             position: 'sticky',
@@ -176,7 +179,7 @@ export default function ProcessRefundForm({
         <DialogContent sx={(theme) => ({
           flex: 1,
           overflow: 'auto',
-          padding: '24px!important  ',
+          padding: {xs: '12px!important', md: '24px!important'},
           backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
           '&::-webkit-scrollbar': {
             width: '6px',
@@ -193,13 +196,13 @@ export default function ProcessRefundForm({
             },
           },
         })}>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="md:space-y-6">
             {/* Refund Details Section */}
-            <Box className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
+            <Box className="md:mb-6 mb-2 p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
               <p className="text-gray-800 dark:text-gray-300 mb-3 text-md font-bold">
                 Refund Details
               </p>
-              <Box className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <Box className="grid grid-cols-2 md:gap-4 gap-2 text-sm">
                 <div className="flex flex-row items-center gap-2">
                   <p className="text-gray-600 dark:text-gray-400 text-md">Tenant:</p>
                   <p className="font-medium text-gray-900 dark:text-white">
@@ -212,13 +215,13 @@ export default function ProcessRefundForm({
                     {refund.tenant.tenantNumber}
                   </p>
                   </div>
-                <div className="flex flex-row items-center gap-2">
+                <div className="flex flex-row items-center gap-2 col-span-2 md:col-span-1">
                   <p className="text-gray-600 dark:text-gray-400 text-md">Room:</p>
                   <p className="font-medium text-gray-900 dark:text-white">
                     {refund.room.roomNo}
                   </p>
                   </div>
-                <div className="flex flex-row items-center gap-2">
+                <div className="flex flex-row items-center gap-2 col-span-2 md:col-span-1">
                   <p className="text-gray-600 dark:text-gray-400 text-md">Notice Ends:</p>
                   <p className="font-medium text-gray-900 dark:text-white">
                     {formatDate(refund.noticeEndsOn)}
@@ -228,7 +231,7 @@ export default function ProcessRefundForm({
             </Box>
 
             {/* Financial Details */}
-            <Box className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
+            <Box className="md:mb-6 mb-2 p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
               <p className="text-gray-800 dark:text-gray-300 mb-3 text-md font-bold">
                 Financial Summary
               </p>
@@ -249,11 +252,11 @@ export default function ProcessRefundForm({
 
               {/* Deductions */}
               {refund.deductions && (
-                <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+                <div className="mt-4 md:p-3 p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
                   <Typography variant="subtitle2" className="font-medium mb-2 text-gray-900 dark:text-white">
                     Deductions Applied:
                   </Typography>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="grid md:grid-cols-3 grid-cols-2 gap-4 text-sm">
                     <div>
                       <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                         Electricity Bill
@@ -301,12 +304,12 @@ export default function ProcessRefundForm({
             </Box>
 
             {/* Transaction Details Section */}
-            <Box className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
+            <Box className="md:mb-6 mb-2 p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
               <p className="text-gray-800 dark:text-gray-300 mb-4 font-bold">
                 Transaction Details
               </p>
 
-              <Box className="grid grid-cols-2 gap-4">
+              <Box className="grid md:grid-cols-2 gap-4">
               {/* Transaction ID */}
               <TextField
                 label="Transaction ID *"
@@ -356,7 +359,7 @@ export default function ProcessRefundForm({
             </Box>
 
             {/* Receipt Upload Section */}
-            <Box className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
+            <Box className="md:mb-6 mb-2 p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg border border-gray-200 dark:border-gray-800">
               <p className="text-gray-800 dark:text-gray-300 mb-4 font-bold">
                    Receipt Upload (Optional)
               </p>

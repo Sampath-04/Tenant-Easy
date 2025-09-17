@@ -198,18 +198,18 @@ export default function RefundsPage() {
 
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER}>
         <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
-          <div className="p-4">
+          <div className="md:p-6 p-2">
             {/* Summary Cards */}
             {
               refundsLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+                <div className="grid grid-cols-2 md:grid-cols-5 md:gap-6 gap-3 md:mb-8 mb-6">
                   <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
                   <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
                   <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
                 </div>
               ) : (
                 (refundsResponse?.statistics || !refundsLoading) && (
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+                  <div className="grid grid-cols-2 md:grid-cols-5 md:gap-6 gap-3 md:mb-8 mb-6">
                 <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700" sx={{
                   borderRadius: '12px',
                   boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;"
@@ -220,7 +220,7 @@ export default function RefundsPage() {
                     <div>
                       <div className='flex justify-between gap-2 items-center'>
                         <div>
-                          <p className="text-blue-600 dark:text-blue-400 text-3xl">
+                          <p className="text-blue-600 dark:text-blue-400 md:text-3xl text-2xl">
                             {formatCurrency(refundsResponse?.statistics?.totalAmount || 0)}
                           </p>
                           <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
@@ -248,7 +248,7 @@ export default function RefundsPage() {
                     <div>
                       <div className='flex justify-between gap-2 items-center'>
                         <div>
-                          <p className="text-green-600 dark:text-green-400 text-3xl">
+                          <p className="text-green-600 dark:text-green-400 md:text-3xl text-2xl">
                             {formatCurrency(refundsResponse?.statistics?.processedAmount || 0)}
                           </p>
                           <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
@@ -300,7 +300,7 @@ export default function RefundsPage() {
             }
 
             {/* Filter Toggle and Export Button */}
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center md:mb-6 mb-4">
               <div className="flex items-center gap-2">
                 <Tooltip title="Toggle Filters">
                   <IconButton
@@ -352,9 +352,9 @@ export default function RefundsPage() {
             {/* Search and Filter */}
             <div className={`overflow-hidden transition-all duration-300 ${showFilters ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
               }`}>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
-                <div className="flex flex-col md:flex-row gap-4 items-center">
-                  <div className="flex-1 w-full">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-700 md:mb-6 mb-4">
+                <div className=" grid grid-cols-2 md:flex flex-col md:flex-row gap-4 items-center">
+                  <div className="flex-1 w-full col-span-2">
                     <TextField
                       fullWidth
                       placeholder="Search by tenant name, phone, or room number..."
@@ -373,7 +373,7 @@ export default function RefundsPage() {
                     />
                   </div>
 
-                  <div className="w-full md:w-48">
+                  <div className="w-full md:w-48 col-span-2">
                     <TextField
                       select
                       fullWidth
@@ -459,12 +459,12 @@ export default function RefundsPage() {
                     }}
                     className="bg-white dark:bg-gray-800"
                   >
-                    <CardContent className="p-6">
+                    <CardContent sx={{padding: {xs: '12px', md: '16px'}}}>
                       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         {/* Refund Info Section */}
                         <div className="flex-1">
                           {/* Tenant and Room Info */}
-                          <div className="flex items-center gap-6 mb-4">
+                          <div className=" grid grid-cols-2 md:flex items-center md:gap-6 gap-2 mb-4">
                             <div className="flex items-center gap-2">
                               <PersonIcon className="text-gray-400 dark:text-gray-500" />
                               <Typography variant="body1" className="font-semibold text-gray-600 dark:text-gray-400">
@@ -484,14 +484,17 @@ export default function RefundsPage() {
                               </Typography>
                             </div>
                             {/* Status Chip */}
+                            <div className='w-fit'>
+                              
                             {getStatusChip(refund.status)}
+                            </div>
                           </div>
 
                           {/* Refund Details */}
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                             {/* Left Column - Refund Information */}
-                            <div className="space-y-4">
-                              <div className='grid gap-1'>
+                            <div className="md:space-y-4 grid grid-cols-2 md:grid-cols-1">
+                              <div className='grid-cols-1 grid gap-1'>
                                 <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                                   Security Deposit
                                 </Typography>
@@ -500,7 +503,7 @@ export default function RefundsPage() {
                                 </Typography>
                               </div>
 
-                              <div className='grid gap-1'>
+                              <div className='grid-cols-1 grid gap-1'>
                                 <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                                   Refund Amount
                                 </Typography>
@@ -511,7 +514,7 @@ export default function RefundsPage() {
                             </div>
 
                             {/* Right Column - Deductions */}
-                            <div className="space-y-4">
+                            <div className="md:space-y-4 grid grid-cols-2 md:grid-cols-1">
                               {refund.deductions && (
                                 <>
                                   <div className='grid gap-1'>
