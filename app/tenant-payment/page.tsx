@@ -290,7 +290,7 @@ function TenantPaymentPage() {
         )}
 
         {/* QR Code for Pending Payments */}
-        {hasPendingPayments && !hasPaymentRequest && (
+        {/* {hasPendingPayments && !hasPaymentRequest && (
           <Card className="mb-6 shadow-lg border border-orange-200 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20">
             <CardContent className="p-6 text-center">
               <div className="flex items-center justify-center gap-3 mb-4">
@@ -303,7 +303,6 @@ function TenantPaymentPage() {
                 Please scan or download the QR code below to pay your rent.
               </p>
               
-              {/* QR Code Image with proper styling */}
               <div className="flex justify-center mb-6">
                 <div className="relative">
                   <Image 
@@ -314,12 +313,10 @@ function TenantPaymentPage() {
                     className="rounded-lg border-2 border-orange-300 dark:border-orange-600 shadow-lg bg-white p-2"
                     priority={true}
                   />
-                  {/* Decorative border */}
                   <div className="absolute inset-0 rounded-lg border-2 border-orange-400/30 pointer-events-none"></div>
                 </div>
               </div>
 
-              {/* Download Button */}
               <div className="flex justify-center mb-6">
                 <Button
                   variant="outlined"
@@ -353,7 +350,6 @@ function TenantPaymentPage() {
                 </Button>
               </div>
 
-              {/* Payment Amount Display */}
               <div className="p-3 bg-orange-100 dark:bg-orange-800/30 rounded-lg border border-orange-200 dark:border-orange-700">
                 <Typography variant="body2" className="text-orange-900 dark:text-orange-100 font-medium">
                   Pending Amount: {formatCurrency(rentRecordResponse?.data?.remainingAmount || 0)}
@@ -362,7 +358,7 @@ function TenantPaymentPage() {
 
             </CardContent>
           </Card>
-        )}
+        )} */}
 
         {/* Payment Request Form */}
         {hasPendingPayments && !hasPaymentRequest && !submitPaymentRequestMutation.isSuccess && (
