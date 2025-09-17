@@ -49,6 +49,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
             '& .MuiChip-label': {
               padding: '0 6px',
             },
+            width: 'fit-content',
           })}
           icon={<PersonOffIcon />}
         />
@@ -172,6 +173,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
             '& .MuiChip-label': {
               padding: '0 6px',
             },
+            width: 'fit-content',
           })}
         />
       );
@@ -203,7 +205,9 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
           </Typography>
         </div>
         {/* Status Chip */}
+        <div className="w-fit ">
         {getStatusChip(record)}
+        </div>
         {/* <p>current date: {getCurrentDate().toISOString().split('T')[0]}</p> */}
       </div>
 

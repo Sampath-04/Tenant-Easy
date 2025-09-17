@@ -14,6 +14,7 @@ interface AuthContextType {
   login: (credentials: LoginRequest) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  clearToken: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,15 +49,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const checkAuth = async () => {
     try {
       setIsLoading(true);
+      
+      // Check if token exists in localStorage
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setUser(null);
+        return;
+      }
+      
       const response = await authApi.me();
       
       if (response.success && response.user) {
         setUser(response.user);
       } else {
+        // Token is invalid, clear it
+        localStorage.removeItem('authToken');
         setUser(null);
       }
     } catch (error) {
       console.log('Auth check failed:', error);
+      // Clear invalid token
+      localStorage.removeItem('authToken');
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -69,8 +82,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsLoading(true);
       const response = await authApi.login(credentials);
     
-      if (response.success && response.user) {
+      if (response.success && response.user && response.token) {
+        // Store token in localStorage
+        localStorage.setItem('authToken', response.token);
         setUser(response.user);
+
+        // console.log("response", response);
+        // console.log("user logged in as", response.user);
         
         // Show success toast
         const successToast = showSuccessToast(`Welcome back, ${response.user.name}!`);
@@ -105,12 +123,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  // Clear token utility function
+  const clearToken = () => {
+    localStorage.removeItem('authToken');
+    setUser(null);
+  };
+
   // Logout function
   const logout = async () => {
     try {
       setIsLoading(true);
       await authApi.logout();
-      setUser(null);
+      // Clear token from localStorage
+      clearToken();
       
       // Show logout success
       const successToast = showSuccessToast('Logged out successfully');
@@ -123,7 +148,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       console.error('Logout failed:', error);
       // Even if logout API fails, clear local state
-      setUser(null);
+      clearToken();
       router.push('/login');
     } finally {
       setIsLoading(false);
@@ -162,6 +187,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     login,
     logout,
     checkAuth,
+    clearToken,
   };
 
   return (

@@ -52,16 +52,28 @@ export class ApiError extends Error {
   }
 }
 
+// Helper function to get auth headers
+const getAuthHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+
+  // Get token from localStorage
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  return headers;
+};
+
 export const apiClient = {
   async get<T>(endpoint: string): Promise<T> {
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
+        headers: getAuthHeaders(),
       });
 
       const data = await response.json();
@@ -86,12 +98,19 @@ export const apiClient = {
 
   async getBlob(endpoint: string): Promise<Blob> {
     try {
+      const headers: Record<string, string> = {
+        'Accept': 'application/pdf, application/octet-stream, */*',
+      };
+
+      // Get token from localStorage
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'GET',
-        headers: {
-          'Accept': 'application/pdf, application/octet-stream, */*',
-        },
-        credentials: 'include',
+        headers,
       });
 
       if (!response.ok) {
@@ -122,7 +141,6 @@ export const apiClient = {
 
   async post<T>(endpoint: string, body: any): Promise<T> {
     try {
-
       // Handle FormData differently from JSON
       const isFormData = body instanceof FormData;
       
@@ -135,11 +153,16 @@ export const apiClient = {
         headers['Content-Type'] = 'application/json';
       }
 
+      // Get token from localStorage
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers,
         mode: 'cors',
-        credentials: 'include',
         body: isFormData ? body : JSON.stringify(body),
       });
 
@@ -177,11 +200,16 @@ export const apiClient = {
         headers['Content-Type'] = 'application/json';
       }
 
+      // Get token from localStorage
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'PUT',
         headers,
         mode: 'cors',
-        credentials: 'include',
         body: isFormData ? body : JSON.stringify(body),
       });
 
@@ -219,11 +247,16 @@ export const apiClient = {
         headers['Content-Type'] = 'application/json';
       }
 
+      // Get token from localStorage
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'PATCH',
         headers,
         mode: 'cors',
-        credentials: 'include',
         body: isFormData ? body : JSON.stringify(body),
       });
 
@@ -261,10 +294,15 @@ export const apiClient = {
         headers['Content-Type'] = 'application/json';
       }
 
+      // Get token from localStorage
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'DELETE',
         headers,
-        credentials: 'include',
         mode: 'cors',
         body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
       });

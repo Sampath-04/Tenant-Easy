@@ -196,10 +196,10 @@ export function AppHeader({
                             }`}
                           >
                             <div className="flex items-center">
-                              <span className="w-5 h-5 mr-3 text-current">
+                              <span className="w-5 h-5 mr-3 text-current relative -top-1">
                                 {item.icon}
                               </span>
-                              {item.label}
+                              <p>{item.label}</p>
                             </div>
                             {expandedItems.includes(item.id) ? (
                               <ExpandLess className="w-5 h-5" />
@@ -219,10 +219,10 @@ export function AppHeader({
                                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                                   }`}
                                 >
-                                  <span className="w-4 h-4 mr-3 text-current">
+                                  <span className="w-4 h-4 mr-3 text-current relative -top-1">
                                     {child.icon}
                                   </span>
-                                  {child.label}
+                                  <p>{child.label}</p>
                                 </button>
                               ))}
                             </div>
@@ -237,10 +237,10 @@ export function AppHeader({
                               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                           }`}
                         >
-                          <span className="w-5 h-5 mr-3 text-current">
+                          <span className="w-5 h-5 mr-3 text-current relative -top-1">
                             {item.icon}
                           </span>
-                          {item.label}
+                          <p>{item.label}</p>
                         </button>
                       )}
                     </div>
