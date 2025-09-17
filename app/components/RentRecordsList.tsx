@@ -10,7 +10,7 @@ import {
     Cancel as CancelIcon,
 } from '@mui/icons-material';
 import RentHistoryDetails from '@/components/RentHistoryDetails';
-import { formatDate, getCurrentDate } from '@/lib/utils/formatters';
+import { formatDate, getCurrentDate, getNextMonthRentPeriodFromRecord } from '@/lib/utils/formatters';
 import RentInfoCard from '@/components/RentInfoCard';
 import PaymentCollectionForm from '@/components/PaymentCollectionForm';
 import EvictionForm from '@/components/EvictionForm';
@@ -54,10 +54,11 @@ export default function RentRecordsList({
 
     const getWhatsAppMessage = (rent: any) => {
     const paymentLink = `http://localhost:3000/tenant-payment?rentRecordId=${rent._id}`;
+    const nextMonthPeriod = getNextMonthRentPeriodFromRecord(rent);
     const message = 
 `Hi ${rent.tenant.tenantName}, 
 
-This is a friendly reminder that your rent payment for ${formatDate(rent.startDate)} to ${formatDate(rent.endDate)} is pending.
+This is a friendly reminder that your rent payment to start next cycle from ${formatDate(nextMonthPeriod.startDateString)} to ${formatDate(nextMonthPeriod.endDateString)} is pending.
 
 Details:
 • Room: ${rent.room.roomNo}
@@ -66,6 +67,9 @@ Details:
 • Total Amount: ₹${rent.totalAmount}
 • Remaining Amount: ₹${rent.remainingAmount}
 • Due Date: ${formatDate(rent.dueDate)}
+
+Payment Instructions:
+Please request the UPI ID or QR code from the owner/caretaker to complete your payment.
 
 You can complete your payment online using this link:
 ${paymentLink}

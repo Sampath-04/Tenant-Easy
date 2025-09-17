@@ -41,4 +41,41 @@ export const formatCategory = (cat: string) => {
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join('');
-}
+};
+
+// Get next month's rent start date (1st of next month)
+export const getNextMonthRentStartDate = (): Date => {
+  const today = new Date();
+  const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  return nextMonth;
+};
+
+
+// Calculate next month's rent period based on existing rent record dates
+export const getNextMonthRentPeriodFromRecord = (rentRecord: any) => {
+
+  // Parse the existing rent record dates
+  const currentStartDate = new Date(rentRecord.startDate);
+  const currentEndDate = new Date(rentRecord.endDate);
+
+  // Calculate the next month's start date (same day of month, next month)
+  const nextStartDate = new Date(
+    currentStartDate.getFullYear(),
+    currentStartDate.getMonth() + 1,
+    currentStartDate.getDate()
+  );
+
+  // Calculate the next month's end date (same day of month, next month)
+  const nextEndDate = new Date(
+    currentEndDate.getFullYear(),
+    currentEndDate.getMonth() + 1,
+    currentEndDate.getDate()
+  );
+
+  return {
+    startDate: nextStartDate,
+    endDate: nextEndDate,
+    startDateString: formatDateForAPI(nextStartDate),
+    endDateString: formatDateForAPI(nextEndDate),
+  };
+};

@@ -30,7 +30,7 @@ import {
   Close as CloseIcon,
 } from '@mui/icons-material';
 import { useRentRecord } from '@/hooks/useRentRecords';
-import { formatDate, formatCurrency } from '@/lib/utils/formatters';
+import { formatDate, formatCurrency, getNextMonthRentPeriodFromRecord } from '@/lib/utils/formatters';
 import { useSubmitPaymentRequest } from '@/hooks/usePaymentRequests';
 import { toast } from 'react-toastify';
 
@@ -386,7 +386,10 @@ function TenantPaymentPage() {
                     </div>
                   </div>
                   <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">
-                    This is the pending amount for {formatDate(rentRecordResponse?.data?.startDate)} to {formatDate(rentRecordResponse?.data?.endDate)}
+                    This is the pending amount for {(() => {
+                      const nextPeriod = getNextMonthRentPeriodFromRecord(rentRecordResponse?.data);
+                      return `${formatDate(nextPeriod.startDateString)} to ${formatDate(nextPeriod.endDateString)}`;
+                    })()}
                   </p>
                 </div>
 
@@ -674,10 +677,13 @@ function TenantPaymentPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div>
                     <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
-                      Cycle period
+                      Next Cycle
                     </Typography>
                     <Typography className="font-semibold text-gray-900 dark:text-white">
-                      {formatDate(rentRecordResponse.data.startDate)} to {formatDate(rentRecordResponse.data.endDate)}
+                      {(() => {
+                        const nextPeriod = getNextMonthRentPeriodFromRecord(rentRecordResponse.data);
+                        return `${formatDate(nextPeriod.startDateString)} to ${formatDate(nextPeriod.endDateString)}`;
+                      })()}
                     </Typography>
                   </div>
                   <div>
@@ -720,7 +726,7 @@ function TenantPaymentPage() {
                   </div>
                   <div>
                     <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
-                      Electricity Bill
+                      Last Month Electricity Bill
                     </Typography>
                     <Typography variant="body2" className="font-medium text-gray-900 dark:text-white">
                       {formatCurrency(rentRecordResponse.data.electricityBill)}
