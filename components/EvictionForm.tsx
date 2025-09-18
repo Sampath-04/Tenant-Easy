@@ -18,6 +18,7 @@ import { Close as CloseIcon, PersonOff as PersonOffIcon, CloudUpload as CloudUpl
 import { CircularProgress } from '@mui/material';
 import { formatCurrency, formatDate } from '@/lib/utils/formatters';
 import { useDropzone } from 'react-dropzone';
+import { useProperty } from '@/contexts/PropertyContext';
 
 interface EvictionFormProps {
   isOpen: boolean;
@@ -40,6 +41,7 @@ export default function EvictionForm({
   onSubmitCallback,
   rentRecord,
 }: EvictionFormProps) {
+  const { selectedProperty } = useProperty();
   const [currentElectricityReading, setCurrentElectricityReading] = useState<number>(rentRecord?.room?.currentMeterReading || 0);
   const [refundableAmount, setRefundableAmount] = useState<number>(0);
   const [comments, setComments] = useState('');
@@ -47,7 +49,7 @@ export default function EvictionForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tenantQrCode, setTenantQrCode] = useState<File | null>(null);
   const [qrCodePreviewUrl, setQrCodePreviewUrl] = useState<string | null>(null);
-  const perUnitCost = 10;
+  const perUnitCost = selectedProperty?.electricitySettings?.ratePerUnit || 0;
   // Calculate refundable amount when current reading changes
   useEffect(() => {
     if (!rentRecord) return;
