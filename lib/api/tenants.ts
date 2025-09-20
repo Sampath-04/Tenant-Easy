@@ -70,8 +70,8 @@ export async function getTenants({
 /**
  * Get a single tenant by ID
  */
-export async function getTenantById(id: string): Promise<Tenant> {
-  const response = await apiClient.get<{ success: boolean; data: Tenant }>(`/tenants/${id}`);
+export async function getTenantById(id: string, propertyId: string): Promise<Tenant> {
+  const response = await apiClient.get<{ success: boolean; data: Tenant }>(`/tenants/property/${propertyId}/${id}`);
 
   return response.data;
 }

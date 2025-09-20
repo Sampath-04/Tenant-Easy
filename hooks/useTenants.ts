@@ -30,7 +30,7 @@ export const tenantKeys = {
   lists: () => [...tenantKeys.all, 'list'] as const,
   list: (params: GetTenantsRequest) => [...tenantKeys.lists(), params] as const,
   details: () => [...tenantKeys.all, 'detail'] as const,
-  detail: (id: string) => [...tenantKeys.details(), id] as const,
+  detail: (id: string, propertyId?: string) => [...tenantKeys.details(), id, propertyId] as const,
   properties: ['properties', 'filter'] as const,
   rooms: (propertyId?: string) => ['rooms', 'filter', propertyId] as const,
 };
@@ -51,13 +51,14 @@ export function useTenants(params: GetTenantsRequest = {}) {
 /**
  * Hook to fetch a single tenant by ID
  */
-export function useTenant(id: string) {
+export function useTenant( id: string, propertyId: string) {
   return useQuery({
-    queryKey: tenantKeys.detail(id),
-    queryFn: () => getTenantById(id),
-    enabled: !!id,
-    staleTime: 0,
-    gcTime: 0,
+    queryKey: tenantKeys.detail(id, propertyId),
+    queryFn: () => getTenantById(id, propertyId),
+    enabled: !!id && !!propertyId,
+    staleTime: 0, 
+    gcTime: 0, 
+    retry: false, 
   });
 }
 
@@ -76,8 +77,8 @@ export function useCreateTenant() {
       // Invalidate room queries to update room data (occupancy, tenant count, etc.)
       queryClient.invalidateQueries({ queryKey: ['rooms'] });
       
-      // Add the new tenant to existing cache if possible
-      queryClient.setQueryData(tenantKeys.detail(data._id), data);
+      // Invalidate tenant details to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: tenantKeys.details() });
     },
     onError: (error: ApiError) => {
       console.error('Failed to create tenant:', error);
@@ -116,8 +117,8 @@ export function useDeleteTenant() {
   return useMutation({
     mutationFn: deleteTenant,
     onSuccess: (_, tenantId) => {
-      // Remove from cache
-      queryClient.removeQueries({ queryKey: tenantKeys.detail(tenantId) });
+      // Remove from cache - invalidate all tenant detail queries for this tenant
+      queryClient.removeQueries({ queryKey: tenantKeys.details() });
       
       // Invalidate tenant lists
       queryClient.invalidateQueries({ queryKey: tenantKeys.lists() });
@@ -138,8 +139,8 @@ export function useMarkTenantAsDeleted() {
   return useMutation({
     mutationFn: markTenantAsDeleted,
     onSuccess: (data, tenantId) => {
-      // Remove from cache
-      queryClient.removeQueries({ queryKey: tenantKeys.detail(tenantId) });
+      // Remove from cache - invalidate all tenant detail queries for this tenant
+      queryClient.removeQueries({ queryKey: tenantKeys.details() });
       
       // Invalidate tenant lists
       queryClient.invalidateQueries({ queryKey: tenantKeys.lists() });
