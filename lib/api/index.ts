@@ -13,3 +13,5 @@ export * from './properties';
 export * from './notice';
 export * from "./electricityReadings";
 export * from './paymentRequests';
+export * from './additionalIncome';
+export * from './moveTenant';

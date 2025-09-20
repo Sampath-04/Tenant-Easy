@@ -5,13 +5,16 @@ import { PropertyData } from '../lib/api/types';
 import { useAuth } from './AuthContext';
 import { useProfile } from '../hooks/useProfile';
 
-export interface Property {
+export interface  Property {
   id: string;
   name: string;
   address: string;
   profile: string;
   totalRooms: number;
   occupiedRooms: number;
+  electricitySettings: {
+    ratePerUnit: number;
+  };
   totalTenants: number;
   pendingRent: number;
   pendingRentCount: number;
@@ -41,6 +44,7 @@ const convertToProperty = (propertyData: PropertyData, profileId: string): Prope
   address: propertyData.propertyAddress,
   profile: profileId,
   foodAmount: propertyData.foodAmount,
+  electricitySettings: propertyData.electricitySettings,
   // Use actual data from API summary
   totalRooms: propertyData.summary.totalRooms,
   occupiedRooms: propertyData.summary.occupiedRooms,

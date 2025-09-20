@@ -22,6 +22,7 @@ import {
 import { showErrorToast, showSuccessToast } from '../lib/toast-config';
 import { toast } from 'react-toastify';
 import { TenantHistoryResponse } from '@/lib/api/rentHistory';
+import { evictTenant } from '@/lib/api/tenants';
 
 // Query keys
 export const tenantKeys = {
@@ -29,7 +30,7 @@ export const tenantKeys = {
   lists: () => [...tenantKeys.all, 'list'] as const,
   list: (params: GetTenantsRequest) => [...tenantKeys.lists(), params] as const,
   details: () => [...tenantKeys.all, 'detail'] as const,
-  detail: (id: string) => [...tenantKeys.details(), id] as const,
+  detail: (id: string, propertyId?: string) => [...tenantKeys.details(), id, propertyId] as const,
   properties: ['properties', 'filter'] as const,
   rooms: (propertyId?: string) => ['rooms', 'filter', propertyId] as const,
 };
@@ -50,13 +51,14 @@ export function useTenants(params: GetTenantsRequest = {}) {
 /**
  * Hook to fetch a single tenant by ID
  */
-export function useTenant(id: string) {
+export function useTenant( id: string, propertyId: string) {
   return useQuery({
-    queryKey: tenantKeys.detail(id),
-    queryFn: () => getTenantById(id),
-    enabled: !!id,
-    staleTime: 0,
-    gcTime: 0,
+    queryKey: tenantKeys.detail(id, propertyId),
+    queryFn: () => getTenantById(id, propertyId),
+    enabled: !!id && !!propertyId,
+    staleTime: 0, 
+    gcTime: 0, 
+    retry: false, 
   });
 }
 
@@ -75,8 +77,8 @@ export function useCreateTenant() {
       // Invalidate room queries to update room data (occupancy, tenant count, etc.)
       queryClient.invalidateQueries({ queryKey: ['rooms'] });
       
-      // Add the new tenant to existing cache if possible
-      queryClient.setQueryData(tenantKeys.detail(data._id), data);
+      // Invalidate tenant details to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: tenantKeys.details() });
     },
     onError: (error: ApiError) => {
       console.error('Failed to create tenant:', error);
@@ -115,8 +117,8 @@ export function useDeleteTenant() {
   return useMutation({
     mutationFn: deleteTenant,
     onSuccess: (_, tenantId) => {
-      // Remove from cache
-      queryClient.removeQueries({ queryKey: tenantKeys.detail(tenantId) });
+      // Remove from cache - invalidate all tenant detail queries for this tenant
+      queryClient.removeQueries({ queryKey: tenantKeys.details() });
       
       // Invalidate tenant lists
       queryClient.invalidateQueries({ queryKey: tenantKeys.lists() });
@@ -137,8 +139,8 @@ export function useMarkTenantAsDeleted() {
   return useMutation({
     mutationFn: markTenantAsDeleted,
     onSuccess: (data, tenantId) => {
-      // Remove from cache
-      queryClient.removeQueries({ queryKey: tenantKeys.detail(tenantId) });
+      // Remove from cache - invalidate all tenant detail queries for this tenant
+      queryClient.removeQueries({ queryKey: tenantKeys.details() });
       
       // Invalidate tenant lists
       queryClient.invalidateQueries({ queryKey: tenantKeys.lists() });
@@ -284,6 +286,34 @@ export function useUpdateOnboardingPaymentAmount() {
       console.error('Failed to update payment amount:', error);
       const errorToast = showErrorToast(error.getUserMessage());
       toast.error(errorToast.message, errorToast.config);
+    },
+  });
+}
+
+interface EvictTenantData {
+  electricityUnit: number;
+  amount: number;
+  comments?: string;
+  tenantQrCode?: File;
+}
+
+export function useEvictTenant() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ tenantId, data }: { tenantId: string; data: EvictTenantData }) =>
+      evictTenant(tenantId, data),
+    onSuccess: (response, variables) => {
+      toast.success(response.message || 'Tenant evicted successfully');
+      
+      // Invalidate relevant queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      queryClient.invalidateQueries({ queryKey: ['tenant', variables.tenantId] });
+      queryClient.invalidateQueries({ queryKey: ['tenant-details', variables.tenantId] });
+    },
+    onError: (error: any) => {
+      console.error('Failed to evict tenant:', error);
+      toast.error(error?.response?.data?.message || 'Failed to evict tenant');
     },
   });
 }

@@ -7,6 +7,8 @@ import { AuthGuard } from '@/contexts/AuthContext';
 import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
 import { useTenant, useUpdateOnboardingPaymentAmount, useMarkTenantAsDeleted } from '@/hooks/useTenants';
+import { useCompleteNotice } from '@/hooks/useNotice';
+import { CompleteNoticeData } from '@/lib/api/notice';
 import DeleteTenantDialog from '@/components/DeleteTenantDialog';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -20,12 +22,20 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import WarningIcon from '@mui/icons-material/Warning';
 import RentHistoryTable from '@/app/components/RentHistoryTable';
 import NoticeForm from '@/components/NoticeForm';
+import EvictionForm from '@/components/EvictionForm';
+import EvictTenantForm from '@/components/EvictTenantForm';
+import MoveTenantForm from '@/components/MoveTenantForm';
+import { useEvictTenant } from '@/hooks/useTenants';
+import { useMoveTenant } from '@/hooks/useMoveTenant';
 import { Button, Accordion, AccordionSummary, AccordionDetails, Typography, IconButton, Chip, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Alert, Box } from '@mui/material';
-import { NotificationsActive as NoticeIcon, ExpandMore as ExpandMoreIcon, Edit as EditIcon, Payment as PaymentIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { NotificationsActive as NoticeIcon, ExpandMore as ExpandMoreIcon, Edit as EditIcon, Payment as PaymentIcon, Delete as DeleteIcon, PersonOff as PersonOffIcon, Home as HomeIcon } from '@mui/icons-material';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
 import { useTheme } from '@mui/material/styles';
+import { getCurrentDate } from '@/lib/utils/formatters';
+import { useProperty } from '@/contexts/PropertyContext';
 
 function TenantViewContent() {
+  const { selectedProperty } = useProperty();
   const params = useParams();
   const router = useRouter();
   const tenantId = params.id as string;
@@ -38,12 +48,20 @@ function TenantViewContent() {
   const [editAmount, setEditAmount] = useState('');
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [evictionFormOpen, setEvictionFormOpen] = useState(false);
+  const [selectedRentForEviction, setSelectedRentForEviction] = useState<any>(null);
+  const [evictTenantFormOpen, setEvictTenantFormOpen] = useState(false);
+  const [moveTenantFormOpen, setMoveTenantFormOpen] = useState(false);
+  const evictTenantMutation = useEvictTenant();
+  const moveTenantMutation = useMoveTenant();
+  const { data: tenant, isLoading, error: fetchError } = useTenant(
+    tenantId, 
+    selectedProperty?.id || ''
+  );
 
-  const { data: tenant, isLoading, error: fetchError } = useTenant(tenantId);
-
-  console.log("tenant", tenant);
   const updatePaymentMutation = useUpdateOnboardingPaymentAmount();
   const markTenantAsDeletedMutation = useMarkTenantAsDeleted();
+  const completeNoticeMutation = useCompleteNotice();
   const error = fetchError?.message;
 
   const formatCurrency = (amount: number) => {
@@ -174,11 +192,136 @@ function TenantViewContent() {
     }
   };
 
+  const handleCompleteEviction = () => {
+    const noticeRentRecord =  localTenant.pendingRents?.pendingRentRecords.find((rent: any) => rent.notice._id === localTenant.notice?._id);
+    setSelectedRentForEviction(noticeRentRecord);
+    setEvictionFormOpen(true);
+  };
+
+  const handleEvictionSubmit = async (data: any) => {
+    if (!data.rentRecord?.notice._id) {
+      console.error('No notice ID found for eviction');
+      return;
+    }
+
+    const payload = {
+      noticeId: data.rentRecord.notice._id,
+      electricityUnit: data.currentElectricityReading,
+      tenantQrCode: data.tenantQrCode,
+      comments: data.comments,
+      otherDeduction: data.otherDeduction || 0,
+    } as CompleteNoticeData;
+
+    try {
+      // Call the completeNotice API
+      await completeNoticeMutation.mutateAsync(payload);
+      
+      // Close the eviction form
+      setEvictionFormOpen(false);
+      setSelectedRentForEviction(null);
+      
+      // Update local tenant status to evicted
+      if (localTenant) {
+        setLocalTenant({
+          ...localTenant,
+          status: 'evicted',
+          notice: {
+            ...localTenant.notice,
+            status: 'completed'
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Failed to complete eviction:', error);
+      // Error handling is done in the mutation
+    }
+  };
+
+  const handleEvictTenant = () => {
+    setEvictTenantFormOpen(true);
+  };
+
+  const handleEvictTenantSubmit = async (data: any) => {
+    if (!localTenant?._id) return;
+    
+    try {
+      await evictTenantMutation.mutateAsync({
+        tenantId: localTenant._id,
+        data: {
+          electricityUnit: data.electricityUnit,
+          amount: data.amount,
+          comments: data.comments,
+          tenantQrCode: data.tenantQrCode,
+        }
+      });
+      
+      // Close the evict tenant form only after successful API call
+      setEvictTenantFormOpen(false);
+      
+      // Update local tenant status to evicted
+      if (localTenant) {
+        setLocalTenant({
+          ...localTenant,
+          status: 'evicted',
+          checkOutDate: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      console.error('Failed to evict tenant:', error);
+      // Form stays open on error
+    }
+  };
+
+  const handleMoveTenant = () => {
+    setMoveTenantFormOpen(true);
+  };
+
+  const handleMoveTenantSubmit = async (data: any) => {
+    try {
+      await moveTenantMutation.mutateAsync(data);
+      setMoveTenantFormOpen(false);
+    } catch (error) {
+      console.error('Failed to move tenant:', error);
+    }
+  };
+
   useEffect(() => {
     if (tenant) {
       setLocalTenant(tenant);
     }
+    else {
+      setLocalTenant(null);
+    }
   }, [tenant]);
+
+  // Show message when no property is selected
+  if (!selectedProperty?.id) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <AppHeader
+          title="Tenant Details"
+          subtitle="Please select a property to view tenant details"
+        />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Property Selected</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">Please select a property from the header to view tenant details.</p>
+            <button
+              onClick={() => window.location.href = '/dashboard/tenants'}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Go to Tenants List
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -200,833 +343,940 @@ function TenantViewContent() {
     );
   }
 
-  if (error || !localTenant) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Error Loading Tenant</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            {error || 'Tenant not found'}
-          </p>
-          <Link
-            href="/dashboard/tenants"
-            className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors duration-200"
-          >
-            <ArrowBackIcon className="w-4 h-4 mr-2" />
-            Back to Tenants
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   const breadcrumbs = [
     { label: 'Dashboard', url: '/dashboard' },
     { label: 'Tenants', url: '/dashboard/tenants' },
-    { label: localTenant.tenantName || 'Tenant', url: `/dashboard/tenants/${localTenant._id}` },
+    { label: localTenant?.tenantName || 'Tenant', url: `/dashboard/tenants/${localTenant?._id}` },
   ];
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <AppHeader
         title="Tenant Details"
-        subtitle={`Viewing details for ${localTenant.tenantName}`}
+        subtitle={`Viewing details for ${localTenant ? localTenant?.tenantName  : 'Tenant'}`}
       />
-      
-      <div className='px-6 md:pt-6 pt-3'>
-      <BreadCrumbs items={breadcrumbs} />
-      </div>
+      {localTenant ? (
+      <div>
+        <div className='px-6 md:pt-6 pt-3'>
+        <BreadCrumbs items={breadcrumbs} />
+        </div>
 
-      <main className={LAYOUT_CLASSES.MAIN_CONTAINER + " py-4"}>
-        {/* Tenant Overview Card */}
-        <div className={`${LAYOUT_CLASSES.CARD_CONTAINER} md:mb-6 mb-4`}>
-          <div className="p-2 md:p-3">
-            <div className="flex md:flex-row flex-col md:items-center md:justify-between justify-start mb-3">
-              <div className="flex items-center md:space-x-4 gap-2 md:gap-0">
-                <div className="hidden w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full md:flex items-center justify-center text-white text-xl font-bold">
-                  {localTenant.tenantName.charAt(0).toUpperCase()}
+        <main className={LAYOUT_CLASSES.MAIN_CONTAINER + " py-4"}>
+          {/* Tenant Overview Card */}
+        
+          <div className={`${LAYOUT_CLASSES.CARD_CONTAINER} md:mb-6 mb-4`}>
+            <div className="p-2 md:p-3">
+              <div className="flex md:flex-row flex-col md:items-center md:justify-between justify-start mb-3">
+                <div className="flex items-center md:space-x-4 gap-2 md:gap-0">
+                  <div className="hidden w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full md:flex items-center justify-center text-white text-xl font-bold">
+                    {localTenant.tenantName.charAt(0).toUpperCase()}
+                  </div>
+                  <div className='flex flex-row items-center gap-2'>
+                    <h1 className="md:text-lg text-base font-bold text-gray-900 dark:text-white ">
+                      {localTenant.tenantName}
+                    </h1>
+                    <div className="flex items-center space-x-2">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(localTenant.status)}`}>
+                        {getStatusLabel(localTenant.status)}
+                      </span>
+                      <span className="text-gray-600 dark:text-gray-400 text-sm font-bold">
+                        Room {localTenant.room.roomNo}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className='flex flex-row items-center gap-2'>
-                  <h1 className="md:text-lg text-base font-bold text-gray-900 dark:text-white ">
-                    {localTenant.tenantName}
-                  </h1>
-                  <div className="flex items-center space-x-2">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(localTenant.status)}`}>
-                      {getStatusLabel(localTenant.status)}
-                    </span>
-                    <span className="text-gray-600 dark:text-gray-400 text-sm font-bold">
-                      Room {localTenant.room.roomNo}
-                    </span>
+
+                <div className="md:mt-0 mt-2 md:text-right text-left">
+                  <div className="text-md md:text-lg text-green-600 dark:text-green-400 font-bold">
+                    {formatCurrency(localTenant.monthlyRent)}
+                  </div>
+                  <div className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
+                    Monthly Rent
                   </div>
                 </div>
               </div>
 
-              <div className="md:mt-0 mt-2 md:text-right text-left">
-                <div className="text-md md:text-lg text-green-600 dark:text-green-400 font-bold">
-                  {formatCurrency(localTenant.monthlyRent)}
-                </div>
-                <div className="text-gray-600 dark:text-gray-400 text-sm md:text-base">
-                  Monthly Rent
-                </div>
-              </div>
-            </div>
+              <hr className="my-4 border-gray-200 dark:border-gray-700" />
 
-            <hr className="my-4 border-gray-200 dark:border-gray-700" />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div className="grid grid-cols-[220px_auto] items-center">
-                  <div className='flex items-center gap-2'>
-                    <PhoneIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Phone Number
-                    </div>
-                  </div>
-                  <div className="font-medium text-gray-900 dark:text-white text-sm">
-                    {localTenant.tenantNumber}
-                  </div>
-                </div>
-
-                {localTenant.tenantEmail && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <div className="grid grid-cols-[220px_auto] items-center">
                     <div className='flex items-center gap-2'>
-                    <EmailIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Email
-                    </div>
-                    </div>
-                    <div className="font-medium text-gray-900 dark:text-white text-sm">
-                      {localTenant.tenantEmail}
-                    </div>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-[220px_auto] items-center">
-                  <div className='flex items-center gap-2'>
-                    <LocationOnIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Property
-                    </div>
-                  </div>
-                    <div className="font-medium text-gray-900 dark:text-white text-sm">
-                      {localTenant.property?.propertyName || 'N/A'}
-                    </div>
-                </div>
-
-                {localTenant.currentReading > 0 && (
-                  <div className="grid grid-cols-[220px_auto] items-center">
-                    <div className='flex items-center gap-2'>
-                      <ReceiptIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                      <PhoneIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                          Current Meter Reading
+                        Phone Number
                       </div>
                     </div>
                     <div className="font-medium text-gray-900 dark:text-white text-sm">
-                      {localTenant.currentReading} units
+                      {localTenant.tenantNumber}
                     </div>
                   </div>
-                )}
 
-                <div className="grid grid-cols-[220px_auto] items-center">
-                  <div className='flex items-center gap-2'>
-                    <CalendarTodayIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Check-in Date
+                  {localTenant.tenantEmail && (
+                    <div className="grid grid-cols-[220px_auto] items-center">
+                      <div className='flex items-center gap-2'>
+                      <EmailIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        Email
+                      </div>
+                      </div>
+                      <div className="font-medium text-gray-900 dark:text-white text-sm">
+                        {localTenant.tenantEmail}
+                      </div>
                     </div>
-                  </div>
-                  <div className="font-medium text-gray-900 dark:text-white text-sm">
-                    {formatDate(localTenant.checkInDate)}
-                  </div>
-                </div>
+                  )}
 
-                {localTenant.checkOutDate && (
                   <div className="grid grid-cols-[220px_auto] items-center">
                     <div className='flex items-center gap-2'>
-                      <CalendarTodayIcon className="w-5 h-5 text-red-500 dark:text-red-400" />
+                      <LocationOnIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                          Check-out Date
+                          Property
                       </div>
                     </div>
-                      <div className="font-medium text-red-600 dark:text-red-400 text-sm">
-                        {formatDate((new Date(localTenant.checkOutDate).toISOString()))}
+                      <div className="font-medium text-gray-900 dark:text-white text-sm">
+                        {localTenant.property?.propertyName || 'N/A'}
                       </div>
                   </div>
-                )}
 
-                <div className="grid grid-cols-[220px_auto] items-center">
-                  <div className='flex items-center gap-2'>
+                  {localTenant.currentReading > 0 && (
+                    <div className="grid grid-cols-[220px_auto] items-center">
+                      <div className='flex items-center gap-2'>
+                        <ReceiptIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                            Current Meter Reading
+                        </div>
+                      </div>
+                      <div className="font-medium text-gray-900 dark:text-white text-sm">
+                        {localTenant.currentReading} units
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-[220px_auto] items-center">
+                    <div className='flex items-center gap-2'>
+                      <CalendarTodayIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                          Check-in Date
+                      </div>
+                    </div>
+                    <div className="font-medium text-gray-900 dark:text-white text-sm">
+                      {formatDate(localTenant.checkInDate)}
+                    </div>
+                  </div>
+
+                  {localTenant.checkOutDate && (
+                    <div className="grid grid-cols-[220px_auto] items-center">
+                      <div className='flex items-center gap-2'>
+                        <CalendarTodayIcon className="w-5 h-5 text-red-500 dark:text-red-400" />
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                            Check-out Date
+                        </div>
+                      </div>
+                        <div className="font-medium text-red-600 dark:text-red-400 text-sm">
+                          {formatDate((new Date(localTenant.checkOutDate).toISOString()))}
+                        </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-[220px_auto] items-center">
+                    <div className='flex items-center gap-2'>
+                      <AccountBalanceWalletIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                          Security Deposit
+                      </div>
+                    </div>
+                    <div className="font-medium text-gray-900 dark:text-white text-sm">
+                      {formatCurrency(localTenant.securityDepositTotal || 0)}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-[220px_auto] items-center">
+                    <div className='flex items-center gap-2'>
                     <AccountBalanceWalletIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Security Deposit
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                          Security Deposit Paid
+                        </div>
+                    </div>
+                    <div className="font-medium text-gray-900 dark:text-white text-sm">
+                      {formatCurrency(localTenant.securityDepositPaid || 0)}
                     </div>
                   </div>
-                  <div className="font-medium text-gray-900 dark:text-white text-sm">
-                    {formatCurrency(localTenant.securityDepositTotal || 0)}
-                  </div>
-                </div>
-                <div className="grid grid-cols-[220px_auto] items-center">
-                  <div className='flex items-center gap-2'>
-                  <AccountBalanceWalletIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Security Deposit Paid
-                      </div>
-                  </div>
-                  <div className="font-medium text-gray-900 dark:text-white text-sm">
-                    {formatCurrency(localTenant.securityDepositPaid || 0)}
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-[220px_auto] items-center">
-                  <div className='flex items-center gap-2'>
-                    <AttachMoneyIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Base Rent
-                    </div>
-                  </div>
-                  <div className="font-medium text-gray-900 dark:text-white text-sm">
-                    {formatCurrency(localTenant.baseRent || 0)}
-                  </div>
-                </div>
-
-                {localTenant.foodOpted && (
                   <div className="grid grid-cols-[220px_auto] items-center">
                     <div className='flex items-center gap-2'>
-                      <RestaurantIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                      <AttachMoneyIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                          Food Amount
+                          Base Rent
                       </div>
                     </div>
                     <div className="font-medium text-gray-900 dark:text-white text-sm">
-                      {formatCurrency(localTenant.foodAmount || 0)}
+                      {formatCurrency(localTenant.baseRent || 0)}
+                    </div>
+                  </div>
+
+                  {localTenant.foodOpted && (
+                    <div className="grid grid-cols-[220px_auto] items-center">
+                      <div className='flex items-center gap-2'>
+                        <RestaurantIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                            Food Amount
+                        </div>
+                      </div>
+                      <div className="font-medium text-gray-900 dark:text-white text-sm">
+                        {formatCurrency(localTenant.foodAmount || 0)}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-[220px_auto] items-center">
+                    <div className='flex items-center gap-2'>
+                      <AttachMoneyIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                          Total Monthly Rent
+                      </div>
+                    </div>
+                    <div className="font-semibold text-gray-900 dark:text-white text-sm">
+                      {formatCurrency(localTenant.monthlyRent || 0)}
+                    </div>
+                  </div>
+              </div>
+
+              <div className='flex md:flex-row flex-col md:items-center md:justify-between justify-start gap-2'>
+                {localTenant.notice && (
+                  <div className="mt-4 p-2 md:px-3 md:py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg w-fit">
+                    <div className="flex items-center space-x-3">
+                      <WarningIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                      <div className='flex flex-row items-center gap-2'>
+                        <div className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
+                          Notice Period:
+                        </div>
+                        <div className="text-sm text-yellow-700 dark:text-yellow-400">
+                          {formatDate(localTenant.notice.noticeDate.toString())} - {formatDate(localTenant.notice.noticeEndsOn.toString())}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
 
-                <div className="grid grid-cols-[220px_auto] items-center">
-                  <div className='flex items-center gap-2'>
-                    <AttachMoneyIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Total Monthly Rent
-                    </div>
-                  </div>
-                  <div className="font-semibold text-gray-900 dark:text-white text-sm">
-                    {formatCurrency(localTenant.monthlyRent || 0)}
-                  </div>
-                </div>
-            </div>
-
-            <div className='flex md:flex-row flex-col md:items-center md:justify-between justify-start gap-2'>
-              {localTenant.notice && (
-                <div className="mt-4 p-2 md:px-3 md:py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg w-fit">
-                  <div className="flex items-center space-x-3">
-                    <WarningIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                    <div className='flex flex-row items-center gap-2'>
-                      <div className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
-                        Notice Period:
-                      </div>
-                      <div className="text-sm text-yellow-700 dark:text-yellow-400">
-                        {formatDate(localTenant.notice.noticeDate.toString())} - {formatDate(localTenant.notice.noticeEndsOn.toString())}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Apply Notice Button - Only show for onboarded tenants without notice */}
-          
-              <div className="grid grid-cols-2 md:flex md:flex-row md:justify-end justify-start gap-4 md:mt-4 mt-3 md:ml-auto">
-                <Button
-                  variant="outlined"
-                  onClick={() => router.push(`/dashboard/tenants/${tenantId}/edit`)}
-                  sx={{
-                    borderColor: '#6b7280',
-                    color: '#6b7280',
-                    '&:hover': {
-                      borderColor: '#4b5563',
-                      backgroundColor: 'rgba(107, 114, 128, 0.04)',
-                    },
-                    borderRadius: '12px',
-                    textTransform: 'none',
-                    fontWeight: 500,
-                  }}
-                >
-                  Edit Tenant
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<DeleteIcon />}
-                  onClick={handleDeleteTenant}
-                  sx={{
-                    borderColor: '#ef4444',
-                    color: '#ef4444',
-                    '&:hover': {
-                      borderColor: '#dc2626',
-                      backgroundColor: 'rgba(239, 68, 68, 0.04)',
-                    },
-                    borderRadius: '12px',
-                    textTransform: 'none',
-                    fontWeight: 500,
-                    padding: { xs: '6px 12px', md: '6px 12px' },
-                  }}
-                >
-                  Delete Tenant
-                </Button>
-
-                {localTenant.status === 'onboarded' && !localTenant.notice && localTenant.currentCycle && 
-                <Button
-                  variant="contained"
-                  startIcon={<NoticeIcon />}
-                  onClick={handleApplyNotice}
-                  disabled={localTenant.previousCyclePaymentStatus === 'NOT_PAID' || localTenant.previousCyclePaymentStatus === 'PARTIALLY_PAID'}
-                  sx={{
-                    backgroundColor: '#FFC04D',
-                    boxShadow: 'none',
-                    borderRadius: '12px',
-                    fontSize: '12px',
-                    fontWeight: 500,
-                    textTransform: 'none',
-                    padding: '6px 12px',
-                    '&:hover': {
-                      backgroundColor: '#d97706',
-                    },
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  Apply Notice
-                </Button>}
-                <Button
-                  variant="outlined"
-                  onClick={() => setShowOnboardingHistory(!showOnboardingHistory)}
-                  sx={{
-                    borderColor: '#3b82f6',
-                    color: '#3b82f6',
-                    '&:hover': {
-                      borderColor: '#2563eb',
-                      backgroundColor: 'rgba(59, 130, 246, 0.04)',
-                    },
-                    borderRadius: '12px',
-                    textTransform: 'none',
-                    fontWeight: 500,
-                  }}
-                >
-                  {showOnboardingHistory ? 'Hide' : 'Show More'}
-                </Button>
-              </div>
-            </div>
-                      
-            {/* Show More Button for Onboarding Payment History */}
-            {localTenant.onboardingPayments && localTenant.onboardingPayments.length > 0 && (
-                <div>
-                  {/* Onboarding Payment History Accordion */}
-                  <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                    showOnboardingHistory 
-                      ? 'max-h-[1000px] opacity-100 mt-4' 
-                      : 'max-h-0 opacity-0'
-                  }`}>
-                    <Accordion 
-                      defaultExpanded
-                      sx={{ 
+                {/* Apply Notice Button - Only show for onboarded tenants without notice */}
+            
+                <div className="flex flex-col gap-4 md:mt-4 mt-3">
+                  {/* Primary Actions - Status-based */}
+                  <div className="flex flex-wrap gap-3">
+                    {localTenant.status === 'onboarded' && !localTenant.notice && localTenant.currentCycle && 
+                    <Button
+                      variant="contained"
+                      startIcon={<NoticeIcon />}
+                      onClick={handleApplyNotice}
+                      disabled={localTenant.previousCyclePaymentStatus === 'NOT_PAID' || localTenant.previousCyclePaymentStatus === 'PARTIALLY_PAID'}
+                      sx={{
+                        backgroundColor: '#FFC04D',
                         boxShadow: 'none',
-                        backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#1f2937' : '#F5F5F5',
-                        '&:before': {
-                          display: 'none',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        textTransform: 'none',
+                        padding: '6px 12px',
+                        '&:hover': {
+                          backgroundColor: '#d97706',
                         },
-                        '&.Mui-expanded': {
-                          margin: '16px 0',
-                        },
-                        '& .MuiAccordionSummary-root':{
-                          minHeight:"50px",
-                          // borderBottom: (theme) => `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#9ca3af'}`,
-                          background: "transparent",
-                          "& .MuiTypography-root":{
-                            fontSize: "18px",
-                            color: (theme) => theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
-                          }
-                        },
-                        '& .MuiAccordionSummary-content':{
-                          margin: '0',
-                        }
+                        transition: 'all 0.2s ease',
                       }}
                     >
-                      <AccordionSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        sx={(theme) => ({
-                          "@media (max-width: 768px)":{
-                            minHeight: "50px",
+                      Apply Notice
+                    </Button>}
+
+                    {localTenant.status === 'notice_serving' && localTenant.notice && 
+                    <Button
+                      variant="contained"
+                      startIcon={<PersonOffIcon />}
+                      onClick={() => handleCompleteEviction()}
+                      sx={{
+                        backgroundColor: '#ef4444',
+                        boxShadow: 'none',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        textTransform: 'none',
+                        padding: '6px 12px',
+                        '&:hover': {
+                          backgroundColor: '#dc2626',
+                        },
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      Complete Eviction
+                    </Button>}
+
+                    {localTenant.status === 'onboarded' && 
+                    <Button
+                      variant="contained"
+                      startIcon={<PersonOffIcon />}
+                      onClick={handleEvictTenant}
+                      disabled={evictTenantMutation.isPending}
+                      sx={{
+                        backgroundColor: '#dc2626',
+                        boxShadow: 'none',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        textTransform: 'none',
+                        padding: '6px 12px',
+                        '&:hover': {
+                          backgroundColor: '#b91c1c',
+                        },
+                        '&:disabled': {
+                          backgroundColor: '#9ca3af',
+                          color: '#ffffff',
+                        },
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {evictTenantMutation.isPending ? 'Evicting...' : 'Evict Tenant'}
+                    </Button>}
+                  </div>
+
+                  {/* Secondary Actions - Management */}
+                  <div className="flex flex-wrap gap-3">
+                    {localTenant.status !== 'evicted' && 
+                    <Button
+                      variant="outlined"
+                      startIcon={<EditIcon />}
+                      onClick={() => router.push(`/dashboard/tenants/${tenantId}/edit`)}
+                      sx={{
+                        borderColor: '#6b7280',
+                        color: '#6b7280',
+                        '&:hover': {
+                          borderColor: '#4b5563',
+                          backgroundColor: 'rgba(107, 114, 128, 0.04)',
+                        },
+                        borderRadius: '12px',
+                        textTransform: 'none',
+                        fontWeight: 500,
+                      }}
+                    >
+                      Edit Tenant
+                    </Button>}
+
+                    {localTenant.status !== 'evicted' && 
+                    <Button
+                      variant="outlined"
+                      startIcon={<HomeIcon />}
+                      onClick={handleMoveTenant}
+                      disabled={moveTenantMutation.isPending}
+                      sx={{
+                        borderColor: '#3b82f6',
+                        color: '#3b82f6',
+                        '&:hover': {
+                          borderColor: '#2563eb',
+                          backgroundColor: 'rgba(59, 130, 246, 0.04)',
+                        },
+                        borderRadius: '12px',
+                        textTransform: 'none',
+                        fontWeight: 500,
+                        '&:disabled': {
+                          opacity: 0.6,
+                          color: '#3b82f6',
+                          borderColor: '#3b82f6',
+                        },
+                      }}
+                    >
+                      {moveTenantMutation.isPending ? 'Moving...' : 'Move Tenant'}
+                    </Button>}
+
+                    <Button
+                      variant="outlined"
+                      startIcon={<DeleteIcon />}
+                      onClick={handleDeleteTenant}
+                      sx={{
+                        borderColor: '#ef4444',
+                        color: '#ef4444',
+                        '&:hover': {
+                          borderColor: '#dc2626',
+                          backgroundColor: 'rgba(239, 68, 68, 0.04)',
+                        },
+                        borderRadius: '12px',
+                        textTransform: 'none',
+                        fontWeight: 500,
+                        padding: { xs: '6px 12px', md: '6px 12px' },
+                      }}
+                    >
+                      Delete Tenant
+                    </Button>
+                  </div>
+
+                  {/* Utility Actions */}
+                  <div className="flex flex-wrap gap-3">
+                    {localTenant.status !== 'evicted' && 
+                    <Button
+                      variant="outlined"
+                      onClick={() => setShowOnboardingHistory(!showOnboardingHistory)}
+                      sx={{
+                        borderColor: '#10b981',
+                        color: '#10b981',
+                        '&:hover': {
+                          borderColor: '#059669',
+                          backgroundColor: 'rgba(16, 185, 129, 0.04)',
+                        },
+                        borderRadius: '12px',
+                        textTransform: 'none',
+                        fontWeight: 500,
+                      }}
+                    >
+                      {showOnboardingHistory ? 'Hide Details' : 'Show More Details'}
+                    </Button>}
+                  </div>
+                </div>
+              </div>
+                        
+              {/* Show More Button for Onboarding Payment History */}
+              {localTenant.onboardingPayments && localTenant.onboardingPayments.length > 0 && (
+                  <div>
+                    {/* Onboarding Payment History Accordion */}
+                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                      showOnboardingHistory 
+                        ? 'max-h-[1000px] opacity-100 mt-4' 
+                        : 'max-h-0 opacity-0'
+                    }`}>
+                      <Accordion 
+                        defaultExpanded
+                        sx={{ 
+                          boxShadow: 'none',
+                          backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#1f2937' : '#F5F5F5',
+                          '&:before': {
+                            display: 'none',
+                          },
+                          '&.Mui-expanded': {
+                            margin: '16px 0',
+                          },
+                          '& .MuiAccordionSummary-root':{
+                            minHeight:"50px",
+                            // borderBottom: (theme) => `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#9ca3af'}`,
+                            background: "transparent",
                             "& .MuiTypography-root":{
-                              fontSize: "16px !important",
+                              fontSize: "18px",
+                              color: (theme) => theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
                             }
                           },
-                          
-                          backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#f8fafc',
-                          borderRadius: '12px',
-                          '&.Mui-expanded': {
-                            borderBottomLeftRadius: 0,
-                            borderBottomRightRadius: 0,
+                          '& .MuiAccordionSummary-content':{
+                            margin: '0',
+                          }
+                        }}
+                      >
+                        <AccordionSummary
+                          expandIcon={<ExpandMoreIcon />}
+                          sx={(theme) => ({
                             "@media (max-width: 768px)":{
                               minHeight: "50px",
-                              "& .MuiAccordionSummary-content":{
-                                margin: "0",
-                              },
                               "& .MuiTypography-root":{
                                 fontSize: "16px !important",
                               }
                             },
-                          },
-                          '&:hover': {
-                            backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f1f5f9',
-                          },
-                        })}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Typography sx={(theme) => ({ 
-                            color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937', 
-                            fontSize: "18px"
-                          })}>
-                            Onboarding Payment History
-                          </Typography>
-                        </div>
-                      </AccordionSummary>
-                      <AccordionDetails sx={{ padding: '16px,', paddingTop: '0px'  }}>
-                        <div className="space-y-2">
-                          {localTenant.onboardingPayments.map((payment: any, index: number) => (
-                            <div 
-                              key={payment._id || index}
-                              className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
-                            >
-                              <div className="flex md:flex-row flex-col md:items-center md:justify-between justify-start mb-3">
-                                <div className="flex items-center gap-3">
-                                  <Typography variant="subtitle1" sx={(theme) => ({ 
-                                    fontWeight: 600, 
-                                    color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937'
-                                  })}>
-                                    {payment.paymentType === 'SECURITY_DEPOSIT' ? 'Security Deposit' : 'Onboarding Rent'}
-                                  </Typography>
-                                  <Chip 
-                                    label={payment.isSuccessful ? 'Successful' : payment.isPending ? 'Pending' : 'Failed'}
-                                    size="small"
-                                    sx={{
-                                      backgroundColor: payment.isSuccessful ? '#10b981' : payment.isPending ? '#f59e0b' : '#ef4444',
-                                      color: 'white',
-                                      fontWeight: 500,
-                                      fontSize: '12px',
-                                    }}
-                                  />
+                            
+                            backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#f8fafc',
+                            borderRadius: '12px',
+                            '&.Mui-expanded': {
+                              borderBottomLeftRadius: 0,
+                              borderBottomRightRadius: 0,
+                              "@media (max-width: 768px)":{
+                                minHeight: "50px",
+                                "& .MuiAccordionSummary-content":{
+                                  margin: "0",
+                                },
+                                "& .MuiTypography-root":{
+                                  fontSize: "16px !important",
+                                }
+                              },
+                            },
+                            '&:hover': {
+                              backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#f1f5f9',
+                            },
+                          })}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Typography sx={(theme) => ({ 
+                              color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937', 
+                              fontSize: "18px"
+                            })}>
+                              Onboarding Payment History
+                            </Typography>
+                          </div>
+                        </AccordionSummary>
+                        <AccordionDetails sx={{ padding: '16px,', paddingTop: '0px'  }}>
+                          <div className="space-y-2">
+                            {localTenant.onboardingPayments.map((payment: any, index: number) => (
+                              <div 
+                                key={payment._id || index}
+                                className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
+                              >
+                                <div className="flex md:flex-row flex-col md:items-center md:justify-between justify-start mb-3">
+                                  <div className="flex items-center gap-3">
+                                    <Typography variant="subtitle1" sx={(theme) => ({ 
+                                      fontWeight: 600, 
+                                      color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937'
+                                    })}>
+                                      {payment.paymentType === 'SECURITY_DEPOSIT' ? 'Security Deposit' : 'Onboarding Rent'}
+                                    </Typography>
+                                    <Chip 
+                                      label={payment.isSuccessful ? 'Successful' : payment.isPending ? 'Pending' : 'Failed'}
+                                      size="small"
+                                      sx={{
+                                        backgroundColor: payment.isSuccessful ? '#10b981' : payment.isPending ? '#f59e0b' : '#ef4444',
+                                        color: 'white',
+                                        fontWeight: 500,
+                                        fontSize: '12px',
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                  {editingPayment?._id === payment._id ? (
+                                    <div className="flex items-center gap-2">
+                                      <Typography variant="h6" sx={(theme) => ({ 
+                                        fontWeight: 700, 
+                                        color: theme.palette.mode === 'dark' ? '#10b981' : '#059669'
+                                      })}>
+                                        ₹{payment.amount}
+                                      </Typography>
+                                      <IconButton
+                                        size="small"
+                                        sx={{
+                                          color: '#6b7280',
+                                          '&:hover': {
+                                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                            color: '#3b82f6',
+                                          }
+                                        }}
+                                        onClick={() => handleEditPayment(payment)}
+                                      >
+                                        <EditIcon />
+                                      </IconButton>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <Typography variant="h6" sx={(theme) => ({ 
+                                        fontWeight: 700, 
+                                        color: theme.palette.mode === 'dark' ? '#10b981' : '#059669'
+                                      })}>
+                                        ₹{payment.amount}
+                                      </Typography>
+                                      <IconButton
+                                        size="small"
+                                        sx={{
+                                          color: '#6b7280',
+                                          '&:hover': {
+                                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                            color: '#3b82f6',
+                                          }
+                                        }}
+                                        onClick={() => handleEditPayment(payment)}
+                                      >
+                                        <EditIcon />
+                                      </IconButton>
+                                    </>
+                                  )}
                                 </div>
-                                <div className="flex items-center gap-2">
-                                 {editingPayment?._id === payment._id ? (
-                                   <div className="flex items-center gap-2">
-                                     <Typography variant="h6" sx={(theme) => ({ 
-                                       fontWeight: 700, 
-                                       color: theme.palette.mode === 'dark' ? '#10b981' : '#059669'
-                                     })}>
-                                       ₹{payment.amount}
-                                     </Typography>
-                                     <IconButton
-                                       size="small"
-                                       sx={{
-                                         color: '#6b7280',
-                                         '&:hover': {
-                                           backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                           color: '#3b82f6',
-                                         }
-                                       }}
-                                       onClick={() => handleEditPayment(payment)}
-                                     >
-                                       <EditIcon />
-                                     </IconButton>
-                                   </div>
-                                 ) : (
-                                   <>
-                                     <Typography variant="h6" sx={(theme) => ({ 
-                                       fontWeight: 700, 
-                                       color: theme.palette.mode === 'dark' ? '#10b981' : '#059669'
-                                     })}>
-                                       ₹{payment.amount}
-                                     </Typography>
-                                     <IconButton
-                                       size="small"
-                                       sx={{
-                                         color: '#6b7280',
-                                         '&:hover': {
-                                           backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                           color: '#3b82f6',
-                                         }
-                                       }}
-                                       onClick={() => handleEditPayment(payment)}
-                                     >
-                                       <EditIcon />
-                                     </IconButton>
-                                   </>
-                                 )}
-                               </div>
+                                </div>
+                                
+                                  <div className="grid grid-cols-1 md:flex md:gap-4 gap-2 text-sm items-center">
+                                  <div className="flex flex-row items-center gap-2">
+                                    <Typography variant="body2" sx={(theme) => ({ 
+                                      color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280', 
+                                      fontWeight: 500
+                                    })}>
+                                      Payment Method
+                                    </Typography>
+                                    <Typography sx={(theme) => ({ 
+                                      color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937', 
+                                      fontWeight: 600,
+                                      fontSize: '14px'
+                                    })}>
+                                      {payment.method.replace('_', ' ')}
+                                    </Typography>
+                                  </div>
+                                  {/*  vertical line */}
+                                  <div className="hidden md:block h-4 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
+                                  <div className="flex flex-row items-center gap-2">
+                                    <Typography variant="body2" sx={(theme) => ({ 
+                                      color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280', 
+                                      fontWeight: 500
+                                    })}>
+                                      Payment Date
+                                    </Typography>
+                                    <Typography sx={(theme) => ({ 
+                                      color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937', 
+                                      fontWeight: 600,
+                                      fontSize: '14px'
+                                    })}>
+                                      {formatDate(payment.paidAt)}
+                                    </Typography>
+                                  </div>
+                                </div>
                               </div>
-                              
-                                <div className="grid grid-cols-1 md:flex md:gap-4 gap-2 text-sm items-center">
-                                <div className="flex flex-row items-center gap-2">
-                                  <Typography variant="body2" sx={(theme) => ({ 
-                                    color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280', 
-                                    fontWeight: 500
-                                  })}>
-                                    Payment Method
-                                  </Typography>
-                                  <Typography sx={(theme) => ({ 
-                                    color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937', 
-                                    fontWeight: 600,
-                                    fontSize: '14px'
-                                  })}>
-                                    {payment.method.replace('_', ' ')}
-                                  </Typography>
-                                </div>
-                                {/*  vertical line */}
-                                <div className="hidden md:block h-4 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
-                                <div className="flex flex-row items-center gap-2">
-                                  <Typography variant="body2" sx={(theme) => ({ 
-                                    color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280', 
-                                    fontWeight: 500
-                                  })}>
-                                    Payment Date
-                                  </Typography>
-                                  <Typography sx={(theme) => ({ 
-                                    color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937', 
-                                    fontWeight: 600,
-                                    fontSize: '14px'
-                                  })}>
-                                    {formatDate(payment.paidAt)}
-                                  </Typography>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </AccordionDetails>
-                    </Accordion>
+                            ))}
+                          </div>
+                        </AccordionDetails>
+                      </Accordion>
+                    </div>
                   </div>
-                </div>
-              )}
-          
-          </div>
-        </div>
-
-        {/* Tabs for Details and Rent History */}
-        <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
-          <div className="p-0">
-            <div className="border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-center md:justify-start md:px-6 px-2">
-                <button
-                  onClick={() => setActiveTab('rent')}
-                  className={`md:px-4 px-2 py-3 text-sm font-medium border-b-2 transition-colors duration-200 cursor-pointer ${activeTab === 'rent'
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                    }`}
-                >
-                  <span className="flex items-center">
-                    Pending Rents
-                    {localTenant.pendingRents?.count && localTenant.pendingRents.count > 0 && (
-                      <span className="ml-2 bg-blue-500 text-white text-xs rounded-full px-2 py-1">
-                        {localTenant.pendingRents.count}
-                      </span>
-                    )}
-                  </span>
-                </button>
-                {/* completed rents */}
-                <button
-                  onClick={() => setActiveTab('completed')}
-                  className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors duration-200 cursor-pointer ${activeTab === 'completed'
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                    }`}
-                >
-                  Completed Rents
-                </button>
-              </div>
+                )}
+            
             </div>
-
-            {activeTab === "rent" && (
-              <RentHistoryTable
-                records={localTenant.pendingRents?.pendingRentRecords || []}
-                emptyMessage="No Rent History Found"
-                showUnits={true}
-              />
-            )}
-
-            {activeTab === "completed" && (
-              <RentHistoryTable
-                records={localTenant.recentPayments || []}
-                emptyMessage="No Completed Rents Found"
-                showUnits={false}
-              />
-            )}
-
           </div>
-        </div>
-      </main>
 
-      {/* Notice Form */}
-      <NoticeForm
-        isOpen={showNoticeForm}
-        onClose={() => setShowNoticeForm(false)}
-        onSubmitCallback={handleNoticeSubmit}
-        tenantName={localTenant?.tenantName || ''}
-        roomData={`Room ${localTenant?.room?.roomNo || ''}`}
-        cycleEndDate={localTenant?.currentCycle?.endDate || ''}
-        monthlyRent={localTenant?.monthlyRent || 0}
-        tenantId={localTenant?._id || ''}
-      />
-
-      {/* Edit Payment Dialog */}
-      <Dialog 
-        open={showEditDialog} 
-        onClose={() => setShowEditDialog(false)}
-        maxWidth="sm"
-        fullWidth
-        sx={{
-          '& .MuiDialog-paper': {
-            margin: { xs: '16px', sm: '32px' },
-            width: { xs: 'calc(100% - 32px)', sm: '100%' },
-            maxHeight: { xs: 'calc(100% - 32px)', sm: '90vh' },
-          }
-        }}
-      >
-        <DialogTitle sx={(theme) => ({
-          color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
-          backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#f8fafc',
-          borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
-          padding: { xs: '12px 16px', sm: '16px' },
-          fontSize: { xs: '18px', sm: '20px' },
-          fontWeight: 600
-        })}>
-          Edit Payment Amount
-        </DialogTitle>
-        <DialogContent sx={(theme) => ({
-          backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
-          padding: { xs: '12px 16px', sm: '16px' }
-        })}>
-          {editingPayment && (
-            <div className="space-y-3 md:space-y-4 md:mt-0">
-              {/* Payment Details */}
-              <div className="grid gap-3 mt-2">
-                {/* <Typography sx={(theme) => ({
-                  color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
-                  fontWeight: 600,
-                  fontSize: { xs: '14px', sm: '16px' }
-                })}>
-                  Payment Details
-                </Typography> */}
-                
-                <div className="grid grid-cols-2 gap-2 md:gap-3">
-                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 py-1">
-                    <Typography variant="body2" sx={(theme) => ({
-                      color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
-                      fontWeight: 500,
-                      fontSize: { xs: '12px', sm: '14px' }
-                    })}>
-                      Payment Type:
-                    </Typography>
-                    <Typography sx={(theme) => ({
-                      color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
-                      fontWeight: 600,
-                      fontSize: { xs: '13px', sm: '14px' }
-                    })}>
-                      {editingPayment.paymentType === 'SECURITY_DEPOSIT' ? 'Security Deposit' : 'Onboarding Rent'}
-                    </Typography>
-                  </div>
-                  
-                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 py-1">
-                    <Typography variant="body2" sx={(theme) => ({
-                      color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
-                      fontWeight: 500,
-                      fontSize: { xs: '12px', sm: '14px' }
-                    })}>
-                      Payment Method:
-                    </Typography>
-                    <Typography variant="body1" sx={(theme) => ({
-                      color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
-                      fontWeight: 600,
-                      fontSize: { xs: '13px', sm: '14px' }
-                    })}>
-                      {editingPayment.method.replace('_', ' ')}
-                    </Typography>
-                  </div>
-                  
-                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 py-1">
-                    <Typography variant="body2" sx={(theme) => ({
-                      color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
-                      fontWeight: 500,
-                      fontSize: { xs: '12px', sm: '14px' }
-                    })}>
-                      Payment Date:
-                    </Typography>
-                    <Typography variant="body1" sx={(theme) => ({
-                      color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
-                      fontWeight: 600,
-                      fontSize: { xs: '13px', sm: '14px' }
-                    })}>
-                      {formatDate(editingPayment.paidAt)}
-                    </Typography>
-                  </div>
-                  
-                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 py-1">
-                    <Typography variant="body2" sx={(theme) => ({
-                      color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
-                      fontWeight: 500,
-                      fontSize: { xs: '12px', sm: '14px' }
-                    })}>
-                      Current Amount:
-                    </Typography>
-                    <Typography variant="body1" sx={(theme) => ({
-                      color: theme.palette.mode === 'dark' ? '#10b981' : '#059669',
-                      fontWeight: 700,
-                      fontSize: { xs: '14px', sm: '15px' }
-                    })}>
-                      ₹{editingPayment.amount}
-                    </Typography>
-                  </div>
+          {/* Tabs for Details and Rent History */}
+          <div className={LAYOUT_CLASSES.CARD_CONTAINER}>
+            <div className="p-0">
+              <div className="border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-center md:justify-start md:px-6 px-2">
+                  <button
+                    onClick={() => setActiveTab('rent')}
+                    className={`md:px-4 px-2 py-3 text-sm font-medium border-b-2 transition-colors duration-200 cursor-pointer ${activeTab === 'rent'
+                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                      }`}
+                  >
+                    <span className="flex items-center">
+                      Pending Rents
+                      {localTenant.pendingRents?.count && localTenant.pendingRents.count > 0 ? (
+                        <span className="ml-2 bg-blue-500 text-white text-xs rounded-full px-2 py-1">
+                          {localTenant.pendingRents.count}
+                        </span>
+                      ) : null}
+                    </span>
+                  </button>
+                  {/* completed rents */}
+                  <button
+                    onClick={() => setActiveTab('completed')}
+                    className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors duration-200 cursor-pointer ${activeTab === 'completed'
+                        ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                      }`}
+                  >
+                    Completed Rents
+                  </button>
                 </div>
               </div>
-              
-              {/* Amount Input */}
-              <div className="grid gap-2">
-                <Typography variant="body2" sx={(theme) => ({
-                  color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
-                  fontWeight: 600,
-                  fontSize: { xs: '14px', sm: '16px' }
-                })}>
-                  New Amount
-                </Typography>
-                <TextField
-                  type="number"
-                  fullWidth
-                  size="medium"
-                  value={editAmount}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    // Only allow positive numbers
-                    if (value === '' || (parseFloat(value) >= 0 && /^\d*\.?\d*$/.test(value))) {
-                      setEditAmount(value);
-                    }
-                  }}
-                  onKeyPress={(e) => {
-                    // Allow only numbers, decimal point, and backspace
-                    if (!/[0-9.]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete') {
-                      e.preventDefault();
-                    }
-                    // Prevent multiple decimal points
-                    if (e.key === '.' && editAmount.includes('.')) {
-                      e.preventDefault();
-                    }
-                  }}
-                  sx={{
-                    '& .MuiInputBase-root': {
-                      fontSize: { xs: '1rem', sm: '1.125rem' },
-                      fontWeight: 600,
-                    },
-                    "& .MuiInputBase-input": {
-                      padding: { xs: '10px 12px', sm: '12px 14px' },
-                    },
-                    '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
-                      display: 'none',
-                    },
-                    '& input[type=number]': {
-                      MozAppearance: 'textfield',
-                    }
-                  }}
-                  inputProps={{
-                    style: { textAlign: 'center' },
-                    min: 0,
-                    step: 0.01,
-                    placeholder: 'Enter new amount'
-                  }}
+
+              {activeTab === "rent" && (
+                <RentHistoryTable
+                  records={localTenant.pendingRents?.pendingRentRecords || []}
+                  emptyMessage="No Rent History Found"
+                  showUnits={true}
                 />
-              </div>
-            </div>
-          )}
-        </DialogContent>
-        <DialogActions sx={(theme) => ({
-          backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#f8fafc',
-          borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
-          padding: { xs: '12px 16px', sm: '16px 24px' },
-          gap: { xs: '8px', sm: '12px' },
-          display: "flex",
-        })}>
-          <Button
-            onClick={() => setShowEditDialog(false)}
-            disabled={updatePaymentMutation.isPending}
-            sx={(theme) => ({
-              color: theme.palette.mode === 'dark' ? '#f9fafb' : '#374151',
-              backgroundColor: 'transparent',
-              border: `1px solid ${theme.palette.mode === 'dark' ? '#4b5563' : '#d1d5db'}`,
-              '&:hover': {
-                backgroundColor: theme.palette.mode === 'dark' ? 'rgba(75, 85, 99, 0.1)' : 'rgba(107, 114, 128, 0.04)',
-                borderColor: theme.palette.mode === 'dark' ? '#6b7280' : '#9ca3af',
-              },
-              '&:disabled': {
-                opacity: 0.5,
-                color: theme.palette.mode === 'dark' ? '#6b7280' : '#9ca3af',
-                borderColor: theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb',
-              },
-              textTransform: 'none',
-              fontWeight: 500,
-              fontSize: { xs: '13px', sm: '14px' },
-              padding: { xs: '8px 16px', sm: '10px 20px' },
-              borderRadius: '8px',
-              transition: 'all 0.2s ease',
-              width: { xs: '100%', sm: 'auto' },
-            })}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSavePaymentEdit}
-            disabled={updatePaymentMutation.isPending}
-            variant="contained"
-            sx={(theme) => ({
-              backgroundColor: theme.palette.mode === 'dark' ? '#10b981' : '#059669',
-              color: '#ffffff',
-              border: 'none',
-              '&:hover': {
-                backgroundColor: theme.palette.mode === 'dark' ? '#059669' : '#047857',
-                boxShadow: theme.palette.mode === 'dark' 
-                  ? '0 4px 12px rgba(16, 185, 129, 0.3)' 
-                  : '0 4px 12px rgba(5, 150, 105, 0.3)',
-              },
-              '&:disabled': {
-                backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#9ca3af',
-                color: theme.palette.mode === 'dark' ? '#6b7280' : '#ffffff',
-                boxShadow: 'none',
-              },
-              textTransform: 'none',
-              fontWeight: 500,
-              fontSize: { xs: '13px', sm: '14px' },
-              padding: { xs: '8px 16px', sm: '10px 20px' },
-              borderRadius: '8px',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              width: { xs: '100%', sm: 'auto' },
-            })}
-          >
-            {updatePaymentMutation.isPending ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Saving...
-              </>
-            ) : (
-              'Save Changes'
-            )}
-          </Button>
-        </DialogActions>
-      </Dialog>
+              )}
 
-      {/* Delete Tenant Confirmation Dialog */}
-      <DeleteTenantDialog
-        open={deleteDialogOpen}
-        onClose={handleCancelDelete}
-        onConfirm={handleConfirmDelete}
-        tenant={tenant}
-        isDeleting={markTenantAsDeletedMutation.isPending}
-      />
+              {activeTab === "completed" && (
+                <RentHistoryTable
+                  records={localTenant.recentPayments || []}
+                  emptyMessage="No Completed Rents Found"
+                  showUnits={false}
+                  showDueDate={false}
+                />
+              )}
+
+            </div>
+          </div>
+        </main>
+
+        {/* Notice Form */}
+        <NoticeForm
+          isOpen={showNoticeForm}
+          onClose={() => setShowNoticeForm(false)}
+          onSubmitCallback={handleNoticeSubmit}
+          tenantName={localTenant?.tenantName || ''}
+          roomData={`Room ${localTenant?.room?.roomNo || ''}`}
+          cycleEndDate={localTenant?.currentCycle?.endDate || ''}
+          monthlyRent={localTenant?.monthlyRent || 0}
+          tenantId={localTenant?._id || ''}
+        />
+
+        {/* Edit Payment Dialog */}
+        <Dialog 
+          open={showEditDialog} 
+          onClose={() => setShowEditDialog(false)}
+          maxWidth="sm"
+          fullWidth
+          sx={{
+            '& .MuiDialog-paper': {
+              margin: { xs: '16px', sm: '32px' },
+              width: { xs: 'calc(100% - 32px)', sm: '100%' },
+              maxHeight: { xs: 'calc(100% - 32px)', sm: '90vh' },
+            }
+          }}
+        >
+          <DialogTitle sx={(theme) => ({
+            color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
+            backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#f8fafc',
+            borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+            padding: { xs: '12px 16px', sm: '16px' },
+            fontSize: { xs: '18px', sm: '20px' },
+            fontWeight: 600
+          })}>
+            Edit Payment Amount
+          </DialogTitle>
+          <DialogContent sx={(theme) => ({
+            backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
+            padding: { xs: '12px 16px', sm: '16px' }
+          })}>
+            {editingPayment && (
+              <div className="space-y-3 md:space-y-4 md:mt-0">
+                {/* Payment Details */}
+                <div className="grid gap-3 mt-2">
+                  {/* <Typography sx={(theme) => ({
+                    color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
+                    fontWeight: 600,
+                    fontSize: { xs: '14px', sm: '16px' }
+                  })}>
+                    Payment Details
+                  </Typography> */}
+                  
+                  <div className="grid grid-cols-2 gap-2 md:gap-3">
+                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 py-1">
+                      <Typography variant="body2" sx={(theme) => ({
+                        color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
+                        fontWeight: 500,
+                        fontSize: { xs: '12px', sm: '14px' }
+                      })}>
+                        Payment Type:
+                      </Typography>
+                      <Typography sx={(theme) => ({
+                        color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
+                        fontWeight: 600,
+                        fontSize: { xs: '13px', sm: '14px' }
+                      })}>
+                        {editingPayment.paymentType === 'SECURITY_DEPOSIT' ? 'Security Deposit' : 'Onboarding Rent'}
+                      </Typography>
+                    </div>
+                    
+                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 py-1">
+                      <Typography variant="body2" sx={(theme) => ({
+                        color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
+                        fontWeight: 500,
+                        fontSize: { xs: '12px', sm: '14px' }
+                      })}>
+                        Payment Method:
+                      </Typography>
+                      <Typography variant="body1" sx={(theme) => ({
+                        color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
+                        fontWeight: 600,
+                        fontSize: { xs: '13px', sm: '14px' }
+                      })}>
+                        {editingPayment.method.replace('_', ' ')}
+                      </Typography>
+                    </div>
+                    
+                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 py-1">
+                      <Typography variant="body2" sx={(theme) => ({
+                        color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
+                        fontWeight: 500,
+                        fontSize: { xs: '12px', sm: '14px' }
+                      })}>
+                        Payment Date:
+                      </Typography>
+                      <Typography variant="body1" sx={(theme) => ({
+                        color: theme.palette.mode === 'dark' ? '#f9fafb' : '#1f2937',
+                        fontWeight: 600,
+                        fontSize: { xs: '13px', sm: '14px' }
+                      })}>
+                        {formatDate(editingPayment.paidAt)}
+                      </Typography>
+                    </div>
+                    
+                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 py-1">
+                      <Typography variant="body2" sx={(theme) => ({
+                        color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
+                        fontWeight: 500,
+                        fontSize: { xs: '12px', sm: '14px' }
+                      })}>
+                        Current Amount:
+                      </Typography>
+                      <Typography variant="body1" sx={(theme) => ({
+                        color: theme.palette.mode === 'dark' ? '#10b981' : '#059669',
+                        fontWeight: 700,
+                        fontSize: { xs: '14px', sm: '15px' }
+                      })}>
+                        ₹{editingPayment.amount}
+                      </Typography>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Amount Input */}
+                <div className="grid gap-2">
+                  <Typography variant="body2" sx={(theme) => ({
+                    color: theme.palette.mode === 'dark' ? '#9ca3af' : '#6b7280',
+                    fontWeight: 600,
+                    fontSize: { xs: '14px', sm: '16px' }
+                  })}>
+                    New Amount
+                  </Typography>
+                  <TextField
+                    type="number"
+                    fullWidth
+                    size="medium"
+                    value={editAmount}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Only allow positive numbers
+                      if (value === '' || (parseFloat(value) >= 0 && /^\d*\.?\d*$/.test(value))) {
+                        setEditAmount(value);
+                      }
+                    }}
+                    onKeyPress={(e) => {
+                      // Allow only numbers, decimal point, and backspace
+                      if (!/[0-9.]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete') {
+                        e.preventDefault();
+                      }
+                      // Prevent multiple decimal points
+                      if (e.key === '.' && editAmount.includes('.')) {
+                        e.preventDefault();
+                      }
+                    }}
+                    sx={{
+                      '& .MuiInputBase-root': {
+                        fontSize: { xs: '1rem', sm: '1.125rem' },
+                        fontWeight: 600,
+                      },
+                      "& .MuiInputBase-input": {
+                        padding: { xs: '10px 12px', sm: '12px 14px' },
+                      },
+                      '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button': {
+                        display: 'none',
+                      },
+                      '& input[type=number]': {
+                        MozAppearance: 'textfield',
+                      }
+                    }}
+                    inputProps={{
+                      style: { textAlign: 'center' },
+                      min: 0,
+                      step: 0.01,
+                      placeholder: 'Enter new amount'
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </DialogContent>
+          <DialogActions sx={(theme) => ({
+            backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#f8fafc',
+            borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
+            padding: { xs: '12px 16px', sm: '16px 24px' },
+            gap: { xs: '8px', sm: '12px' },
+            display: "flex",
+          })}>
+            <Button
+              onClick={() => setShowEditDialog(false)}
+              disabled={updatePaymentMutation.isPending}
+              sx={(theme) => ({
+                color: theme.palette.mode === 'dark' ? '#f9fafb' : '#374151',
+                backgroundColor: 'transparent',
+                border: `1px solid ${theme.palette.mode === 'dark' ? '#4b5563' : '#d1d5db'}`,
+                '&:hover': {
+                  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(75, 85, 99, 0.1)' : 'rgba(107, 114, 128, 0.04)',
+                  borderColor: theme.palette.mode === 'dark' ? '#6b7280' : '#9ca3af',
+                },
+                '&:disabled': {
+                  opacity: 0.5,
+                  color: theme.palette.mode === 'dark' ? '#6b7280' : '#9ca3af',
+                  borderColor: theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb',
+                },
+                textTransform: 'none',
+                fontWeight: 500,
+                fontSize: { xs: '13px', sm: '14px' },
+                padding: { xs: '8px 16px', sm: '10px 20px' },
+                borderRadius: '8px',
+                transition: 'all 0.2s ease',
+                width: { xs: '100%', sm: 'auto' },
+              })}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSavePaymentEdit}
+              disabled={updatePaymentMutation.isPending}
+              variant="contained"
+              sx={(theme) => ({
+                backgroundColor: theme.palette.mode === 'dark' ? '#10b981' : '#059669',
+                color: '#ffffff',
+                border: 'none',
+                '&:hover': {
+                  backgroundColor: theme.palette.mode === 'dark' ? '#059669' : '#047857',
+                  boxShadow: theme.palette.mode === 'dark' 
+                    ? '0 4px 12px rgba(16, 185, 129, 0.3)' 
+                    : '0 4px 12px rgba(5, 150, 105, 0.3)',
+                },
+                '&:disabled': {
+                  backgroundColor: theme.palette.mode === 'dark' ? '#374151' : '#9ca3af',
+                  color: theme.palette.mode === 'dark' ? '#6b7280' : '#ffffff',
+                  boxShadow: 'none',
+                },
+                textTransform: 'none',
+                fontWeight: 500,
+                fontSize: { xs: '13px', sm: '14px' },
+                padding: { xs: '8px 16px', sm: '10px 20px' },
+                borderRadius: '8px',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                width: { xs: '100%', sm: 'auto' },
+              })}
+            >
+              {updatePaymentMutation.isPending ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Delete Tenant Confirmation Dialog */}
+        <DeleteTenantDialog
+          open={deleteDialogOpen}
+          onClose={handleCancelDelete}
+          onConfirm={handleConfirmDelete}
+          tenant={tenant}
+          isDeleting={markTenantAsDeletedMutation.isPending}
+        />
+
+        {/* Eviction Form */}
+        <EvictionForm
+          isOpen={evictionFormOpen}
+          onClose={() => setEvictionFormOpen(false)}
+          onSubmitCallback={handleEvictionSubmit}
+          rentRecord={selectedRentForEviction}
+        />
+
+        {/* Evict Tenant Form */}
+        <EvictTenantForm
+          isOpen={evictTenantFormOpen}
+          onClose={() => setEvictTenantFormOpen(false)}
+          onSubmitCallback={handleEvictTenantSubmit}
+          tenant={localTenant}
+          isSubmitting={evictTenantMutation.isPending}
+        />
+
+        <MoveTenantForm
+          isOpen={moveTenantFormOpen}
+          onClose={() => setMoveTenantFormOpen(false)}
+          onSubmitCallback={handleMoveTenantSubmit}
+          tenant={localTenant}
+          isSubmitting={moveTenantMutation.isPending}
+        />
+      </div>
+      ) : (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="text-red-500 text-6xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Tenant Not Found</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">Tenant details could not be loaded</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

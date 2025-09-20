@@ -151,7 +151,6 @@ function ElectricityReadingContent() {
             }
           }
         });
-        
         // Update local state to show updated status
         setRoomReadings(prev => ({
           ...prev,
@@ -167,8 +166,6 @@ function ElectricityReadingContent() {
         toast.success(successToast.message, successToast.config);
       } catch (error) {
         console.error('Failed to update reading:', error);
-        const errorToast = showErrorToast('Failed to update electricity reading');
-        toast.error(errorToast.message, errorToast.config);
       } finally {
         setRecordingRoomId(null);
       }
@@ -204,8 +201,7 @@ function ElectricityReadingContent() {
         const currentDate = getCurrentDate();
         const today = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
         const recording = room.electricityReadings?.find((reading: any) => reading.readingDate.split('T')[0] === today);
-        if (recording && !recording.isAutoRecorded) {
-          
+        if (recording && !recording.isAutoRecorded) {  
           roomReadingsObj[room._id] = {
             meterReading: recording.meterReading,
             isRecorded: true,
@@ -435,7 +431,7 @@ function ElectricityReadingContent() {
                         isRecorded: false,
                         isEditing: false
                     };
-        
+
                     return (
                         <Card 
                         key={room._id} 
@@ -511,7 +507,7 @@ function ElectricityReadingContent() {
                                     </div>
                                     <div>
                                         <span className="text-gray-600 dark:text-gray-400">Consumption:</span>
-                                        <span className="font-semibold ml-1">{roomReading.recordedData?.consumption || 0} units</span>
+                                        <span className="font-semibold ml-1">{roomReading.recordedData?.consumption.toFixed(2) || 0} units</span>
                                     </div>
                                     <div>
                                         <span className="text-gray-600 dark:text-gray-400">Total Tenants:</span>

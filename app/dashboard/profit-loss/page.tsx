@@ -4,12 +4,14 @@ import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppHeader } from '@/components/AppHeader';
 import { useProfitLossByProperty } from '@/hooks/useProfitLoss';
+import { useCreateAdditionalIncome } from '@/hooks/useAdditionalIncome';
 import { useProperty } from '@/contexts/PropertyContext';
 import {
   LineChart, Line, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
-import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { Select, MenuItem, FormControl, InputLabel, Button } from '@mui/material';
+import AdditionalIncomeForm from '@/components/AdditionalIncomeForm';
 
 const COLORS = {
   income: '#10b981', expenses: '#ef4444', profit: '#3b82f6',
@@ -37,9 +39,21 @@ export default function ProfitLossPage() {
   );
 
   const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
+  const [additionalIncomeFormOpen, setAdditionalIncomeFormOpen] = useState(false);
+
+  const createAdditionalIncomeMutation = useCreateAdditionalIncome();
 
   const navigateToBreakdown = (year: number, month: string) => {
     router.push(`/dashboard/profit-loss/breakdown?year=${year}&month=${month}`);
+  };
+
+  const handleAdditionalIncomeSubmit = async (data: any) => {
+    try {
+      await createAdditionalIncomeMutation.mutateAsync(data);
+      setAdditionalIncomeFormOpen(false);
+    } catch (error) {
+      console.error('Failed to create additional income:', error);
+    }
   };
 
   const filteredData = useMemo(() => {
@@ -104,8 +118,33 @@ export default function ProfitLossPage() {
             </p>
           </div>
           
-          {/* Year Filter */}
-          <div className="flex items-center space-x-3 mt-4 sm:mt-0">
+          {/* Year Filter and Add Income Button */}
+          <div className="flex gap-2 items-center space-x-3 mt-4 sm:mt-0">
+                   
+          <Button
+              onClick={() => setAdditionalIncomeFormOpen(true)}
+              variant="contained"
+              startIcon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+              </svg>}
+              sx={{
+                backgroundColor: '#10b981',
+                color: '#ffffff',
+                '&:hover': {
+                  backgroundColor: '#059669',
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                },
+                textTransform: 'none',
+                fontWeight: 500,
+                fontSize: '0.875rem',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              Add Income
+            </Button>
+
             <FormControl size="small" sx={{ minWidth: 150 }}>
               <InputLabel>Filter by Year</InputLabel>
               <Select
@@ -334,6 +373,13 @@ export default function ProfitLossPage() {
           </div>
         )}
       </div>
+
+      {/* Additional Income Form */}
+      <AdditionalIncomeForm
+        isOpen={additionalIncomeFormOpen}
+        onClose={() => setAdditionalIncomeFormOpen(false)}
+        onSubmitCallback={handleAdditionalIncomeSubmit}
+      />
     </div>
   );
 }

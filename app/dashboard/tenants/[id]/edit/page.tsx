@@ -44,7 +44,7 @@ function TenantEditContent() {
     includeFood: false
   });
 
-  const { data: tenant, isLoading, error: fetchError } = useTenant(tenantId);
+  const { data: tenant, isLoading, error: fetchError } = useTenant(tenantId, selectedProperty?.id || '');
 
   // Populate form data when tenant data is loaded
   React.useEffect(() => {

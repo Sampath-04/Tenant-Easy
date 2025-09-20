@@ -13,6 +13,10 @@ import {
   IconButton,
   Chip,
   Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -22,6 +26,7 @@ import { CircularProgress } from '@mui/material';
 import { useCreateNotice, useUpdateNotice } from '@/hooks/useRentRecords';
 import { getCurrentDate } from '@/lib/utils/formatters';
 import { useDropzone } from 'react-dropzone';
+import { PAYMENT_METHOD_OPTIONS, DEFAULT_PAYMENT_METHOD } from '@/lib/constants/paymentConstants';
 
 interface NoticeFormProps {
   isOpen: boolean;
@@ -45,13 +50,14 @@ export default function NoticeForm({
   monthlyRent,
   tenantId,
   existingNotice,
-}: NoticeFormProps) {
+}: NoticeFormProps) { 
   const [extraDays, setExtraDays] = useState(0);
   const [cost, setCost] = useState(0);
   const [noticeEndDate, setNoticeEndDate] = useState<Date | null>(null);
   const [amount, setAmount] = useState(0);
   const [paidTo, setPaidTo] = useState('');
   const [comments, setComments] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<string>(DEFAULT_PAYMENT_METHOD);
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [paymentProofPreviewUrl, setPaymentProofPreviewUrl] = useState<string | null>(null);
   
@@ -72,8 +78,9 @@ export default function NoticeForm({
       const maxAmount = existingNotice ? (existingNotice.remainingAmount || cost) : cost;
       if (amount > maxAmount) return false;
       
-      // If amount is entered, paidTo is required
+      // If amount is entered, paidTo and paymentMethod are required
       if (!paidTo.trim()) return false;
+      if (!paymentMethod) return false;
     }
 
     return true;
@@ -151,11 +158,16 @@ export default function NoticeForm({
      const cycleEnd = new Date(cycleEndDate);
      const today = getCurrentDate(); // Notice application date
      
+     // Normalize today to midnight to avoid timezone issues
+     today.setHours(0, 0, 0, 0);
+     
     // Calculate default notice end date (30th day from today - notice application date)
     // Counting: Day 1 = today, Day 2 = today+1, ..., Day 30 = today+29
     // Example: If today is Oct 28, then 30th day = Oct 28 + 29 days = Nov 26
-    const defaultNoticeEndDate = new Date(today);
-    defaultNoticeEndDate.setDate(defaultNoticeEndDate.getDate() + 29);
+    const defaultNoticeEndDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 29);
+    
+    // Normalize to midnight to avoid timezone issues
+    defaultNoticeEndDate.setHours(0, 0, 0, 0);
      
      // Set the notice end date if not already set
      if (!noticeEndDate) {
@@ -180,8 +192,14 @@ export default function NoticeForm({
      
      const calculatedExtraDays = calculateExtraDays();
      setExtraDays(calculatedExtraDays);
-     setCost(calculatedExtraDays > 0 ? Math.round((monthlyRent / 30) * calculatedExtraDays) : 0);
-  }, [cycleEndDate, monthlyRent, isOpen, noticeEndDate]);
+     
+     // For existing notices, use the total amount from the notice
+     if (existingNotice) {
+       setCost(existingNotice.totalAmount || 0);
+     } else {
+       setCost(calculatedExtraDays > 0 ? Math.round((monthlyRent / 30) * calculatedExtraDays) : 0);
+     }
+  }, [cycleEndDate, monthlyRent, isOpen, noticeEndDate, existingNotice]);
 
 
   const handleSubmit = async () => {
@@ -210,6 +228,7 @@ export default function NoticeForm({
             extraDaysCost: cost,
             amount: amount,
             paidTo: paidTo.trim() || undefined,
+            paymentMethod: paymentMethod,
             comments: comments.trim() || undefined,
             paymentProof: paymentProof || undefined,
           }
@@ -224,6 +243,7 @@ export default function NoticeForm({
           extraDaysCost: cost,
           amount: amount > 0 ? amount : undefined,
           paidTo: paidTo.trim() || undefined,
+          paymentMethod: paymentMethod,
           comments: comments.trim() || undefined,
           paymentProof: paymentProof || undefined,
         });
@@ -252,8 +272,8 @@ export default function NoticeForm({
   const handleClose = () => {
     if (!isSubmitting) {
         const today = getCurrentDate();
-        const defaultNoticeEndDate = new Date(today);
-        defaultNoticeEndDate.setDate(defaultNoticeEndDate.getDate() + 30);
+        const defaultNoticeEndDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 29);
+        defaultNoticeEndDate.setHours(0, 0, 0, 0);
         setNoticeEndDate(defaultNoticeEndDate);
         setAmount(0);
         setPaidTo('');
@@ -437,39 +457,42 @@ export default function NoticeForm({
            onChange={(e) => setCost(Number(e.target.value))}
            margin="normal"
            variant="outlined"
-           helperText={`Calculated: ₹${Math.round(monthlyRent / 30)} per day`}
+           helperText={existingNotice ? `Total cost: ₹${cost} (Already calculated)` : `Calculated: ₹${Math.round(monthlyRent / 30)} per day`}
+           InputProps={{
+             readOnly: !!existingNotice,
+           }}
          />
 
             {/* Payment History Section for existing notices */}
-        {existingNotice && existingNotice.payments && existingNotice.payments.length > 0 && (
+        {existingNotice && existingNotice.paymentTransactions && existingNotice.paymentTransactions.length > 0 && (
           <Box className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <p className="text-blue-800 dark:text-blue-300 mb-3 font-medium">
               Payment History
             </p>
             <Box className="space-y-3">
-              {existingNotice.payments.map((payment: any, index: number) => (
+              {existingNotice.paymentTransactions.map((payment: any, index: number) => (
                 <Box key={index} className="p-3 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-600">
-                  <div className="flex justify-between items-center text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                     <div>
                       <span className="text-gray-600 dark:text-gray-400">Amount:</span>
-                      <span className="font-medium text-green-600 dark:text-green-400 ml-1">
+                      <span className="font-medium text-green-600 dark:text-green-400 ml-1 block">
                         ₹{payment.amount?.toLocaleString()}
                       </span>
                     </div>
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400">Paid To:</span>
-                      <span className="font-medium ml-1">{payment.paidTo}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Method:</span>
+                      <span className="font-medium ml-1 block">{payment.method}</span>
                     </div>
                     <div>
                       <span className="text-gray-600 dark:text-gray-400">Date:</span>
-                      <span className="font-medium ml-1">
-                        {new Date(payment.paidDate).toLocaleDateString('en-IN')}
+                      <span className="font-medium ml-1 block">
+                        {new Date(payment.paidAt).toLocaleDateString('en-IN')}
                       </span>
                     </div>
-                    {/* <div>
-                      <span className="text-gray-600 dark:text-gray-400">Comments:</span>
-                      <span className="font-medium ml-1">{payment.comments || '-'}</span>
-                    </div> */}
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">Paid To:</span>
+                      <span className="font-medium ml-1 block">{payment.metadata?.paidTo || 'N/A'}</span>
+                    </div>
                   </div>
                 </Box>
               ))}
@@ -509,7 +532,7 @@ export default function NoticeForm({
                  mb: {xs: 1, sm: 3},
                })}
              >
-               {existingNotice ? 'Additional Payment Details (Optional)' : 'Payment Details (Optional)'}
+               {existingNotice ? `Complete Payment (Remaining: ₹${existingNotice.remainingAmount?.toLocaleString()})` : 'Payment Details (Optional)'}
              </Typography>
              <div className="space-y-4">
                  <TextField
@@ -520,7 +543,7 @@ export default function NoticeForm({
                    onChange={(e) => setAmount(Number(e.target.value))}
                    margin="normal"
                    variant="outlined"
-                   helperText={existingNotice ? `Maximum: ₹${existingNotice.remainingAmount || cost}` : `Maximum: ₹${cost}`}
+                   helperText={existingNotice ? `Remaining amount to complete payment: ₹${existingNotice.remainingAmount || cost}` : `Maximum: ₹${cost}`}
                    InputProps={{
                      inputProps: { max: existingNotice ? (existingNotice.remainingAmount || cost) : cost }
                    }}
@@ -535,6 +558,32 @@ export default function NoticeForm({
                    variant="outlined"
                    placeholder="Enter recipient name"
                  />
+
+                 <FormControl fullWidth variant="outlined" margin="normal">
+                   <InputLabel>Payment Method</InputLabel>
+                   <Select
+                     value={paymentMethod}
+                     onChange={(e) => setPaymentMethod(e.target.value)}
+                     label="Payment Method"
+                     sx={(theme) => ({
+                       '& .MuiOutlinedInput-notchedOutline': {
+                         borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
+                       },
+                       '&:hover .MuiOutlinedInput-notchedOutline': {
+                         borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+                       },
+                       '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                         borderColor: theme.palette.mode === 'dark' ? '#3b82f6' : '#2563eb',
+                       },
+                     })}
+                   >
+                     {PAYMENT_METHOD_OPTIONS.map((option) => (
+                       <MenuItem key={option.value} value={option.value}>
+                         {option.label}
+                       </MenuItem>
+                     ))}
+                   </Select>
+                 </FormControl>
 
                  <TextField
                    fullWidth

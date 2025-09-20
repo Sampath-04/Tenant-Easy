@@ -68,8 +68,7 @@ export default function DeleteTenantDialog({
           backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
         })}
       >
-        <Typography 
-          variant="h6" 
+        <Typography  
           sx={(theme) => ({
             fontWeight: 600,
             fontSize: '1.125rem',

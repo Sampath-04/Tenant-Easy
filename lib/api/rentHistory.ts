@@ -267,6 +267,7 @@ export async function createNotice(data: {
   paidTo?: string;
   comments?: string;
   paymentProof?: File;
+  paymentMethod?: string;
 }): Promise<{ success: boolean; message: string }> {
   const formData = new FormData();
   
@@ -282,6 +283,10 @@ export async function createNotice(data: {
   
   if (data.paidTo) {
     formData.append('paidTo', data.paidTo);
+  }
+
+  if (data.paymentMethod) {
+    formData.append('paymentMethod', data.paymentMethod);
   }
   
   if (data.comments) {
@@ -306,6 +311,7 @@ export async function updateNotice(
     amount?: number;
     paidTo?: string;
     comments?: string;
+    paymentMethod?: string;
     paymentProof?: File;
   }
 ): Promise<{ success: boolean; message: string }> {
@@ -323,6 +329,10 @@ export async function updateNotice(
   
   if (data.paidTo) {
     formData.append('paidTo', data.paidTo);
+  }
+  
+  if (data.paymentMethod) {
+    formData.append('paymentMethod', data.paymentMethod);
   }
   
   if (data.comments) {

@@ -159,6 +159,7 @@ interface CreateNoticeData {
   extraDaysCost: number;
   amount?: number;
   paidTo?: string;
+  paymentMethod?: string;
   comments?: string;
   paymentProof?: File;
 }
@@ -219,6 +220,7 @@ interface UpdateNoticeData {
   extraDaysCost: number;
   amount?: number;
   paidTo?: string;
+  paymentMethod?: string;
   comments?: string;
   paymentProof?: File;
 }

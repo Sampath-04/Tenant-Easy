@@ -70,8 +70,8 @@ export async function getTenants({
 /**
  * Get a single tenant by ID
  */
-export async function getTenantById(id: string): Promise<Tenant> {
-  const response = await apiClient.get<{ success: boolean; data: Tenant }>(`/tenants/${id}`);
+export async function getTenantById(id: string, propertyId: string): Promise<Tenant> {
+  const response = await apiClient.get<{ success: boolean; data: Tenant }>(`/tenants/property/${propertyId}/${id}`);
 
   return response.data;
 }
@@ -517,6 +517,34 @@ export async function getTenantAnalysis(propertyId: string): Promise<TenantAnaly
  */
 export async function getTenantAnalysisSummary(propertyId: string): Promise<TenantAnalysisSummary> {
   return apiClient.get<TenantAnalysisSummary>(`/tenants/property/${propertyId}/analysis/summary`);
+}
+
+/**
+ * Evict a tenant
+ */
+export async function evictTenant(
+  tenantId: string,
+  data: {
+    electricityUnit: number;
+    amount: number;
+    comments?: string;
+    tenantQrCode?: File;
+  }
+): Promise<{ success: boolean; message: string }> {
+  const formData = new FormData();
+  
+  formData.append('electricityUnit', data.electricityUnit.toString());
+  formData.append('amount', data.amount.toString());
+  
+  if (data.comments) {
+    formData.append('comments', data.comments);
+  }
+  
+  if (data.tenantQrCode) {
+    formData.append('tenantQrCode', data.tenantQrCode);
+  }
+  
+  return apiClient.post<{ success: boolean; message: string }>(`/tenants/${tenantId}/evict`, formData);
 }
 
 

@@ -11,9 +11,7 @@ import { TenantFilters } from '../../../lib/api/types';
 import { AppHeader } from '../../../components/AppHeader';
 import SearchInput from '../../../components/ui/SearchInput';
 import CustomSelect from '../../../components/ui/CustomSelect';
-import NumberInput from '../../../components/ui/NumberInput';
 import {
-  Box,
   Table,
   TableBody,
   TableCell,
@@ -32,7 +30,6 @@ import {
   Tooltip,
 } from '@mui/material';
 import { ExpandMore, FilterList as FilterIcon } from '@mui/icons-material';
-import DateRangePicker from '../../../components/ui/DateRange';
 import { LAYOUT_CLASSES } from '../../../lib/constants/styles';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -53,7 +50,7 @@ function TenantsContent() {
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   // Filter toggle state
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
 
   // Filter state - Initialize with selected property
   const [filters, setFilters] = useState<TenantFilters>({
@@ -62,10 +59,8 @@ function TenantsContent() {
     room: '',
     search: '',
     isActive: '',
-    rentRange: { min: undefined, max: undefined },
-    checkInDateRange: { from: '', to: '' },
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
+    sortBy: '',
+    sortOrder: '',
   });
 
   // Update property filter when selected property changes
@@ -99,16 +94,8 @@ function TenantsContent() {
       room: searchParams.get("room") || '',
       search: searchParams.get("search") || '',
       isActive: isActiveParam === 'true' ? true : isActiveParam === 'false' ? false : '',
-      rentRange: {
-        min: searchParams.get("rentMin") ? parseInt(searchParams.get("rentMin")!) : undefined,
-        max: searchParams.get("rentMax") ? parseInt(searchParams.get("rentMax")!) : undefined,
-      },
-      checkInDateRange: {
-        from: searchParams.get("checkInFrom") || '',
-        to: searchParams.get("checkInTo") || '',
-      },
-      sortBy: (sortByParam as 'tenantName' | 'checkInDate' | 'monthlyRent' | 'createdAt') || 'createdAt',
-      sortOrder: (sortOrderParam as 'asc' | 'desc') || 'desc',
+      sortBy: (sortByParam as 'tenantName' | 'checkInDate' | 'monthlyRent' | 'room' | 'createdAt') || '',
+      sortOrder: (sortOrderParam as 'asc' | 'desc') || '',
     });
     setCurrentPage(parseInt(searchParams.get("page") || "1"));
     setPageSize(parseInt(searchParams.get("pageSize") || "10"));
@@ -126,13 +113,7 @@ function TenantsContent() {
     // Add filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value && value !== '' && value !== selectedProperty?.id) {
-        if (key === 'rentRange' && typeof value === 'object') {
-          if (value.min !== undefined) params.set("rentMin", value.min.toString());
-          if (value.max !== undefined) params.set("rentMax", value.max.toString());
-        } else if (key === 'checkInDateRange' && typeof value === 'object') {
-          if (value.from) params.set("checkInFrom", value.from);
-          if (value.to) params.set("checkInTo", value.to);
-        } else if (key === 'isActive' && typeof value === 'boolean') {
+        if (key === 'isActive' && typeof value === 'boolean') {
           params.set(key, value.toString());
         } else if (typeof value === 'string') {
           params.set(key, value);
@@ -195,10 +176,8 @@ function TenantsContent() {
       room: '',
       search: '',
       isActive: '',
-      rentRange: { min: undefined, max: undefined },
-      checkInDateRange: { from: '', to: '' },
-      sortBy: 'createdAt',
-      sortOrder: 'desc',
+      sortBy: '',
+      sortOrder: '',
     });
     setCurrentPage(1);
   };
@@ -309,18 +288,18 @@ function TenantsContent() {
           </div>
 
           {/* Filter Controls */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:flex gap-4 md:gap-4 mb-4">
             {/* Search */}
-            <div className="space-y-2 self-end">
+            <div className="space-y-2 self-end md:w-[380px]">
               <SearchInput
                 placeholder="Name, email, or phone..."
                 value={searchTerm}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSearch(e.target.value)}
               />
             </div>
-            <div className='flex flex-row gap-4'>
+            <div className=' grid grid-cols-2 md:flex flex-row gap-4'>
               {/* Status Filter */}
-              <div className="space-y-2 w-[140px]">
+              <div className="space-y-2 md:w-[140px]">
                 <CustomSelect
                   value={filters.status || ''}
                   onChange={(e: any) => handleFilterChange('status', e.target.value)}
@@ -334,7 +313,7 @@ function TenantsContent() {
               </div>
 
               {/* Room Filter */}
-              <div className="space-y-2 w-[180px]">
+              <div className="space-y-2 md:w-[180px]">
                 <CustomSelect
                   value={filters.room || ''}
                   onChange={(e: any) => handleFilterChange('room', e.target.value)}
@@ -347,112 +326,39 @@ function TenantsContent() {
                   ]}
                 />
               </div>
+                  
+              {/* Sort By Filter */}
+              <div className="space-y-2 md:w-[180px]">
+                <CustomSelect
+                  value={filters.sortBy || ''}
+                  onChange={(e: any) => handleFilterChange('sortBy', e.target.value)}
+                  options={[
+                    { value: '', label: 'Sort By' },
+                    { value: 'room', label: 'Room' },
+                    { value: 'tenantName', label: 'Name' },
+                    { value: 'checkInDate', label: 'Check-in Date' },
+                    { value: 'monthlyRent', label: 'Monthly Rent' },
+                    { value: 'createdAt', label: 'Created Date' }
+                  ]}
+                />
+              </div>
+              
+              {/* Order Filter */}
+              <div className="space-y-2 md:w-[140px]">
+                <CustomSelect
+                  value={filters.sortOrder || ''}
+                  onChange={(e: any) => handleFilterChange('sortOrder', e.target.value)}
+                  options={[
+                    { value: '', label: 'Order' },
+                    { value: 'asc', label: 'Ascending' },
+                    { value: 'desc', label: 'Descending' }
+                  ]}
+                />
+              </div>
             </div>
+        
           </div>
 
-          {/* Advanced Filters Accordion */}
-          <Accordion 
-            className="rounded-2xl border border-gray-200 dark:border-gray-600 overflow-hidden bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
-            sx={{
-              '&:before': {
-                display: 'none',
-              },
-              '.MuiAccordionSummary-content':{
-                margin: '12px 0',
-              },
-              '.MuiButtonBase-root ':{
-                minHeight: "45px",
-              },
-              boxShadow: 'none',
-              backgroundColor: 'transparent',
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMore />}
-              className="bg-gray-50/80 dark:bg-gray-700/80 hover:bg-gray-100/80 dark:hover:bg-gray-600/80 transition-colors backdrop-blur-sm"
-              sx={{
-                '& .MuiAccordionSummary-content': {
-                  margin: '12px 0',
-                },
-              }}
-            >
-              <p  className="font-semibold text-gray-700 dark:text-gray-200 flex items-center text-md">
-                Advanced Filters
-              </p>
-            </AccordionSummary>
-            <AccordionDetails sx={{
-              padding: '16px',
-            }} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                    Monthly Rent Range
-                  </label>
-                  <Box display="flex" gap={2}>
-                    <NumberInput
-                      placeholder="Min Amount"
-                      value={filters.rentRange?.min || ""}
-                      onChange={(value) =>
-                        handleFilterChange("rentRange", {
-                          ...filters.rentRange,
-                          min: value,
-                        })
-                      }
-                      minWidth="120px"
-                    />
-                    <NumberInput
-                      placeholder="Max Amount"
-                      value={filters.rentRange?.max || ""}
-                      onChange={(value) =>
-                        handleFilterChange("rentRange", {
-                          ...filters.rentRange,
-                          max: value,
-                        })
-                      }
-                      minWidth="120px"
-                    />
-                  </Box>
-                </div>
-
-                <div className="space-y-2">
-                  <DateRangePicker
-                    label="Check-in Date Range"
-                    value={filters.checkInDateRange || { from: '', to: '' } as any}
-                    onChange={(newRange) =>
-                      handleFilterChange("checkInDateRange", newRange)
-                    }
-                  />
-                </div>
-
-                <div className='flex flex-row gap-4'>
-                  <div className="space-y-2 w-[180px]">
-                    <CustomSelect
-                      label="Sort By"
-                      value={filters.sortBy || 'createdAt'}
-                      onChange={(e: any) => handleFilterChange('sortBy', e.target.value)}
-                      options={[
-                        { value: 'tenantName', label: 'Name' },
-                        { value: 'checkInDate', label: 'Check-in Date' },
-                        { value: 'monthlyRent', label: 'Monthly Rent' },
-                        { value: 'createdAt', label: 'Created Date' }
-                      ]}
-                    />
-                  </div>
-                  <div className="space-y-2 w-[140px]">
-                    <CustomSelect
-                      label="Order"
-                      value={filters.sortOrder || 'desc'}
-                      onChange={(e: any) => handleFilterChange('sortOrder', e.target.value)}
-                      options={[
-                        { value: 'asc', label: 'Ascending' },
-                        { value: 'desc', label: 'Descending' }
-                      ]}
-                    />
-                  </div>
-                </div>
-              </div>
-            </AccordionDetails>
-          </Accordion>
           </div>
         </div>
 

@@ -195,8 +195,8 @@ export interface TenantFilters {
     from?: string;
     to?: string;
   };
-  sortBy?: 'tenantName' | 'checkInDate' | 'monthlyRent' | 'createdAt';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: 'tenantName' | 'checkInDate' | 'monthlyRent' | 'createdAt' | 'room' | '';
+  sortOrder?: 'asc' | 'desc' | '';
 }
 
 export interface GetTenantsRequest {
@@ -213,6 +213,9 @@ export interface PropertyData {
   propertyAddress: string;
   isActive: boolean;
   foodAmount: number;
+  electricitySettings: {
+    ratePerUnit: number;
+  };
   summary: {
     totalTenants: number;
     totalRooms: number;
@@ -239,6 +242,9 @@ export interface Profile {
   email: string;
   address: string;
   properties: PropertyData[];
+  electricitySettings: {
+    ratePerUnit: number;
+  };
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

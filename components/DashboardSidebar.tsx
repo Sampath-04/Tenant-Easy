@@ -35,6 +35,7 @@ import {
   RequestPage as RequestPageIcon,
 } from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
+import { getCurrentDate } from '@/lib/utils/formatters';
 
 export interface MenuItem {
   id: string;
@@ -307,6 +308,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             }}
           >
             Easy Tenant
+            <p>{getCurrentDate().toLocaleDateString()}</p>
           </Typography>
         )}
         <IconButton onClick={onToggle} size="small" sx={{p:2}}>
