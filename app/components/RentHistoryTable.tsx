@@ -12,12 +12,14 @@ interface RentHistoryTableProps {
   records: RentHistoryItem[];
   emptyMessage: string;
   showUnits?: boolean; // optional flag for units
+  showDueDate?: boolean; // optional flag for due date column
 }
 
 const RentHistoryTable: React.FC<RentHistoryTableProps> = ({
   records,
   emptyMessage,
   showUnits = true,
+  showDueDate = true,
 }) => {
   return (
     <div className="p-2">
@@ -49,9 +51,11 @@ const RentHistoryTable: React.FC<RentHistoryTableProps> = ({
                   <th className="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[120px] whitespace-nowrap">
                     Total (₹)
                   </th>
-                  <th className="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[140px] whitespace-nowrap">
-                    Due Date
-                  </th>
+                  {showDueDate && (
+                    <th className="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[140px] whitespace-nowrap">
+                      Due Date
+                    </th>
+                  )}
                   <th className="px-2 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[180px] whitespace-nowrap">
                     Status
                   </th>
@@ -95,11 +99,13 @@ const RentHistoryTable: React.FC<RentHistoryTableProps> = ({
                         {formatCurrency(record.totalAmount)}
                       </div>
                     </td>
-                    <td className="px-2 md:px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-700 dark:text-gray-300">
-                        {formatDate(record.dueDate)}
-                      </div>
-                    </td>
+                    {showDueDate && (
+                      <td className="px-2 md:px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                          {formatDate(record.dueDate)}
+                        </div>
+                      </td>
+                    )}
                     <td className="px-2 md:px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -203,14 +209,16 @@ const RentHistoryTable: React.FC<RentHistoryTableProps> = ({
                           {formatCurrency(record.totalAmount)}
                         </Typography>
                       </div>
-                      <div>
-                        <Typography variant="caption" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Due Date
-                        </Typography>
-                        <Typography variant="body2" className="text-gray-900 dark:text-white">
-                          {formatDate(record.dueDate)}
-                        </Typography>
-                      </div>
+                      {showDueDate && (
+                        <div>
+                          <Typography variant="caption" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Due Date
+                          </Typography>
+                          <Typography variant="body2" className="text-gray-900 dark:text-white">
+                            {formatDate(record.dueDate)}
+                          </Typography>
+                        </div>
+                      )}
                     </div>
                     
                     {/* Status */}

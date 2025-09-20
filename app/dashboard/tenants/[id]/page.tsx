@@ -23,6 +23,8 @@ import WarningIcon from '@mui/icons-material/Warning';
 import RentHistoryTable from '@/app/components/RentHistoryTable';
 import NoticeForm from '@/components/NoticeForm';
 import EvictionForm from '@/components/EvictionForm';
+import EvictTenantForm from '@/components/EvictTenantForm';
+import { useEvictTenant } from '@/hooks/useEvictTenant';
 import { Button, Accordion, AccordionSummary, AccordionDetails, Typography, IconButton, Chip, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Alert, Box } from '@mui/material';
 import { NotificationsActive as NoticeIcon, ExpandMore as ExpandMoreIcon, Edit as EditIcon, Payment as PaymentIcon, Delete as DeleteIcon, PersonOff as PersonOffIcon } from '@mui/icons-material';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
@@ -44,7 +46,8 @@ function TenantViewContent() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [evictionFormOpen, setEvictionFormOpen] = useState(false);
   const [selectedRentForEviction, setSelectedRentForEviction] = useState<any>(null);
-
+  const [evictTenantFormOpen, setEvictTenantFormOpen] = useState(false);
+  const evictTenantMutation = useEvictTenant();
   const { data: tenant, isLoading, error: fetchError } = useTenant(tenantId);
 
   const updatePaymentMutation = useUpdateOnboardingPaymentAmount();
@@ -225,6 +228,41 @@ function TenantViewContent() {
     }
   };
 
+  const handleEvictTenant = () => {
+    setEvictTenantFormOpen(true);
+  };
+
+  const handleEvictTenantSubmit = async (data: any) => {
+    if (!localTenant?._id) return;
+    
+    try {
+      await evictTenantMutation.mutateAsync({
+        tenantId: localTenant._id,
+        data: {
+          electricityUnit: data.electricityUnit,
+          amount: data.amount,
+          comments: data.comments,
+          tenantQrCode: data.tenantQrCode,
+        }
+      });
+      
+      // Close the evict tenant form only after successful API call
+      setEvictTenantFormOpen(false);
+      
+      // Update local tenant status to evicted
+      if (localTenant) {
+        setLocalTenant({
+          ...localTenant,
+          status: 'evicted',
+          checkOutDate: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      console.error('Failed to evict tenant:', error);
+      // Form stays open on error
+    }
+  };
+
   useEffect(() => {
     if (tenant) {
       setLocalTenant(tenant);
@@ -291,9 +329,7 @@ function TenantViewContent() {
 
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER + " py-4"}>
         {/* Tenant Overview Card */}
-        {
-          <p>Current date: {getCurrentDate().toISOString().split('T')[0]}</p>
-        }
+       
         <div className={`${LAYOUT_CLASSES.CARD_CONTAINER} md:mb-6 mb-4`}>
           <div className="p-2 md:p-3">
             <div className="flex md:flex-row flex-col md:items-center md:justify-between justify-start mb-3">
@@ -489,7 +525,7 @@ function TenantViewContent() {
               {/* Apply Notice Button - Only show for onboarded tenants without notice */}
           
               <div className="grid grid-cols-2 md:flex md:flex-row md:justify-end justify-start gap-4 md:mt-4 mt-3 md:ml-auto">
-                <Button
+                {localTenant.status !== 'evicted' && <Button
                   variant="outlined"
                   onClick={() => router.push(`/dashboard/tenants/${tenantId}/edit`)}
                   sx={{
@@ -505,7 +541,7 @@ function TenantViewContent() {
                   }}
                 >
                   Edit Tenant
-                </Button>
+                </Button>}
                 <Button
                   variant="outlined"
                   startIcon={<DeleteIcon />}
@@ -570,7 +606,34 @@ function TenantViewContent() {
                 >
                   Complete Eviction
                 </Button>}
+
+                {localTenant.status === 'onboarded' && 
                 <Button
+                  variant="contained"
+                  startIcon={<PersonOffIcon />}
+                  onClick={handleEvictTenant}
+                  disabled={evictTenantMutation.isPending}
+                  sx={{
+                    backgroundColor: '#dc2626',
+                    boxShadow: 'none',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    padding: '6px 12px',
+                    '&:hover': {
+                      backgroundColor: '#b91c1c',
+                    },
+                    '&:disabled': {
+                      backgroundColor: '#9ca3af',
+                      color: '#ffffff',
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  {evictTenantMutation.isPending ? 'Evicting...' : 'Evict Tenant'}
+                </Button>}
+                {localTenant.status !== 'evicted' && <Button
                   variant="outlined"
                   onClick={() => setShowOnboardingHistory(!showOnboardingHistory)}
                   sx={{
@@ -586,7 +649,7 @@ function TenantViewContent() {
                   }}
                 >
                   {showOnboardingHistory ? 'Hide' : 'Show More'}
-                </Button>
+                </Button>}
               </div>
             </div>
                       
@@ -798,11 +861,11 @@ function TenantViewContent() {
                 >
                   <span className="flex items-center">
                     Pending Rents
-                    {localTenant.pendingRents?.count && localTenant.pendingRents.count > 0 && (
+                    {localTenant.pendingRents?.count && localTenant.pendingRents.count > 0 ? (
                       <span className="ml-2 bg-blue-500 text-white text-xs rounded-full px-2 py-1">
                         {localTenant.pendingRents.count}
                       </span>
-                    )}
+                    ) : null}
                   </span>
                 </button>
                 {/* completed rents */}
@@ -831,6 +894,7 @@ function TenantViewContent() {
                 records={localTenant.recentPayments || []}
                 emptyMessage="No Completed Rents Found"
                 showUnits={false}
+                showDueDate={false}
               />
             )}
 
@@ -1110,6 +1174,15 @@ function TenantViewContent() {
         onClose={() => setEvictionFormOpen(false)}
         onSubmitCallback={handleEvictionSubmit}
         rentRecord={selectedRentForEviction}
+      />
+
+      {/* Evict Tenant Form */}
+      <EvictTenantForm
+        isOpen={evictTenantFormOpen}
+        onClose={() => setEvictTenantFormOpen(false)}
+        onSubmitCallback={handleEvictTenantSubmit}
+        tenant={localTenant}
+        isSubmitting={evictTenantMutation.isPending}
       />
     </div>
   );

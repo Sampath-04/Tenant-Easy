@@ -519,4 +519,32 @@ export async function getTenantAnalysisSummary(propertyId: string): Promise<Tena
   return apiClient.get<TenantAnalysisSummary>(`/tenants/property/${propertyId}/analysis/summary`);
 }
 
+/**
+ * Evict a tenant
+ */
+export async function evictTenant(
+  tenantId: string,
+  data: {
+    electricityUnit: number;
+    amount: number;
+    comments?: string;
+    tenantQrCode?: File;
+  }
+): Promise<{ success: boolean; message: string }> {
+  const formData = new FormData();
+  
+  formData.append('electricityUnit', data.electricityUnit.toString());
+  formData.append('amount', data.amount.toString());
+  
+  if (data.comments) {
+    formData.append('comments', data.comments);
+  }
+  
+  if (data.tenantQrCode) {
+    formData.append('tenantQrCode', data.tenantQrCode);
+  }
+  
+  return apiClient.post<{ success: boolean; message: string }>(`/tenants/${tenantId}/evict`, formData);
+}
+
 

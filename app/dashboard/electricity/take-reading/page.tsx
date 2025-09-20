@@ -507,7 +507,7 @@ function ElectricityReadingContent() {
                                     </div>
                                     <div>
                                         <span className="text-gray-600 dark:text-gray-400">Consumption:</span>
-                                        <span className="font-semibold ml-1">{roomReading.recordedData?.consumption || 0} units</span>
+                                        <span className="font-semibold ml-1">{roomReading.recordedData?.consumption.toFixed(2) || 0} units</span>
                                     </div>
                                     <div>
                                         <span className="text-gray-600 dark:text-gray-400">Total Tenants:</span>

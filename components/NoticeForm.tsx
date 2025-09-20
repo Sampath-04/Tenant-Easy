@@ -327,11 +327,7 @@ export default function NoticeForm({
             color: theme.palette.mode === 'dark' ? '#f9fafb' : '#111827',
           })}
         >
-          {existingNotice ? 'Update Notice Period' : 'Apply Notice Period'} {getCurrentDate().toLocaleDateString('en-IN', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          })}
+          {existingNotice ? 'Update Notice Period' : 'Apply Notice Period'}
         </Typography>
         <IconButton 
           onClick={handleClose} 
