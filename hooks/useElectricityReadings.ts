@@ -6,6 +6,8 @@ import {
   UpdateElectricityReadingRequest,
   ElectricityReadingResponse
 } from '../lib/api/electricityReadings';
+import { toast } from 'react-toastify';
+import { showErrorToast } from '@/lib/toast-config';
 
 export function useRecordElectricityReading() {
   const queryClient = useQueryClient();
@@ -34,6 +36,10 @@ export function useUpdateElectricityReading() {
       
       // You can also invalidate other related queries if needed
       queryClient.invalidateQueries({ queryKey: ['pending-rents'] });
+    },
+    onError: (error: any) => {
+      const errorToast = showErrorToast(error.message);
+      toast.error(errorToast.message, errorToast.config);
     },
   });
 }

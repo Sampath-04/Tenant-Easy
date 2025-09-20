@@ -330,7 +330,7 @@ export default function EvictionForm({
                   Units Consumed:
                 </span>
                 <span className="text-amber-600 dark:text-amber-400 font-bold text-lg">
-                  {Math.max(0, currentElectricityReading - lastReading)} units
+                  {Math.max(0, currentElectricityReading - lastReading).toFixed(2)} units
                 </span>
               </div>
               

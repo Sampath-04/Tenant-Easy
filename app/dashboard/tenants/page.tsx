@@ -50,7 +50,7 @@ function TenantsContent() {
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   // Filter toggle state
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
 
   // Filter state - Initialize with selected property
   const [filters, setFilters] = useState<TenantFilters>({
@@ -334,10 +334,10 @@ function TenantsContent() {
                   onChange={(e: any) => handleFilterChange('sortBy', e.target.value)}
                   options={[
                     { value: '', label: 'Sort By' },
+                    { value: 'room', label: 'Room' },
                     { value: 'tenantName', label: 'Name' },
                     { value: 'checkInDate', label: 'Check-in Date' },
                     { value: 'monthlyRent', label: 'Monthly Rent' },
-                    { value: 'room', label: 'Room' },
                     { value: 'createdAt', label: 'Created Date' }
                   ]}
                 />

@@ -100,7 +100,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (response.user.role === 'admin') {
             router.push('/admin');
           } else if (response.user.role === 'owner') {
-            console.log("user logged in as owner");
             router.push('/dashboard'); // Fallback to home for now
           } else if (response.user.role === 'tenant') {
             router.push('/tenant'); // Tenant dashboard (to be created)

@@ -7,6 +7,8 @@ import { AuthGuard } from '@/contexts/AuthContext';
 import { AppHeader } from '@/components/AppHeader';
 import { LAYOUT_CLASSES } from '@/lib/constants/styles';
 import { useTenant, useUpdateOnboardingPaymentAmount, useMarkTenantAsDeleted } from '@/hooks/useTenants';
+import { useCompleteNotice } from '@/hooks/useNotice';
+import { CompleteNoticeData } from '@/lib/api/notice';
 import DeleteTenantDialog from '@/components/DeleteTenantDialog';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -20,10 +22,12 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import WarningIcon from '@mui/icons-material/Warning';
 import RentHistoryTable from '@/app/components/RentHistoryTable';
 import NoticeForm from '@/components/NoticeForm';
+import EvictionForm from '@/components/EvictionForm';
 import { Button, Accordion, AccordionSummary, AccordionDetails, Typography, IconButton, Chip, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Alert, Box } from '@mui/material';
-import { NotificationsActive as NoticeIcon, ExpandMore as ExpandMoreIcon, Edit as EditIcon, Payment as PaymentIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { NotificationsActive as NoticeIcon, ExpandMore as ExpandMoreIcon, Edit as EditIcon, Payment as PaymentIcon, Delete as DeleteIcon, PersonOff as PersonOffIcon } from '@mui/icons-material';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
 import { useTheme } from '@mui/material/styles';
+import { getCurrentDate } from '@/lib/utils/formatters';
 
 function TenantViewContent() {
   const params = useParams();
@@ -38,12 +42,14 @@ function TenantViewContent() {
   const [editAmount, setEditAmount] = useState('');
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [evictionFormOpen, setEvictionFormOpen] = useState(false);
+  const [selectedRentForEviction, setSelectedRentForEviction] = useState<any>(null);
 
   const { data: tenant, isLoading, error: fetchError } = useTenant(tenantId);
 
-  console.log("tenant", tenant);
   const updatePaymentMutation = useUpdateOnboardingPaymentAmount();
   const markTenantAsDeletedMutation = useMarkTenantAsDeleted();
+  const completeNoticeMutation = useCompleteNotice();
   const error = fetchError?.message;
 
   const formatCurrency = (amount: number) => {
@@ -174,6 +180,51 @@ function TenantViewContent() {
     }
   };
 
+  const handleCompleteEviction = () => {
+    const noticeRentRecord =  localTenant.pendingRents?.pendingRentRecords.find((rent: any) => rent.notice._id === localTenant.notice?._id);
+    setSelectedRentForEviction(noticeRentRecord);
+    setEvictionFormOpen(true);
+  };
+
+  const handleEvictionSubmit = async (data: any) => {
+    if (!data.rentRecord?.notice._id) {
+      console.error('No notice ID found for eviction');
+      return;
+    }
+
+    const payload = {
+      noticeId: data.rentRecord.notice._id,
+      electricityUnit: data.currentElectricityReading,
+      tenantQrCode: data.tenantQrCode,
+      comments: data.comments,
+      otherDeduction: data.otherDeduction || 0,
+    } as CompleteNoticeData;
+
+    try {
+      // Call the completeNotice API
+      await completeNoticeMutation.mutateAsync(payload);
+      
+      // Close the eviction form
+      setEvictionFormOpen(false);
+      setSelectedRentForEviction(null);
+      
+      // Update local tenant status to evicted
+      if (localTenant) {
+        setLocalTenant({
+          ...localTenant,
+          status: 'evicted',
+          notice: {
+            ...localTenant.notice,
+            status: 'completed'
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Failed to complete eviction:', error);
+      // Error handling is done in the mutation
+    }
+  };
+
   useEffect(() => {
     if (tenant) {
       setLocalTenant(tenant);
@@ -240,6 +291,9 @@ function TenantViewContent() {
 
       <main className={LAYOUT_CLASSES.MAIN_CONTAINER + " py-4"}>
         {/* Tenant Overview Card */}
+        {
+          <p>Current date: {getCurrentDate().toISOString().split('T')[0]}</p>
+        }
         <div className={`${LAYOUT_CLASSES.CARD_CONTAINER} md:mb-6 mb-4`}>
           <div className="p-2 md:p-3">
             <div className="flex md:flex-row flex-col md:items-center md:justify-between justify-start mb-3">
@@ -493,6 +547,28 @@ function TenantViewContent() {
                   }}
                 >
                   Apply Notice
+                </Button>}
+
+                {localTenant.status === 'notice_serving' && localTenant.notice && 
+                <Button
+                  variant="contained"
+                  startIcon={<PersonOffIcon />}
+                  onClick={() => handleCompleteEviction()}
+                  sx={{
+                    backgroundColor: '#ef4444',
+                    boxShadow: 'none',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    padding: '6px 12px',
+                    '&:hover': {
+                      backgroundColor: '#dc2626',
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  Complete Eviction
                 </Button>}
                 <Button
                   variant="outlined"
@@ -1026,6 +1102,14 @@ function TenantViewContent() {
         onConfirm={handleConfirmDelete}
         tenant={tenant}
         isDeleting={markTenantAsDeletedMutation.isPending}
+      />
+
+      {/* Eviction Form */}
+      <EvictionForm
+        isOpen={evictionFormOpen}
+        onClose={() => setEvictionFormOpen(false)}
+        onSubmitCallback={handleEvictionSubmit}
+        rentRecord={selectedRentForEviction}
       />
     </div>
   );

@@ -78,7 +78,6 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
       const firstProfile = profilesResponse.data[0];
       const propertiesData = firstProfile.properties.filter((p: any) => p.isActive);
       
-      console.log("propertiesData",propertiesData);
       // Convert to Property format
       const convertedProperties = propertiesData.map((propertyData: PropertyData) => 
         convertToProperty(propertyData, firstProfile._id)
