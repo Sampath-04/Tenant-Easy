@@ -24,7 +24,7 @@ import RentHistoryTable from '@/app/components/RentHistoryTable';
 import NoticeForm from '@/components/NoticeForm';
 import EvictionForm from '@/components/EvictionForm';
 import EvictTenantForm from '@/components/EvictTenantForm';
-import { useEvictTenant } from '@/hooks/useEvictTenant';
+import { useEvictTenant } from '@/hooks/useTenants';
 import { Button, Accordion, AccordionSummary, AccordionDetails, Typography, IconButton, Chip, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Alert, Box } from '@mui/material';
 import { NotificationsActive as NoticeIcon, ExpandMore as ExpandMoreIcon, Edit as EditIcon, Payment as PaymentIcon, Delete as DeleteIcon, PersonOff as PersonOffIcon } from '@mui/icons-material';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';

@@ -22,6 +22,7 @@ import {
 import { showErrorToast, showSuccessToast } from '../lib/toast-config';
 import { toast } from 'react-toastify';
 import { TenantHistoryResponse } from '@/lib/api/rentHistory';
+import { evictTenant } from '@/lib/api/tenants';
 
 // Query keys
 export const tenantKeys = {
@@ -284,6 +285,34 @@ export function useUpdateOnboardingPaymentAmount() {
       console.error('Failed to update payment amount:', error);
       const errorToast = showErrorToast(error.getUserMessage());
       toast.error(errorToast.message, errorToast.config);
+    },
+  });
+}
+
+interface EvictTenantData {
+  electricityUnit: number;
+  amount: number;
+  comments?: string;
+  tenantQrCode?: File;
+}
+
+export function useEvictTenant() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ tenantId, data }: { tenantId: string; data: EvictTenantData }) =>
+      evictTenant(tenantId, data),
+    onSuccess: (response, variables) => {
+      toast.success(response.message || 'Tenant evicted successfully');
+      
+      // Invalidate relevant queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      queryClient.invalidateQueries({ queryKey: ['tenant', variables.tenantId] });
+      queryClient.invalidateQueries({ queryKey: ['tenant-details', variables.tenantId] });
+    },
+    onError: (error: any) => {
+      console.error('Failed to evict tenant:', error);
+      toast.error(error?.response?.data?.message || 'Failed to evict tenant');
     },
   });
 }
