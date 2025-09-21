@@ -52,7 +52,9 @@ export default function RentRecordsList({
         setPaymentFormOpen(true);
     };
 
-    const domain = process.env.NEXT_PUBLIC_NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://easy-tenant-front-end.vercel.app';
+    const domain = process.env.NEXT_PUBLIC_NODE_ENV === 'development' 
+        ? 'http://localhost:3000' 
+        : process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
 
     const getWhatsAppMessage = (rent: any) => {
     const paymentLink = `${domain}/tenant-payment?rentRecordId=${rent._id}`;
