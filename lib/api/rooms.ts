@@ -46,8 +46,8 @@ export async function getRoomsForFilter(propertyId?: string): Promise<{ _id: str
 /**
  * Get all rooms list for a property (for dropdowns)
  */
-export async function getRoomList(propertyId: string): Promise<{ success: boolean; data: { _id: string; roomNo: string }[] }> {
-  return apiClient.get<{ success: boolean; data: { _id: string; roomNo: string }[] }>(`/rooms/list/${propertyId}`);
+export async function getRoomList(propertyId: string): Promise<{ success: boolean; data: { _id: string; roomNo: string, roomType: string }[] }> {
+  return apiClient.get<{ success: boolean; data: { _id: string; roomNo: string, roomType: string }[] }>(`/rooms/list/${propertyId}`);
 }
 
 /**

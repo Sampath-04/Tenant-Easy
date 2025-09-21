@@ -28,7 +28,7 @@ import {
   Clear as ClearIcon,
 } from '@mui/icons-material';
 import { useRentRecords, usePropertyRentSummary } from '@/hooks/useRentRecords';
-import { useRooms } from '@/hooks/useRooms';
+import { useRoomList, useRooms } from '@/hooks/useRooms';
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatDate, formatCurrency, formatDateForAPI } from '@/lib/utils/formatters';
 import { generateRentHistoryExcel } from '@/lib/utils/excelExport';
@@ -147,9 +147,8 @@ export default function RentRecordsPage() {
   );
 
   // Get rooms for dropdown
-  const { data: roomsResponse } = useRooms(selectedProperty?.id || '');
+  const { data: roomsResponse } = useRoomList(selectedProperty?.id || '');
   const rooms = roomsResponse?.data || [];
-
   const rentRecords = rentRecordsResponse?.data || [];
   const summary = summaryResponse?.data;
 

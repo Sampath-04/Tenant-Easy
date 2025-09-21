@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { AuthGuard, useAuth } from '../../../../contexts/AuthContext';
 import { useProperty } from '../../../../contexts/PropertyContext';
 import { useRecordElectricityReading, useUpdateElectricityReading } from '../../../../hooks/useElectricityReadings';
-import { useRooms } from '../../../../hooks/useRooms';
+import { useRoomList, useRooms } from '../../../../hooks/useRooms';
 import { AppHeader } from '../../../../components/AppHeader';
 import NumberInput from '../../../../components/ui/NumberInput';
 import { 
@@ -57,10 +57,8 @@ function ElectricityReadingContent() {
     }
   );
 
-  const { data: allRoomsResponse, isLoading: allRoomsLoading, error: allRoomsError } = useRooms(
-    selectedProperty?.id || '',
-    1,
-    30
+  const { data: allRoomsResponse, isLoading: allRoomsLoading } = useRoomList(
+    selectedProperty?.id || ''
   );
   
   const recordReadingMutation = useRecordElectricityReading();
@@ -257,21 +255,21 @@ function ElectricityReadingContent() {
         <BreadCrumbs items={breadcrumbs} />
       </div>
       
-      <main className="mx-auto px-4 md:px-6 py-4">
+      <main className="mx-auto px-2 md:px-6 py-4">
       <div className='bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-lg border border-white/20 dark:border-gray-700/50'>
-      <div className='p-4'>
+      <div className='md:p-4 p-2'>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 md:mb-6"> 
             <Card sx={{ borderRadius: '16px', boxShadow: 'rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px' }}>
-            <CardContent>
+            <CardContent sx={{padding: {xs: '12px!important', md: '16px!important'}}}>
                 <div className="flex items-center gap-3 mb-2 md:mb-4">
                 <ElectricBoltIcon className="text-blue-600 dark:text-blue-400" />
-                <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
+                <p className="font-semibold text-gray-900 dark:text-white md:text-xl text-lg">
                     {selectedProperty.name}
-                </Typography>
+                </p>
                 </div>
-                <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                <p className="text-gray-600 dark:text-gray-400 md:text-sm text-xs">
                 {selectedProperty.address}
-                </Typography>
+                </p>
                 <div className="mt-3">
                 <Chip 
                     label={`${roomsResponse?.summary?.totalRooms} Total Rooms`} 
@@ -300,40 +298,40 @@ function ElectricityReadingContent() {
                 </Card>
             ) : rooms.length > 0 && (
                 <Card sx={{ borderRadius: '16px', boxShadow: 'rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px' }}>
-                    <CardContent>
-                    <p className="font-semibold text-gray-900 dark:text-white mb-3 text-xl">
+                    <CardContent sx={{padding: {xs: '12px!important', md: '16px!important'}}}>
+                    <p className="font-semibold text-gray-900 dark:text-white md:mb-3 mb-2 md:text-xl text-lg">
                         Summary {selectedRoomId !== 'all' && `- Filtered`}
                     </p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 md:gap-4 gap-2">
                         <div className="text-center">
-                        <p className="font-bold text-blue-600 dark:text-blue-400 text-2xl">
+                        <p className="font-bold text-blue-600 dark:text-blue-400 md:text-2xl text-xl">
                             {selectedRoomId === 'all' ? (roomsResponse?.summary?.totalRooms || rooms.length) : rooms.length}
                         </p>
-                        <p className="text-gray-600 dark:text-gray-400">
+                        <p className="text-gray-600 dark:text-gray-400 md:text-sm text-xs">
                             {selectedRoomId === 'all' ? 'Total Rooms' : 'Filtered Rooms'}
                         </p>
                         </div>
                         <div className="text-center">
-                        <p className="font-bold text-green-600 dark:text-green-400 text-2xl">
+                        <p className="font-bold text-green-600 dark:text-green-400 md:text-2xl text-xl">
                             {selectedRoomId === 'all' ? (roomsResponse?.summary?.recorded || Object.values(roomReadings).filter(r => r.isRecorded).length) : Object.values(roomReadings).filter(r => r.isRecorded).length}
                         </p>
-                        <p className="text-gray-600 dark:text-gray-400">
+                        <p className="text-gray-600 dark:text-gray-400 md:text-sm text-xs">
                             Recorded
                         </p>
                         </div>
                         <div className="text-center">
-                        <p className="font-bold text-orange-600 dark:text-orange-400 text-2xl">
+                        <p className="font-bold text-orange-600 dark:text-orange-400 md:text-2xl text-xl">
                             {selectedRoomId === 'all' ? (roomsResponse?.summary?.pending || Object.values(roomReadings).filter(r => !r.isRecorded).length) : Object.values(roomReadings).filter(r => !r.isRecorded).length}
                         </p>
-                        <p className="text-gray-600 dark:text-gray-400">
+                        <p className="text-gray-600 dark:text-gray-400 md:text-sm text-xs">
                             Pending
                         </p>
                         </div>
                         <div className="text-center">
-                        <p className="font-bold text-purple-600 dark:text-purple-400 text-2xl">
+                        <p className="font-bold text-purple-600 dark:text-purple-400 md:text-2xl text-xl">
                             {selectedRoomId === 'all' ? (roomsResponse?.summary?.totalTenants || rooms.reduce((total, room) => total + (room.tenants?.length || 0), 0)) : rooms.reduce((total, room) => total + (room.tenants?.length || 0), 0)}
                         </p>
-                        <p className="text-gray-600 dark:text-gray-400">
+                        <p className="text-gray-600 dark:text-gray-400 md:text-sm text-xs">
                             Total Tenants
                         </p>
                         </div>
@@ -347,7 +345,7 @@ function ElectricityReadingContent() {
         <div className="space-y-2 md:space-y-4">
           <div className='flex flex-row justify-between items-center'>
             <div className='flex flex-col gap-2'>
-                <p className="text-gray-600 dark:text-gray-400 text-lg font-medium">
+                <p className="text-gray-600 dark:text-gray-400 md:text-lg text-base font-medium ">
                     Date: {formatDate(getCurrentDate().toISOString())}
                 </p>
             </div>
@@ -382,12 +380,12 @@ function ElectricityReadingContent() {
             <>
             {
               roomsLoading || allRoomsLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:gap-4 gap-2">
                   {Array.from({ length: 6 }).map((_, index) => (
                     <Card 
                       key={index}
                       sx={{ 
-                        padding: '16px !important',
+                        padding: {xs: '12px!important', md: '16px!important'},
                         borderRadius: '16px', 
                         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                       }}
@@ -412,7 +410,7 @@ function ElectricityReadingContent() {
                           </div>
                           
                           {/* Reading Input Skeleton */}
-                          <div className="flex flex-col gap-3 min-w-[200px]">
+                          <div className="flex flex-col md:gap-3 gap-2 min-w-[200px]">
                             <Skeleton variant="rectangular" width="100%" height={56} sx={{ borderRadius: '12px' }} />
                             <Skeleton variant="text" width={120} height={16} />
                             <Skeleton variant="rectangular" width="100%" height={40} sx={{ borderRadius: '30px' }} />
@@ -423,7 +421,7 @@ function ElectricityReadingContent() {
                   ))}
                 </div>
               ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:gap-4 gap-2">
                 {
                 rooms.map((room) => {
                     const roomReading = roomReadings[room._id] || {
@@ -436,7 +434,7 @@ function ElectricityReadingContent() {
                         <Card 
                         key={room._id} 
                         sx={{ 
-                            padding: '16px !important',
+                            padding: {xs: '12px!important', md: '16px!important'},
                             borderRadius: '16px', 
                             boxShadow: "rgba(0, 0, 0, 0.15) 0px 2px 8px"
                         }}
@@ -496,11 +494,11 @@ function ElectricityReadingContent() {
         
                                 {/* Recorded Data Display */}
                                 {roomReading.isRecorded && roomReading.recordedData && !roomReading.isEditing && (
-                                <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg w-full">
+                                <div className="mt-3 md:p-3 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg w-full">
                                     <p className="text-green-700 dark:text-green-400 font-semibold mb-1">
                                     Reading Recorded
                                     </p>
-                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <div className="grid grid-cols-2 md:gap-2 gap-1 text-sm">
                                     <div>
                                         <span className="text-gray-600 dark:text-gray-400">Current Reading:</span>
                                         <span className="font-semibold ml-1">{roomReading.recordedData?.meterReading || 0}</span>
@@ -525,7 +523,7 @@ function ElectricityReadingContent() {
                             </div>
         
                             {/* Reading Input and Actions */}
-                            <div className="flex flex-col gap-3 min-w-[200px]">
+                            <div className="flex flex-col md:gap-3 gap-2 min-w-[200px]">
                                 {!roomReading.isRecorded || roomReading.isEditing ? (
                                 <>
                                     <NumberInput
@@ -631,13 +629,13 @@ function ElectricityReadingContent() {
             <TablePagination
               component="div"
               count={roomsResponse.total || 0}
-              page={currentPage - 1} // MUI uses 0-based indexing
-              onPageChange={(_, newPage) => setCurrentPage(newPage + 1)} // Convert back to 1-based
+              page={currentPage - 1}
+              onPageChange={(_, newPage) => setCurrentPage(newPage + 1)}
               rowsPerPage={pageSize}
               onRowsPerPageChange={(e) => {
                 const newPageSize = parseInt(e.target.value, 10);
                 setPageSize(newPageSize);
-                setCurrentPage(1); // Reset to first page when changing page size
+                setCurrentPage(1); 
               }}
               rowsPerPageOptions={[9, 18, 36, 72]}
               labelRowsPerPage="Rooms per page:"
@@ -652,6 +650,12 @@ function ElectricityReadingContent() {
                 '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
                   color: 'inherit',
                 },
+                "& .MuiInputBase-root":{
+                  marginRight:{xs: "4px", md: "16px"}
+                },
+                "& .MuiTablePaginationActions-root":{
+                  marginLeft:{xs: "0px", md: "16px"}
+                }
               }}
             />
           </div>
