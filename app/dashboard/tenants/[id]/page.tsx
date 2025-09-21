@@ -54,7 +54,7 @@ function TenantViewContent() {
   const [moveTenantFormOpen, setMoveTenantFormOpen] = useState(false);
   const evictTenantMutation = useEvictTenant();
   const moveTenantMutation = useMoveTenant();
-  const { data: tenant, isLoading, error: fetchError } = useTenant(
+  const { data: tenant, isLoading } = useTenant(
     tenantId, 
     selectedProperty?.id || ''
   );
@@ -62,7 +62,6 @@ function TenantViewContent() {
   const updatePaymentMutation = useUpdateOnboardingPaymentAmount();
   const markTenantAsDeletedMutation = useMarkTenantAsDeleted();
   const completeNoticeMutation = useCompleteNotice();
-  const error = fetchError?.message;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -280,6 +279,7 @@ function TenantViewContent() {
     try {
       await moveTenantMutation.mutateAsync(data);
       setMoveTenantFormOpen(false);
+      router.push('/dashboard/tenants');
     } catch (error) {
       console.error('Failed to move tenant:', error);
     }
@@ -343,12 +343,23 @@ function TenantViewContent() {
     );
   }
 
+  if(!localTenant) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="text-red-500 text-6xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Tenant Not Found</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">Tenant details could not be loaded</p>
+          </div>
+        </div>
+    )
+  }
+
   const breadcrumbs = [
     { label: 'Dashboard', url: '/dashboard' },
     { label: 'Tenants', url: '/dashboard/tenants' },
     { label: localTenant?.tenantName || 'Tenant', url: `/dashboard/tenants/${localTenant?._id}` },
   ];
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -356,7 +367,6 @@ function TenantViewContent() {
         title="Tenant Details"
         subtitle={`Viewing details for ${localTenant ? localTenant?.tenantName  : 'Tenant'}`}
       />
-      {localTenant ? (
       <div>
         <div className='px-6 md:pt-6 pt-3'>
         <BreadCrumbs items={breadcrumbs} />
@@ -559,9 +569,9 @@ function TenantViewContent() {
 
                 {/* Apply Notice Button - Only show for onboarded tenants without notice */}
             
-                <div className="flex flex-col gap-4 md:mt-4 mt-3">
+                <div className="flex flex-col md:flex-row justify-between w-full gap-4 md:mt-4 mt-6">
                   {/* Primary Actions - Status-based */}
-                  <div className="flex flex-wrap gap-3">
+                  <div className="grid grid-cols-2 md:flex flex-wrap gap-3">
                     {localTenant.status === 'onboarded' && !localTenant.notice && localTenant.currentCycle && 
                     <Button
                       variant="contained"
@@ -605,7 +615,8 @@ function TenantViewContent() {
                       }}
                     >
                       Complete Eviction
-                    </Button>}
+                    </Button>
+                    }
 
                     {localTenant.status === 'onboarded' && 
                     <Button
@@ -633,10 +644,7 @@ function TenantViewContent() {
                     >
                       {evictTenantMutation.isPending ? 'Evicting...' : 'Evict Tenant'}
                     </Button>}
-                  </div>
 
-                  {/* Secondary Actions - Management */}
-                  <div className="flex flex-wrap gap-3">
                     {localTenant.status !== 'evicted' && 
                     <Button
                       variant="outlined"
@@ -1267,16 +1275,7 @@ function TenantViewContent() {
           tenant={localTenant}
           isSubmitting={moveTenantMutation.isPending}
         />
-      </div>
-      ) : (
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Tenant Not Found</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">Tenant details could not be loaded</p>
-          </div>
-        </div>
-      )}
+      </div> 
     </div>
   );
 }

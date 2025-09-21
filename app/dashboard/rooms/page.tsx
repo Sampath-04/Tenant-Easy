@@ -375,7 +375,7 @@ function RoomsContent() {
 
 export default function Rooms() {
   return (
-    <AuthGuard allowedRoles={['owner', 'admin']}>
+    <AuthGuard allowedRoles={['owner', 'admin', 'staff']}>
       <RoomsContent />
     </AuthGuard>
   );

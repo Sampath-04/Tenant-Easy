@@ -46,7 +46,6 @@ export default function MoveTenantForm({
 }: MoveTenantFormProps) {
   const { selectedProperty } = useProperty();
   const { data: properties } = useProperties();
-  console.log("properties", properties);
   const [selectedPropertyId, setSelectedPropertyId] = useState('');
   const { data: rooms, isLoading: roomsLoading } = useActiveRooms(selectedPropertyId);
   
