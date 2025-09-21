@@ -83,7 +83,7 @@ export default function LoginPage() {
         {/* Logo/Header */}
         <div className="text-center md:mb-8 mb-4">
           <h1 className="md:text-4xl text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Easy Tenant
+            Tenant Easy
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Property Management System

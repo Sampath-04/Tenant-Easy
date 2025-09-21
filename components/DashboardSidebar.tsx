@@ -307,8 +307,8 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
               color: theme.palette.primary.main,
             }}
           >
-            Easy Tenant
-            <p>{getCurrentDate().toLocaleDateString()}</p>
+            Tenant Easy
+            {/* <p>{getCurrentDate().toLocaleDateString()}</p> */}
           </Typography>
         )}
         <IconButton onClick={onToggle} size="small" sx={{p:2}}>

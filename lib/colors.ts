@@ -1,4 +1,4 @@
-// Global Color Management for Easy Tenant Application
+// Global Color Management for Tenant Easy Application
 
 export const colors = {
   // Primary Brand Colors
