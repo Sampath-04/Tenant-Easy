@@ -679,7 +679,7 @@ function TenantsContent() {
 
 export default function TenantsPage() {
   return (
-    <AuthGuard allowedRoles={['owner', 'admin']}>
+    <AuthGuard allowedRoles={['owner', 'admin', 'staff']}>
       <TenantsContent />
     </AuthGuard>
   );

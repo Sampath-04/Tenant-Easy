@@ -120,7 +120,6 @@ export const getExpense = async (id: string): Promise<Expense> => {
 };
 
 export const updateExpense = async (id: string, data: UpdateExpenseData): Promise<Expense> => {
-  console.log('Updating expense with data:', data);
   return await apiClient.put(`/expenses/${id}`, data);
 };
 

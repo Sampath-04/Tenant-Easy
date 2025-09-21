@@ -665,7 +665,7 @@ function ElectricityReadingContent() {
 
 export default function ElectricityReadingPage() {
   return (
-    <AuthGuard allowedRoles={['owner', 'staff']}>
+    <AuthGuard allowedRoles={['admin', 'owner', 'staff']}>
       <ElectricityReadingContent />
     </AuthGuard>
   );

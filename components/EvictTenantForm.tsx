@@ -465,7 +465,7 @@ export default function EvictTenantForm({
             Security Deposit Remaining
           </p>
           
-          <Box className="text-center mb-4">
+          <Box className="text-center mb-4 flex flex-col items-center justify-center">
             <p className={`font-bold md:text-2xl text-xl mb-2 ${securityRemaining >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
               {formatCurrency(Math.abs(securityRemaining))}
             </p>
@@ -475,7 +475,9 @@ export default function EvictTenantForm({
             
             {/* Negative amount message */}
             {securityRemaining < 0 && (
-              <Alert severity="warning"  sx={{width: '100% !important'}}>
+              <Alert severity="warning" sx={{margin: '0px !important', width: {xs: '100% !important', md: '80% !important', ".MuiAlert-icon":{
+                display: 'none !important',
+              }}}}>
                 <p className="text-sm">
                   <strong>Note:</strong> This amount will be added to your expense list. 
                   To adjust the loss, use the <strong>Additional Income</strong> option in your dashboard.
