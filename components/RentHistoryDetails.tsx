@@ -33,7 +33,7 @@ const RentHistoryDetails: React.FC<RentHistoryDetailsProps> = ({
       expanded={isExpanded} 
       onChange={onToggle}
       sx={{
-        marginTop: "0",
+        marginTop: "0!important",
         "& .MuiAccordion-heading":{
             display: "none"
         }

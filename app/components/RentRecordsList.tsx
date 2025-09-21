@@ -200,8 +200,8 @@ Thank you!`;
                             }}
                             className="bg-white dark:bg-gray-800"
                         >
-                            <CardContent className="p-6">
-                                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <CardContent className="md:p-6 p-4">
+                                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between md:gap-4 gap-2">
                                     {/* Rent Info Section */}
                                     <RentInfoCard record={record} getCurrentDate={getCurrentDate} />
 

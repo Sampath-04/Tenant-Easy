@@ -11,7 +11,7 @@ import {
   AreaChart, Area
 } from 'recharts';
 import { formatCategory } from '@/lib/utils/formatters';
-import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { Select, MenuItem, FormControl, InputLabel, Box } from '@mui/material';
 
 // Dynamic color palette with highly distinct colors
 const COLOR_PALETTE = [
@@ -247,7 +247,7 @@ export default function ProfitLossBreakdownPage() {
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
           <div>
-             <p className="text-slate-600 dark:text-slate-400 text-xl font-bold">
+             <p className="text-slate-600 dark:text-slate-400 text-base md:text-xl font-bold">
                Detailed view of income and expense categories, payment methods, and daily flows 
                {selectedMonth !== 'all' && (
                  <span className="ml-3 text-md text-blue-600 dark:text-blue-400 font-normal">
@@ -258,15 +258,15 @@ export default function ProfitLossBreakdownPage() {
           </div>
           
             {/* Filters and Navigation */}
-           <div className="flex items-center gap-4 mt-4 sm:mt-0">
+           <div className="md:flex justify-end w-full grid grid-cols-2 items-center gap-4 mt-4 sm:mt-0">
              <button
                onClick={() => router.push('/dashboard/profit-loss')}
-               className="px-4 py-2 bg-slate-100 cursor-pointer dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-150 flex items-center space-x-2"
+               className="md:px-4 px-2 py-2 col-span-2 w-fit bg-slate-100 cursor-pointer dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors duration-150 flex items-center space-x-2"
              >
                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                </svg>
-               <span>Back to Overview</span>
+               <p className=" text-base">Back to Overview</p>
              </button>
              
              <FormControl size="small" sx={{ minWidth: 120 }}>
@@ -323,16 +323,16 @@ export default function ProfitLossBreakdownPage() {
         {profitLossResponse?.data && !isLoading && (
           <>
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
+            <div className="grid grid-cols-2 md:grid-cols-6 md:gap-6 gap-4 mb-4">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 md:p-4 p-2">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Income</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                    <p className="md:text-2xl text-lg font-bold text-slate-900 dark:text-slate-100">
                       {formatCurrency(filteredData.reduce((sum, record) => sum + (record.income?.totalAmount || 0), 0))}
                     </p>
                   </div>
-                  <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-full">
+                  <div className="hidden md:block p-3 bg-green-100 dark:bg-green-900/20 rounded-full">
                     <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                     </svg>
@@ -340,15 +340,15 @@ export default function ProfitLossBreakdownPage() {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 md:p-4 p-2">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Expenses</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                    <p className="md:text-2xl text-lg font-bold text-slate-900 dark:text-slate-100">
                       {formatCurrency(filteredData.reduce((sum, record) => sum + (record.expense?.totalAmount || 0), 0))}
                     </p>
                   </div>
-                  <div className="p-3 bg-red-100 dark:bg-red-900/20 rounded-full">
+                  <div className="hidden md:block p-3 bg-red-100 dark:bg-red-900/20 rounded-full">
                     <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
@@ -356,15 +356,15 @@ export default function ProfitLossBreakdownPage() {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 md:p-4 p-2">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Net Profit</p>
-                    <p className={`text-2xl font-bold ${filteredData.reduce((sum, record) => sum + (record.financialSummary?.netProfit || 0), 0) >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>
+                    <p className={`md:text-2xl text-lg font-bold ${filteredData.reduce((sum, record) => sum + (record.financialSummary?.netProfit || 0), 0) >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>
                       {formatCurrency(filteredData.reduce((sum, record) => sum + (record.financialSummary?.netProfit || 0), 0))}
                     </p>
                   </div>
-                  <div className={`p-3 rounded-full ${filteredData.reduce((sum, record) => sum + (record.financialSummary?.netProfit || 0), 0) >= 0 ? 'bg-blue-100 dark:bg-blue-900/20' : 'bg-orange-100 dark:bg-orange-900/20'}`}>
+                  <div className={`p-3 rounded-full hidden md:block ${filteredData.reduce((sum, record) => sum + (record.financialSummary?.netProfit || 0), 0) >= 0 ? 'bg-blue-100 dark:bg-blue-900/20' : 'bg-orange-100 dark:bg-orange-900/20'}`}>
                     <svg className={`w-6 h-6 ${filteredData.reduce((sum, record) => sum + (record.financialSummary?.netProfit || 0), 0) >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
@@ -372,15 +372,15 @@ export default function ProfitLossBreakdownPage() {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 md:p-4 p-2">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Records</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                    <p className="md:text-2xl text-lg font-bold text-slate-900 dark:text-slate-100">
                       {filteredData.length}
                     </p>
                   </div>
-                  <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-full">
+                  <div className="hidden md:block p-3 bg-purple-100 dark:bg-purple-900/20 rounded-full">
                     <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
@@ -390,9 +390,9 @@ export default function ProfitLossBreakdownPage() {
             </div>
 
             {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 md:gap-8 gap-4 mb-4">
               {/* Expense Category Breakdown */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 md:p-4 p-2">
                 <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
                   Expense Category Breakdown
                 </h3>
@@ -400,25 +400,34 @@ export default function ProfitLossBreakdownPage() {
                   <div className="flex items-center gap-6">
                     {/* Pie Chart */}
                     <div className="flex-1">
-                      <ResponsiveContainer width="100%" height={200}>
+                    <Box
+                      sx={{
+                        height: { xs: 160, md: 200 }, // 160px on mobile, 200px on desktop
+                        width: "100%",
+                      }}
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                         <Pie
-                             data={expenseCategoryData}
-                             cx="50%"
-                             cy="50%"
-                             labelLine={false}
-                             label={false}
-                             outerRadius={80}
-                             fill="#8884d8"
-                             dataKey="value"
-                           >
+                          <Pie
+                            data={expenseCategoryData}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius="80%"
+                            dataKey="value"
+                          >
                             {expenseCategoryData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={getCategoryColor(entry.category)} />
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={getCategoryColor(entry.category)}
+                              />
                             ))}
                           </Pie>
-                          <Tooltip formatter={(value: number) => [formatCurrency(value), 'Amount']} />
+                          <Tooltip
+                            formatter={(value: number) => [formatCurrency(value), "Amount"]}
+                          />
                         </PieChart>
                       </ResponsiveContainer>
+                      </Box>
                     </div>
 
                     {/* Category Labels */}
@@ -452,8 +461,8 @@ export default function ProfitLossBreakdownPage() {
               </div>
 
               {/* Income Category Breakdown */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 md:p-4 p-2">
+                <h3 className="md:text-lg text-base font-semibold text-slate-800 dark:text-slate-200 mb-4">
                   Income Category Breakdown
                 </h3>
                 {incomeCategoryData.length > 0 ? (
@@ -461,25 +470,37 @@ export default function ProfitLossBreakdownPage() {
                     
                     {/* Pie Chart */}
                     <div className="flex-1">
-                      <ResponsiveContainer width="100%" height={200}>
-                        <PieChart>
-                         <Pie
-                             data={incomeCategoryData}
-                             cx="50%"
-                             cy="50%"
-                             labelLine={false}
-                             label={false}
-                             outerRadius={80}
-                             fill="#8884d8"
-                             dataKey="value"
-                           >
-                            {incomeCategoryData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={getCategoryColor(entry.category)} />
-                            ))}
-                          </Pie>
-                          <Tooltip formatter={(value: number) => [formatCurrency(value), 'Amount']} />
-                        </PieChart>
-                      </ResponsiveContainer>
+                      <Box
+                        sx={{
+                          height: { xs: 160, md: 200 }, // responsive height
+                          width: "100%",
+                        }}
+                      >
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={incomeCategoryData}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={false}
+                              outerRadius="80%" // scales with container height
+                              fill="#8884d8"
+                              dataKey="value"
+                            >
+                              {incomeCategoryData.map((entry, index) => (
+                                <Cell
+                                  key={`cell-${index}`}
+                                  fill={getCategoryColor(entry.category)}
+                                />
+                              ))}
+                            </Pie>
+                            <Tooltip
+                              formatter={(value: number) => [formatCurrency(value), "Amount"]}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </Box>
                     </div>
                     {/* Category Labels */}
                     <div className="flex-1 space-y-3">
@@ -513,9 +534,9 @@ export default function ProfitLossBreakdownPage() {
             </div>
 
             {/* Payment Methods and Daily Flow */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 md:gap-8 gap-4 mb-4">
               {/* Payment Methods */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 md:p-4 p-2">
                 <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
                   Payment Methods
                 </h3>
@@ -540,8 +561,8 @@ export default function ProfitLossBreakdownPage() {
               </div>
 
               {/* Daily Income vs Expenses Flow */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 md:p-4 p-2">
+                <h3 className="md:text-lg text-base font-semibold text-slate-800 dark:text-slate-200 mb-4">
                   Daily Income vs Expenses Flow
                 </h3>
                 {dailyBreakdownData.length > 0 ? (

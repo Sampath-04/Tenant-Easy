@@ -33,17 +33,17 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
   const totalPaymentCount = rentPayments.length + noticePayments.length;
 
   return (
-    <Box className="space-y-4">
+    <Box className="space-y-4 mt-4">
       {totalPaymentCount === 0 ? (
         <Alert severity="info" className="rounded-lg">
           No payment history available.
         </Alert>
       ) : (
         <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
-          <div className="p-6">
+          <div className="md:p-6 p-3">
             <div className="flex items-center gap-2 mb-4">
               <ReceiptIcon className="text-green-600 dark:text-green-400" />
-              <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
+              <Typography className="font-semibold text-gray-900 dark:text-white md:text-xl text-lg">
                 Payment History
               </Typography>
               <Chip
@@ -65,13 +65,13 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
             </div>
 
             {/* Payment Summary */}
-            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-              <div className="flex items-center gap-2 mb-2">
+            <div className="md:mb-4 mb-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className=" flex items-center gap-2 mb-2">
                 <Typography variant="body2" className="font-medium text-blue-800 dark:text-blue-300">
                   Payment Summary:
                 </Typography>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="grid md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="text-gray-600 dark:text-gray-400">Total Amount:</span>
                   <span className="font-semibold ml-1 text-blue-600 dark:text-blue-400">
@@ -100,6 +100,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
             </div>
 
             <div className="space-y-3">
+              <div className='flex w-[290px] md:w-full overflow-x-scroll md:overflow-x-hidden md:flex-col md:gap-3 gap-2'>
               {allPayments.map((payment, index) => {
                 // Determine if this payment is from notice or rent history
                 const isFromNotice = noticePayments.some(np => np._id === payment._id);
@@ -108,7 +109,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                 return (
                   <div
                     key={payment._id}
-                    className={`p-4 rounded-lg border ${
+                    className={`min-w-[275px] md:min-w-auto md:w-full md:p-4 p-3 rounded-lg border ${
                       isFromNotice 
                         ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
                         : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600'
@@ -116,7 +117,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                   >
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                       <div className="flex-1">
-                        <div className="flex flex-row gap-24">
+                        <div className="grid grid-cols-2 md:flex md:flex-row flex-col md:gap-24 gap-2">
                           <div>
                             <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                               Payment Date
@@ -145,22 +146,6 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                               {payment.metadata.paidTo}
                             </Typography>
                           </div>
-                          {/* <div>
-                            <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
-                              Recorded By
-                            </Typography>
-                            <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
-                              {payment.recordedBy.name} ({payment.recordedBy.role})
-                            </Typography>
-                          </div> */}
-                          {/* <div>
-                            <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
-                              Comments
-                            </Typography>
-                            <Typography variant="body1" className="font-medium text-gray-900 dark:text-white">
-                              {payment.comments || '-'}
-                            </Typography>
-                          </div> */}
                           <div>
                             <Typography variant="body2" className="text-gray-500 dark:text-gray-400">
                               Payment Proof
@@ -187,7 +172,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                           </div>
                         </div>
 
-                        <div className="mt-3 flex items-center gap-4">
+                        <div className="mt-3 md:flex items-center md:gap-4 gap-2 grid">
                           <div className="flex items-center gap-2">
                             <PersonIcon className="text-gray-400 dark:text-gray-500 w-4 h-4" />
                             <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
@@ -224,6 +209,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                   </div>
                 );
               })}
+              </div> 
 
               {totalPaymentCount === 0 && (
                 <div className="text-center py-8">

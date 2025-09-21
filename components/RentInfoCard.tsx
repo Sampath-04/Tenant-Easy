@@ -212,7 +212,7 @@ export default function RentInfoCard({ record, getCurrentDate }: RentInfoCardPro
       </div>
 
       {/* Cycle and Rent Details */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 md:gap-6 gap-2 mb-4">
         {/* Year and Current Cycle Information */}
         <div className="space-y-4">
           <div className='grid gap-1'>

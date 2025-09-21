@@ -81,7 +81,7 @@ export function AppHeader({
         <div className="flex justify-between items-center md:h-16 h-12">
           <div className="flex items-center space-x-4">
             <div className="flex flex-col gap-2">
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">
                 {title}
               </h1>
               {subtitle && (
