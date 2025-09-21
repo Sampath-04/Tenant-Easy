@@ -100,7 +100,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
             </div>
 
             <div className="space-y-3">
-              <div className='flex w-[290px] md:w-full overflow-x-scroll md:overflow-x-hidden md:flex-col md:gap-3 gap-2'>
+              <div className='flex w-[270px] md:w-full overflow-x-scroll md:overflow-x-hidden md:flex-col md:gap-3 gap-2'>
               {allPayments.map((payment, index) => {
                 // Determine if this payment is from notice or rent history
                 const isFromNotice = noticePayments.some(np => np._id === payment._id);
@@ -109,7 +109,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                 return (
                   <div
                     key={payment._id}
-                    className={`min-w-[275px] md:min-w-auto md:w-full md:p-4 p-3 rounded-lg border ${
+                    className={`min-w-[250px] md:min-w-auto md:w-full md:p-4 p-3 rounded-lg border ${
                       isFromNotice 
                         ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
                         : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600'

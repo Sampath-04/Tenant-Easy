@@ -96,11 +96,11 @@ export default function ElectricityReadingsSection({
 
                 <div className="space-y-3">
                 <div className="md:space-y-3 space-y-0">
-                    <div className='flex w-[300px] md:w-full overflow-x-scroll md:overflow-x-hidden md:flex-col gap-3'>
+                    <div className='flex w-[270px] md:w-full overflow-x-scroll md:overflow-x-hidden md:flex-col md:gap-3 gap-2'>
                         {allReadings.map((reading) => (
                             <div
                                 key={reading._id}
-                                className={`min-w-[275px] md:min-w-auto md:w-full md:p-4  p-3 rounded-lg border ${noticeReadings.some((r) => r._id === reading._id)
+                                className={`min-w-[260px] md:min-w-auto md:w-full md:p-4  p-3 rounded-lg border ${noticeReadings.some((r) => r._id === reading._id)
                                         ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
                                         : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600'
                                     }`}
