@@ -146,7 +146,6 @@ export default function RentRecordsPage() {
     filters.rentStatus === '' ? undefined : filters.rentStatus as "pending" | "due" | "upcoming",
   );
 
-  console.log("test rename project")
   // Get rooms for dropdown
   const { data: roomsResponse } = useRoomList(selectedProperty?.id || '');
   const rooms = roomsResponse?.data || [];

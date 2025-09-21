@@ -201,11 +201,11 @@ export default function RefundsPage() {
           <div className="md:p-6 p-2">
             {/* Summary Cards */}
             {
-              refundsLoading ? (
-                <div className="grid grid-cols-2 md:grid-cols-5 md:gap-6 gap-3 md:mb-8 mb-6">
-                  <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
-                  <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
-                  <Skeleton variant="rectangular" width={290} height={142} sx={{ borderRadius: '12px' }} />
+                refundsLoading ? (
+                <div className="grid grid-cols-2 md:grid-cols-5 md:gap-6 gap-3 md:mb-8 mb-6 h-[325px] md:h-[142px]">
+                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: '100%', height: '100%'}} />
+                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: '100%', height: '100%'}} />
+                  <Skeleton variant="rectangular" sx={{ borderRadius: '12px', width: '100%', height: '100%'}} />
                 </div>
               ) : (
                 (refundsResponse?.statistics || !refundsLoading) && (

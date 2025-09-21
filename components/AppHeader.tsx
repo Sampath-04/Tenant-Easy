@@ -50,7 +50,17 @@ export function AppHeader({
 
   const isActive = (href?: string) => {
     if (!href) return false;
-    return pathname === href || pathname.startsWith(href + '/');
+    
+    // Exact match
+    if (pathname === href) return true;
+    
+    // For dashboard, only match exact path or direct children (not all sub-routes)
+    if (href === '/dashboard') {
+      return pathname === '/dashboard';
+    }
+    
+    // For other routes, check if pathname starts with href + '/'
+    return pathname.startsWith(href + '/');
   };
 
   // Block scrolling when mobile sidebar is open

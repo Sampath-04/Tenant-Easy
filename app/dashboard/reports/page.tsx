@@ -117,6 +117,7 @@ export default function ReportsPage() {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [loadingReport, setLoadingReport] = useState<string | null>(null);
   
   // Month/Year filter states for profit & loss
   const [monthFrom, setMonthFrom] = useState<string>('');
@@ -141,6 +142,7 @@ export default function ReportsPage() {
       // Directly export tenant analysis without dialog
       if (!selectedProperty) return;
       
+      setLoadingReport(report.id);
       setIsExporting(true);
       try {
         const response = await report.exportFunction(selectedProperty.id);
@@ -153,6 +155,7 @@ export default function ReportsPage() {
         const { message, config } = showErrorToast(error.message || 'Failed to export tenant analysis report');
         toast.error(message, config);
       } finally {
+        setLoadingReport(null);
         setIsExporting(false);
       }
     } else if (report.id === 'profit-loss') {
@@ -181,6 +184,7 @@ export default function ReportsPage() {
       return;
     }
 
+    setLoadingReport(selectedReport.id);
     setIsExporting(true);
 
     try {
@@ -207,6 +211,7 @@ export default function ReportsPage() {
       const { message, config } = showErrorToast(error.message || 'Failed to export report');
       toast.error(message, config);
     } finally {
+      setLoadingReport(null);
       setIsExporting(false);
     }
   };
@@ -221,6 +226,7 @@ export default function ReportsPage() {
       return;
     }
 
+    setLoadingReport('profit-loss');
     setIsExporting(true);
 
     try {
@@ -247,6 +253,7 @@ export default function ReportsPage() {
       const { message, config } = showErrorToast(error.message || 'Failed to export report');
       toast.error(message, config);
     } finally {
+      setLoadingReport(null);
       setIsExporting(false);
     }
   };
@@ -313,11 +320,28 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 relative">
       <AppHeader
         title="Reports"
         subtitle={`Generate Excel reports for ${selectedProperty.name}`}
       />
+
+      {/* Global Loading Overlay */}
+      {isExporting && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-2xl flex flex-col items-center gap-4">
+            <CircularProgress size={40} />
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                Generating Report
+              </h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">
+                Please wait while we prepare your {loadingReport === 'profit-loss' ? 'Profit & Loss' : loadingReport === 'tenant-analysis' ? 'Tenant Analysis' : 'report'}...
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className='px-6 pt-6'>
         <BreadCrumbs items={breadcrumbs} />
@@ -370,14 +394,28 @@ export default function ReportsPage() {
               </p>
               
               <button
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-2 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl cursor-pointer"
+                className={`w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-2 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl ${
+                  loadingReport === report.id ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer'
+                }`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleReportSelect(report);
+                  if (loadingReport !== report.id) {
+                    handleReportSelect(report);
+                  }
                 }}
+                disabled={loadingReport === report.id}
               >
-                <DownloadIcon className="h-5 w-5" />
-                Generate Report
+                {loadingReport === report.id ? (
+                  <>
+                    <CircularProgress size={20} color="inherit" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <DownloadIcon className="h-5 w-5" />
+                    Generate Report
+                  </>
+                )}
               </button>
             </div>
           ))}
