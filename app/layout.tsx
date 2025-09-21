@@ -23,7 +23,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Easy Tenant - Property Management System",
+  title: "Tenant Easy - Property Management System",
   description: "Modern property management application for tenants, owners, and administrators",
 };
 
