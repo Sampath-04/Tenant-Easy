@@ -15,6 +15,7 @@ import {
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { MenuItem, menuItems, actionItems } from './DashboardSidebar';
+import { getCurrentDate } from '@/lib/utils/formatters';
 
 interface AppHeaderProps {
   title: string;
@@ -93,6 +94,9 @@ export function AppHeader({
             <div className="flex flex-col gap-2">
               <h1 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">
                 {title}
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {getCurrentDate().toLocaleDateString()}
+                </p>
               </h1>
               {subtitle && (
                 <p className="hidden md:block text-sm text-gray-600 dark:text-gray-400">
