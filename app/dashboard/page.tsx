@@ -269,7 +269,7 @@ function DashboardContent() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 md:gap-6 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-5 md:gap-6 gap-3 mb-8">
           {stats.map((stat, index) => (
             <Link
               key={index}
@@ -307,21 +307,21 @@ function DashboardContent() {
           <h2 className="md:text-xl text-lg font-semibold text-gray-900 dark:text-white md:mb-6 mb-4">
             Quick Actions
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 md:gap-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 md:gap-6 gap-3">
             {quickActions.map((action, index) => (
               <Link
                 key={index}
                 href={action.href}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 md:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all group hover:scale-[1.02]"
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm md:p-4 p-3  border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all group hover:scale-[1.02]"
               >
                 <div className={`w-12 h-12 rounded-lg ${getColorClasses(action.color)} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                   {action.icon}
                 </div>
                 
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                <h3 className="md:text-lg text-base font-semibold text-gray-900 dark:text-white mb-2">
                   {action.title}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm  text-gray-600 dark:text-gray-400">
                   {action.description}
                 </p>
               </Link>
