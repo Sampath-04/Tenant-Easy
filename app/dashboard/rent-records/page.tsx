@@ -240,7 +240,7 @@ export default function RentRecordsPage() {
         title="All Rent Records"
         subtitle={`${selectedProperty?.name || 'Property'} - Complete Rent History`}
       />
-      <div className='px-6 pt-6'>
+      <div className='px-6 md:pt-6 pt-4'>
         <BreadCrumbs items={breadcrumbs} />
       </div>
 
@@ -609,6 +609,12 @@ export default function RentRecordsPage() {
                     '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
                       color: 'inherit',
                     },
+                    "& .MuiInputBase-root":{
+                    marginRight:{xs: "4px", md: "16px"}
+                    },
+                    "& .MuiTablePaginationActions-root":{
+                      marginLeft:{xs: "0px", md: "16px"}
+                    }
                   }}
                 />
               </div>

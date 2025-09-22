@@ -7,7 +7,8 @@ import { useExpensesByProperty, useDeleteExpense, useUpdateExpense } from '@/hoo
 import { Expense, ExpenseFilters, UpdateExpenseData } from '@/lib/api/expenses';
 import { useProperty } from '@/contexts/PropertyContext';
 import { useCategories } from '@/hooks/useCategories';
-import { Select, MenuItem, FormControl, InputLabel, Dialog, TablePagination, TextField, Button, IconButton, Tooltip, Box, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Select, MenuItem, FormControl, InputLabel, Dialog, TablePagination, TextField, Button, IconButton, Tooltip, Box, DialogTitle, DialogContent, DialogActions, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
+import { ExpandMore } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -314,9 +315,9 @@ export default function ExpensesListPage() {
       />
       
           <div>
-        <div className='px-4 md:px-6 pt-3  md:pt-6 flex flex-row justify-between items-center'>
+        <div className='px-4 md:px-6 pt-4 grid gap-2  md:pt-6 md:flex md:flex-row justify-between items-center'>
           <BreadCrumbs items={breadcrumbs} />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 py-2">
             {expensesResponse?.data?.expenses && expensesResponse.data.expenses.length > 0 && (
               <Tooltip title="Toggle Filters">
                 <IconButton
@@ -338,7 +339,7 @@ export default function ExpensesListPage() {
         </div>
 
         {/* Main Content */}
-        <main className="mx-auto px-4 md:px-6 pt-4">
+        <main className="mx-auto px-4 md:px-6 md:pt-4 pt-2">
         {/* Filters Section */}
           <div className={`overflow-hidden transition-all duration-300 ${
             showFilters ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
@@ -346,7 +347,7 @@ export default function ExpensesListPage() {
             <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-lg p-4 border border-white/20 dark:border-gray-700/50 mb-4">
               <div className="flex flex-row justify-between md:flex-col lg:flex-row lg:items-center lg:justify-between mb-3">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  <h2 className="md:text-xl text-base font-bold text-gray-900 dark:text-white mb-2">
                     Filter Expenses
                   </h2>
                 </div>
@@ -360,7 +361,7 @@ export default function ExpensesListPage() {
           </div>
           
               {/* Filter Controls */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 md:gap-6 gap-2 mt-4">
               {/* Category Filter */}
                 <div className="space-y-2">
                   <TextField
@@ -405,28 +406,28 @@ export default function ExpensesListPage() {
               </div>
 
                 {/* Amount Range */}
-                  <Box display="flex" gap={2}>
-                    <TextField
-                    type="number"
-                      placeholder="Min Amount"
-                    value={amountRange.minAmount}
-                    onChange={(e) => handleAmountRangeChange('minAmount', e.target.value)}
-                      size="small"
-                      sx={{ minWidth: '120px' }}
+                <Box display="flex" sx={{ gap: {xs: 1, md: 2} }}>
+                  <TextField
+                  type="number"
+                    placeholder="Min Amount"
+                  value={amountRange.minAmount}
+                  onChange={(e) => handleAmountRangeChange('minAmount', e.target.value)}
+                    size="small"
+                    sx={{ minWidth: '120px' }}
+                />
+                  <TextField
+                  type="number"
+                    placeholder="Max Amount"
+                  value={amountRange.maxAmount}
+                  onChange={(e) => handleAmountRangeChange('maxAmount', e.target.value)}
+                    size="small"
+                    sx={{ minWidth: '120px' }}
                   />
-                    <TextField
-                    type="number"
-                      placeholder="Max Amount"
-                    value={amountRange.maxAmount}
-                    onChange={(e) => handleAmountRangeChange('maxAmount', e.target.value)}
-                      size="small"
-                      sx={{ minWidth: '120px' }}
-                    />
-                  </Box>
+                </Box>
 
                 {/* Date Range */}
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <Box display="flex" gap={2}>
+                    <Box display="flex" sx={{ gap: {xs: 1, md: 2} }}>
                       <DatePicker
                         label="Start Date"
                         value={startDate}
@@ -460,7 +461,6 @@ export default function ExpensesListPage() {
         {/* Expenses Table */}
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-lg border border-white/30 dark:border-gray-700/50 overflow-hidden mb-5">
 
-
           {isLoading ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
@@ -476,108 +476,233 @@ export default function ExpensesListPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-50 dark:bg-slate-700">
-                    <tr>
-                      <th className='px-6 py-4 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider'>No.</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        Expense Details
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        Category
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        Subcategory
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        Amount
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        Recorded By
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-                    {expensesResponse?.data?.expenses?.map((expense, index) => (
-                      <tr key={expense._id} className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150">
-                        <td className="px-6 py-4">
-                          {index + 1}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div>
-                            <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                              {expense.title}
+              {/* Desktop Table View */}
+              <div className="hidden md:block">
+                <div className="overflow-x-auto min-h-[500px]">
+                  <table className="w-full">
+                    <thead className="bg-slate-50 dark:bg-slate-700">
+                      <tr>
+                        <th className='px-6 py-4 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider'>No.</th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          Expense Details
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          Category
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          Subcategory
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          Amount
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          Date
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          Recorded By
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+                      {expensesResponse?.data?.expenses?.map((expense, index) => (
+                        <tr key={expense._id} className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150">
+                          <td className="px-6 py-4">
+                            {index + 1}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div>
+                              <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                {expense.title}
+                              </div>
+                              {expense.description && (
+                                <div className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                                  {expense.description}
+                                </div>
+                              )}
                             </div>
-                            {expense.description && (
-                              <div className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                {expense.description}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full w-fit ${getCategoryColor((expense.category && 'name' in expense.category) ? expense.category.name : 'UNKNOWN')}`}>
+                              {(expense.category && 'name' in expense.category) ? expense.category.name.replace(/_/g, ' ') : 'Unknown Category'}
+                              </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-slate-600 dark:text-slate-400">
+                                {expense.subcategory.replace(/_/g, ' ')}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                              {formatCurrency(expense.totalAmount || expense.amount || 0)}
+                            </div>
+                            {expense.taxAmount && expense.taxAmount > 0 && (
+                              <div className="text-xs text-slate-500 dark:text-slate-400">
+                                +{formatCurrency(expense.taxAmount)} tax
                               </div>
                             )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-slate-900 dark:text-slate-100">
+                              {formatDate(expense.expenseDate)}
+                              </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-slate-900 dark:text-slate-100">
+                              {expense.recordedBy.name}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex gap-2">
+                               <button
+                                 onClick={() => handleEditClick(expense)}
+                                className="text-green-600 dark:text-green-400 p-2 cursor-pointer hover:text-green-800 dark:hover:text-green-300 transition-colors duration-200"
+                                 title="Edit Expense"
+                               >
+                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                 </svg>
+                               </button>
+                               <button
+                                 onClick={() => handleDeleteClick(expense._id, expense.title)}
+                                className="text-red-600 p-2 cursor-pointer dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-200"
+                                 title="Delete Expense"
+                               >
+                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                 </svg>
+                               </button>
+                             </div>
+                             </td>
+                         </tr>
+                          ))}
+                     </tbody>
+                   </table>
+                </div>
+              </div>
+
+              {/* Mobile Accordion View */}
+              <div className="md:hidden min-h-[560px]">
+                {expensesResponse?.data?.expenses?.map((expense, index) => (
+                  <Accordion key={expense._id} className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg shadow-lg border border-white/20 dark:border-gray-700/50 mb-3" sx={{
+                    "&.Mui-expanded": {
+                      margin: 0,
+                    }
+                  }}>
+                    <AccordionSummary
+                      expandIcon={<ExpandMore />}
+                      className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-all duration-200"
+                    >
+                      <div className="flex items-center justify-between w-full pr-4">
+                        <div className="flex items-center space-x-3 w-full justify-between">
+                          <div className='flex flex-row items-center gap-3 justify-between w-full'>
+                            <div className="flex items-center space-x-3">
+                            
+                              <div className="flex gap-2 items-center">
+                                <p className="font-semibold text-gray-900 dark:text-white text-sm md:text-base max-w-[180px] md:max-w-none truncate">
+                                  {expense.title}
+                                </p>
+                                <p className="text-gray-600 dark:text-gray-400 text-xs">
+                                  {formatCurrency(expense.totalAmount || expense.amount || 0)}
+                                </p>
+                              </div>
+                            </div>
+                            <div className='flex flex-row items-center gap-2'>
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getCategoryColor((expense.category && 'name' in expense.category) ? expense.category.name : 'UNKNOWN')}`}>
+                                {(expense.category && 'name' in expense.category) ? expense.category.name.replace(/_/g, ' ') : 'Unknown'}
+                              </span>
+                            </div>
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full w-fit ${getCategoryColor((expense.category && 'name' in expense.category) ? expense.category.name : 'UNKNOWN')}`}>
-                            {(expense.category && 'name' in expense.category) ? expense.category.name.replace(/_/g, ' ') : 'Unknown Category'}
-                            </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-slate-600 dark:text-slate-400">
+                        </div>
+                      </div>
+                    </AccordionSummary>
+                    <AccordionDetails className="bg-gray-50/30 dark:bg-gray-700/30" sx={{
+                      padding: '8px 16px',
+                    }}>
+                      <div className="space-y-4">
+                        {/* Details Grid */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <Typography variant="caption" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              Amount
+                            </Typography>
+                            <Typography variant="body2" className="text-green-700 dark:text-green-400 font-semibold">
+                              {formatCurrency(expense.totalAmount || expense.amount || 0)}
+                            </Typography>
+                            {expense.taxAmount && expense.taxAmount > 0 && (
+                              <Typography variant="caption" className="text-gray-500 dark:text-gray-400">
+                                +{formatCurrency(expense.taxAmount)} tax
+                              </Typography>
+                            )}
+                          </div>
+                          <div>
+                            <Typography variant="caption" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              Date
+                            </Typography>
+                            <Typography variant="body2" className="text-gray-900 dark:text-white">
+                              {formatDate(expense.expenseDate)}
+                            </Typography>
+                          </div>
+                          <div>
+                            <Typography variant="caption" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              Category
+                            </Typography>
+                            <Typography variant="body2" className="text-gray-900 dark:text-white">
+                              {(expense.category && 'name' in expense.category) ? expense.category.name.replace(/_/g, ' ') : 'Unknown Category'}
+                            </Typography>
+                          </div>
+                          <div>
+                            <Typography variant="caption" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              Subcategory
+                            </Typography>
+                            <Typography variant="body2" className="text-gray-900 dark:text-white">
                               {expense.subcategory.replace(/_/g, ' ')}
+                            </Typography>
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                            {formatCurrency(expense.totalAmount || expense.amount || 0)}
+                          <div>
+                            <Typography variant="caption" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              Recorded By
+                            </Typography>
+                            <Typography variant="body2" className="text-gray-900 dark:text-white">
+                              {expense.recordedBy.name}
+                            </Typography>
                           </div>
-                          {expense.taxAmount && expense.taxAmount > 0 && (
-                            <div className="text-xs text-slate-500 dark:text-slate-400">
-                              +{formatCurrency(expense.taxAmount)} tax
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-slate-900 dark:text-slate-100">
-                            {formatDate(expense.expenseDate)}
-                            </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-slate-900 dark:text-slate-100">
-                            {expense.recordedBy.name}
+                        </div>
+                        
+                        {/* Description (if available) */}
+                        {expense.description && (
+                          <div>
+                            <Typography variant="caption" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              Description
+                            </Typography>
+                            <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+                              {expense.description}
+                            </Typography>
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex gap-2">
-                             <button
-                               onClick={() => handleEditClick(expense)}
-                              className="text-green-600 dark:text-green-400 p-2 cursor-pointer hover:text-green-800 dark:hover:text-green-300 transition-colors duration-200"
-                               title="Edit Expense"
-                             >
-                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                               </svg>
-                             </button>
-                             <button
-                               onClick={() => handleDeleteClick(expense._id, expense.title)}
-                              className="text-red-600 p-2 cursor-pointer dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-200"
-                               title="Delete Expense"
-                             >
-                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                               </svg>
-                             </button>
-                           </div>
-                           </td>
-                       </tr>
-                        ))}
-                   </tbody>
-                 </table>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex justify-center space-x-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                          <button
+                            onClick={() => handleEditClick(expense)}
+                            className="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 text-sm font-medium border border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 rounded-md transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700/30"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(expense._id, expense.title)}
+                            className="px-4 py-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 text-sm font-medium border border-red-200 dark:border-red-600 hover:border-red-300 dark:hover:border-red-500 rounded-md transition-all duration-200 hover:bg-red-50 dark:hover:bg-red-700/30"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                        
+                      </div>
+                    </AccordionDetails>
+                  </Accordion>
+                ))}
               </div>
 
               {/* MUI Pagination */}
@@ -607,6 +732,12 @@ export default function ExpensesListPage() {
                       '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
                         color: 'inherit',
                       },
+                      "& .MuiInputBase-root":{
+                        marginRight:{xs: "4px", md: "16px"}
+                      },
+                      "& .MuiTablePaginationActions-root":{
+                        marginLeft:{xs: "0px", md: "16px"}
+                      }
                     }}
                   />
                 </div>
@@ -627,15 +758,16 @@ export default function ExpensesListPage() {
           // for mobile view
           "@media (max-width: 768px)": {
             "& .MuiPaper-elevation": {
-              margin: "16px"
+              margin: "16px",
+              borderRadius: "16px",
             }
           }
         }}
       >
         <DialogTitle 
           sx={(theme) => ({
-            px: 3,
-            py: 2,
+            px: {xs: 2, md: 3},
+            py: {xs: 1, md: 2},
             backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
             borderBottom: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
             color: theme.palette.mode === 'dark' ? '#f87171' : '#ef4444',
@@ -663,7 +795,7 @@ export default function ExpensesListPage() {
         
         <DialogContent 
           sx={(theme) => ({
-            px: 3,
+            px: {xs: 2, md: 3},
             paddingBottom: '0px !important',
             backgroundColor: theme.palette.mode === 'dark' ? '#111827' : '#ffffff',
             height: '130px',
@@ -679,20 +811,20 @@ export default function ExpensesListPage() {
         
         <DialogActions 
           sx={(theme) => ({
-            px: 3,
-            py: 2, 
-            gap: 2,
+            px: {xs: 2, md: 3},
+            py: {xs: 1, md: 2}, 
+            gap: {xs: 1, md: 2},
             backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
             borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
           })}
         >
           <Button
-                  onClick={handleDeleteCancel}
+            onClick={handleDeleteCancel}
             disabled={deleteExpenseMutation.isPending}
             sx={(theme) => ({
               backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280',
               color: '#ffffff',
-              px: 3,
+              px: {xs: 2, md: 3},
               borderRadius: '30px',
               fontSize: '0.875rem',
               fontWeight: 500,
@@ -709,12 +841,12 @@ export default function ExpensesListPage() {
                   Cancel
           </Button>
           <Button
-                  onClick={handleDeleteConfirm}
-                  disabled={deleteExpenseMutation.isPending}
+            onClick={handleDeleteConfirm}
+            disabled={deleteExpenseMutation.isPending}
             sx={(theme) => ({
               backgroundColor: theme.palette.mode === 'dark' ? '#dc2626' : '#ef4444',
               color: '#ffffff',
-              px: 3,
+              px: {xs: 2, md: 3},
               borderRadius: '30px',
               fontSize: '0.875rem',
               fontWeight: 500,
@@ -738,7 +870,7 @@ export default function ExpensesListPage() {
               </>
             ) : (
               <>
-                <DeleteIcon fontSize="small" />
+                <DeleteIcon fontSize="small" sx={{display: {xs: 'none', md: 'block'}}} />
                 Delete Expense
               </>
             )}
@@ -756,16 +888,17 @@ export default function ExpensesListPage() {
           // for mobile view
           "@media (max-width: 768px)": {
             "& .MuiPaper-elevation": {
-              margin: "16px"
+              margin: "0px",
+              width: "90%",
             }
           }
         }}
       >
         <div className="bg-white dark:bg-slate-800 shadow-2xl max-h-[90vh] overflow-y-auto">
             {/* Header */}
-          <div className="bg-slate-50 dark:bg-slate-700 px-6 py-4 border-b border-slate-200 dark:border-slate-600">
+          <div className="bg-slate-50 dark:bg-slate-700 md:px-6 px-4 md:py-4 py-2 border-b border-slate-200 dark:border-slate-600">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 flex items-center">
+                <h3 className="md:text-xl text-base font-semibold text-slate-800 dark:text-slate-200 flex items-center">
                   <svg className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
@@ -783,10 +916,10 @@ export default function ExpensesListPage() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleEditSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleEditSubmit} className="md:p-6 p-3 md:space-y-6 space-y-4">
               {/* Basic Information */}
-              <div className="space-y-4">
-                <h4 className="text-lg font-medium text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-600 pb-2">
+              <div className="md:space-y-4 space-y-2">
+                <h4 className="md:text-lg text-base font-medium text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-600 pb-2">
                   Basic Information
                 </h4>
                 
@@ -840,18 +973,49 @@ export default function ExpensesListPage() {
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Expense Date <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="date"
-                    value={editFormData.expenseDate}
-                    onChange={(e) => handleEditInputChange('expenseDate', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${editErrors.expenseDate
-                        ? 'border-red-500 bg-red-50 dark:bg-red-900/20' 
-                        : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700'
-                    }`}
-                  />
-                  {editErrors.expenseDate && (
-                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{editErrors.expenseDate}</p>
-                  )}
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                      value={editFormData.expenseDate ? new Date(editFormData.expenseDate) : null}
+                      onChange={(newValue) => {
+                        const dateString = newValue ? newValue.toISOString().split('T')[0] : '';
+                        handleEditInputChange('expenseDate', dateString);
+                      }}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: !!editErrors.expenseDate,
+                          helperText: editErrors.expenseDate,
+                          size: "small",
+                          sx: (theme) => ({
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: '8px',
+                              backgroundColor: theme.palette.mode === 'dark' ? '#1e293b' : '#ffffff',
+                              '& fieldset': {
+                                borderColor: editErrors.expenseDate 
+                                  ? '#ef4444' 
+                                  : (theme.palette.mode === 'dark' ? '#475569' : '#e2e8f0'),
+                                borderWidth: '1px',
+                              },
+                              '&:hover fieldset': {
+                                borderColor: editErrors.expenseDate 
+                                  ? '#dc2626' 
+                                  : (theme.palette.mode === 'dark' ? '#64748b' : '#cbd5e1'),
+                              },
+                              '&.Mui-focused fieldset': {
+                                borderColor: editErrors.expenseDate ? '#dc2626' : '#3b82f6',
+                                boxShadow: editErrors.expenseDate 
+                                  ? '0 0 0 2px rgba(239, 68, 68, 0.2)' 
+                                  : '0 0 0 2px rgba(59, 130, 246, 0.2)',
+                              },
+                            },
+                            '& .MuiInputBase-input': {
+                              padding: '8px 12px',
+                            },
+                          }),
+                        },
+                      }}
+                    />
+                  </LocalizationProvider>
                 </div>
               </div>
 
@@ -935,18 +1099,18 @@ export default function ExpensesListPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-600">
+              <div className="flex justify-end md:space-x-3 space-x-2 pt-4 border-t border-slate-200 dark:border-slate-600">
                 <button
                   type="button"
                   onClick={handleEditCancel}
-                className="px-6 py-2 cursor-pointer border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 rounded-lg transition-colors duration-200 font-medium"
+                className="md:px-6 px-4 md:py-2 py-1 cursor-pointer border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 rounded-lg transition-colors duration-200 font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={updateExpenseMutation.isPending}
-                className="px-6 py-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center"
+                className="md:px-6 px-4 md:py-2 py-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center"
                 >
                   {updateExpenseMutation.isPending ? (
                     <>

@@ -12,6 +12,9 @@ import CategoryManagementDialog from '@/components/CategoryManagementDialog';
 import { PAYMENT_METHOD_OPTIONS, DEFAULT_PAYMENT_METHOD } from '@/lib/constants/paymentConstants';
 import BreadCrumbs from '@/components/ui/BreadCrumbs';
 import { FormControl, InputLabel, Select, MenuItem, Theme } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 
 interface ExpenseFormData {
@@ -22,7 +25,7 @@ interface ExpenseFormData {
   categoryName: string; // This will be the category name
   subcategory: string;
   paymentMethod: string;
-  expenseDate: string;
+  expenseDate: Date | null;
 }
 
 export default function ExpensesPage() {
@@ -41,7 +44,7 @@ export default function ExpensesPage() {
     categoryName: '', // category name
     subcategory: '',
     paymentMethod: DEFAULT_PAYMENT_METHOD,
-    expenseDate: new Date().toISOString().split('T')[0],
+    expenseDate: new Date(),
   });
 
   // Update propertyId when selectedProperty changes
@@ -98,8 +101,14 @@ export default function ExpensesPage() {
     }
 
     try {
+      // Convert Date object to string format for API
+      const expenseData = {
+        ...formData,
+        expenseDate: formData.expenseDate?.toISOString().split('T')[0] || ''
+      };
+      
       // Create expense using React Query mutation
-      await createExpenseMutation.mutateAsync(formData);
+      await createExpenseMutation.mutateAsync(expenseData);
   
       // Show success message and redirect
       const successToast = showSuccessToast('Expense recorded successfully!');
@@ -131,31 +140,32 @@ export default function ExpensesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <AppHeader 
         title="Record New Expense"
         subtitle="Track and manage your property expenses"
       />
 
-      <div className='px-6 pt-6'>
+      <div className='px-6 md:pt-6 pt-4'>
         <BreadCrumbs items={breadcrumbs} />
       </div>
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 pb-8">
         {/* Header Section */}
-        <div className="text-center mb-6">
-          <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto">
+        <div className="text-center md:mb-6 mb-4">
+          <p className="text-slate-600 text-start md:text-center dark:text-slate-400 md:text-lg text-base max-w-2xl mx-auto">
             Track your property expenses with our comprehensive categorization system. 
             Keep your financial records organized and up-to-date.
           </p>
           
           {/* Action Buttons */}
-          <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
+          <div className=" md:mt-6 mt-4 grid grid-cols-2 md:flex flex-col sm:flex-row md:gap-4 gap-3 justify-center">
             <button
               onClick={() => router.push('/dashboard/expenses/list')}
-              className="cursor-pointer  inline-flex items-center px-6 py-3 border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-all duration-200  hover:scale-105 font-medium"
+              className="cursor-pointer  inline-flex items-center md:px-6 px-4 md:py-3 py-2 md:text-base text-sm text-center justify-center border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-all duration-200  hover:scale-105 font-medium"
             >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="hidden md:block w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
               View All Expenses
@@ -163,9 +173,9 @@ export default function ExpensesPage() {
             
             <button
               onClick={() => setCategoryDialogOpen(true)}
-              className="cursor-pointer inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-medium transform hover:scale-105"
+              className="cursor-pointer inline-flex items-center md:px-6 px-4 md:py-3 py-2 md:text-base text-sm text-center justify-center bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-medium transform hover:scale-105"
             >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="hidden md:block w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
               Manage Categories
@@ -173,19 +183,19 @@ export default function ExpensesPage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="md:space-y-6 space-y-4">
           {/* Expense Details Card */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div className="bg-slate-50 dark:bg-slate-700 px-8 py-3 border-b border-slate-200 dark:border-slate-600">
-              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 flex items-center">
+            <div className="bg-slate-50 dark:bg-slate-700 md:px-8 px-4 md:py-3 py-2 border-b border-slate-200 dark:border-slate-600">
+              <h3 className="md:text-lg text-base font-semibold text-slate-800 dark:text-slate-200 flex items-center">
                 <svg className="w-6 h-6 mr-3 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 Expense Details
               </h3>
             </div>
-            <div className="p-4 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:p-4 p-2 md:space-y-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 md:gap-6 gap-4">
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
                     Expense Title *
@@ -195,7 +205,7 @@ export default function ExpensesPage() {
                       type="text"
                       value={formData.title}
                       onChange={(e) => handleInputChange('title', e.target.value)}
-                      className={`w-full px-4 py-3 bg-white dark:bg-slate-700 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 ${
+                      className={`w-full md:px-4 px-3 md:py-3 py-2 bg-white dark:bg-slate-700 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 ${
                         errors.title 
                           ? 'border-red-400 focus:border-red-500' 
                           : 'border-slate-200 dark:border-slate-600 focus:border-blue-500'
@@ -230,7 +240,7 @@ export default function ExpensesPage() {
                       type="number"
                       value={formData.amount}
                       onChange={(e) => handleInputChange('amount', parseFloat(e.target.value) || 0)}
-                      className={`w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-700 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 ${
+                      className={`w-full pl-12 pr-4 md:py-3 py-2 bg-white dark:bg-slate-700 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 ${
                         errors.amount 
                           ? 'border-red-400 focus:border-red-500' 
                           : 'border-slate-200 dark:border-slate-600 focus:border-blue-500'
@@ -296,16 +306,16 @@ export default function ExpensesPage() {
 
           {/* Category Selection Card */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div className="bg-slate-50 dark:bg-slate-700 px-8 py-3 border-b border-slate-200 dark:border-slate-600">
-              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 flex items-center">
+            <div className="bg-slate-50 dark:bg-slate-700 md:px-8 px-4 md:py-3 py-2 border-b border-slate-200 dark:border-slate-600">
+              <h3 className="md:text-lg text-base font-semibold text-slate-800 dark:text-slate-200 flex items-center">
                 <svg className="w-6 h-6 mr-3 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
                 Category & Classification
               </h3>
             </div>
-            <div className="p-4 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:p-4 p-2 md:space-y-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 md:gap-6 gap-4">
                 <div className="space-y-2">
                   <FormControl fullWidth error={!!errors.category}>
                     <InputLabel>Category *</InputLabel>
@@ -440,36 +450,56 @@ export default function ExpensesPage() {
 
           {/* Date Card */}
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div className="bg-slate-50 dark:bg-slate-700 px-8 py-3 border-b border-slate-200 dark:border-slate-600">
-              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 flex items-center">
+            <div className="bg-slate-50 dark:bg-slate-700 md:px-8 px-4 md:py-3 py-2 border-b border-slate-200 dark:border-slate-600">
+              <h3 className="md:text-lg text-base font-semibold text-slate-800 dark:text-slate-200 flex items-center">
                 <svg className="w-6 h-6 mr-3 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 Date & Timing
               </h3>
             </div>
-            <div className="p-4">
+            <div className="md:p-4 p-2">
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
                   Expense Date *
                 </label>
-                <div className="relative">
-                  <input
-                    type="date"
-                    value={formData.expenseDate}
-                    onChange={(e) => handleInputChange('expenseDate', e.target.value)}
-                    className={`w-full px-4 py-3 bg-white dark:bg-slate-700 border-2 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-200 ${
-                      errors.expenseDate 
-                        ? 'border-red-400 focus:border-red-500' 
-                        : 'border-slate-200 dark:border-slate-600 focus:border-purple-500'
-                    }`}
-                  />
-                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                </div>
+                <DatePicker
+                  value={formData.expenseDate}
+                  onChange={(newValue) => handleInputChange('expenseDate', newValue)}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      error: !!errors.expenseDate,
+                      helperText: errors.expenseDate,
+                      sx: (theme: Theme) => ({
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '12px',
+                          backgroundColor: theme.palette.mode === 'dark' ? '#1e293b' : '#ffffff',
+                          '& fieldset': {
+                            borderColor: errors.expenseDate 
+                              ? '#ef4444' 
+                              : (theme.palette.mode === 'dark' ? '#475569' : '#e2e8f0'),
+                            borderWidth: '2px',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: errors.expenseDate 
+                              ? '#dc2626' 
+                              : (theme.palette.mode === 'dark' ? '#64748b' : '#cbd5e1'),
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: errors.expenseDate ? '#dc2626' : '#8b5cf6',
+                            boxShadow: errors.expenseDate 
+                              ? '0 0 0 4px rgba(239, 68, 68, 0.2)' 
+                              : '0 0 0 4px rgba(139, 92, 246, 0.2)',
+                          },
+                        },
+                        '& .MuiInputBase-input': {
+                          padding: '12px 14px',
+                        },
+                      }),
+                    },
+                  }}
+                />
                 {errors.expenseDate && (
                   <p className="text-sm text-red-500 flex items-center">
                     <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -483,12 +513,12 @@ export default function ExpensesPage() {
           </div>
 
           {/* Form Actions */}
-          <div className="flex flex-col sm:flex-row justify-end items-center space-y-4 sm:space-y-0 sm:space-x-4">
+          <div className="flex flex-col sm:flex-row justify-end items-center md:space-y-4 space-y-2 md:space-x-4 space-x-2">
     
             <button
               type="submit"
               disabled={isSubmitting}
-              className="cursor-pointer w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium transform hover:scale-105"
+              className="cursor-pointer w-fit md:w-full sm:w-auto md:px-8 px-4 md:py-3 py-2 text-sm md:text-base bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium transform hover:scale-105"
             >
               {isSubmitting ? (
                 <span className="flex items-center justify-center">
@@ -517,6 +547,7 @@ export default function ExpensesPage() {
         onClose={() => setCategoryDialogOpen(false)}
         profileId={selectedProperty?.profile || ''}
       />
-    </div>
+      </div>
+    </LocalizationProvider>
   );
 }

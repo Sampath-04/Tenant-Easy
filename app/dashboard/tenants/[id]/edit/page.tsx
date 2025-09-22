@@ -162,7 +162,7 @@ function TenantEditContent() {
         title="Edit Tenant"
         subtitle={`Editing details for ${tenant?.tenantName || 'Tenant'}`}
       />
-      <div className='px-6 pt-6'>
+      <div className='px-6 md:pt-6 pt-4'>
         <BreadCrumbs items={breadcrumbs} />
       </div>
       

@@ -205,9 +205,22 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
       fullWidth
       PaperProps={{
         sx: {
+          margin: { xs: 0, md: '32px' },
+          width: { xs: '90%', md: '100%' },
           borderRadius: '16px',
           backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          height: { xs: '75vh', md: '75vh' },
+        //   '& .MuiDialog-paper': {
+        //     borderRadius: '20px',
+        //     backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
+        //     maxHeight: '90vh',
+        //     display: 'flex',
+        //     flexDirection: 'column',
+        //     '@media (max-width: 600px)': {
+        //       maxHeight: '95vh',
+        //     }
+        // },
         },
       }}
     >
@@ -219,11 +232,11 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          px: 3,
-          py: 2,
+          px: {xs: 2, md: 3},
+          py: {xs: 1, md: 2},
         }}
       >
-        <Typography sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
+        <Typography sx={{ fontWeight: 600, fontSize: {xs: '1rem', md: '1.25rem'} }}>
           Manage Categories
         </Typography>
         <IconButton onClick={onClose} size="small">
@@ -231,7 +244,7 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
         </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ paddingTop: '24px !important', backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff' }}>
+      <DialogContent sx={{ padding: {xs: '16px !important', md: '24px !important'}, backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff' }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error.message || 'Error loading categories'}
@@ -239,12 +252,12 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
         )}
 
         {/* Add New Category Section */}
-        <Box sx={{ mb: 3, p: 2, border: '1px solid', borderColor: theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb', borderRadius: 2 }}>
-          <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ mb: {xs: 1, md: 3}, p: {xs: 1, md: 2}, border: '1px solid', borderColor: theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb', borderRadius: 2 }}>
+          <p className="font-semibold text-sm md:text-base mb-2 flex items-center" >
             <AddIcon sx={{ mr: 1 }} />
             Add New Category
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          </p>
+          <Box sx={{ display: {xs: 'grid', md: 'flex'}, gap: {xs: 1, md: 2}, alignItems: 'center' }}>
             <TextField
               fullWidth
               size="small"
@@ -279,7 +292,7 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
               categories.map((category) => (
                 <Accordion key={category._id} sx={{ mb: 1 }}>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: {xs: 1, md: 2}, mr: {xs: 1, md: 2} }}>
                       <Typography sx={{ flexGrow: 1 }}>
                         {formatCategoryName(category.name)}
                       </Typography>
@@ -351,7 +364,8 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
                         variant="outlined"
                         onClick={() => handleAddSubcategory(category._id)}
                         disabled={submitting || !newSubcategoryName.trim()}
-                        startIcon={<AddIcon />}
+                        // startIcon={<AddIcon />}
+                        sx={{backgroundColor: theme.palette.mode === 'dark' ? '#4b5563' : '#6b7280', color: '#ffffff', textTransform: 'none'}}
                       >
                         Add
                       </Button>
@@ -421,17 +435,17 @@ const CategoryManagementDialog: React.FC<CategoryManagementDialogProps> = ({
         )}
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, py: 2, gap: 2, backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff', borderTop: '1px solid', borderColor: theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb' }}>
+      <DialogActions sx={{ px: {xs: 2, md: 3}, py: {xs: 1, md: 2}, gap: {xs: 1, md: 2}, backgroundColor: theme.palette.mode === 'dark' ? '#1f2937' : '#ffffff', borderTop: '1px solid', borderColor: theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb' }}>
         <Button
           onClick={onClose}
           variant="outlined"
           sx={{
-            borderRadius: '30px',
+            borderRadius: '24px',
             fontSize: '0.875rem',
             fontWeight: 500,
             textTransform: 'none',
-            px: 3,
-            py: 1,
+            px: {xs: 3},
+            py: {xs: 1},
           }}
         >
           Close

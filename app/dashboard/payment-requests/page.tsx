@@ -189,7 +189,7 @@ export default function PaymentRequestsPage() {
         subtitle={`Manage payment requests submitted by tenants`}
       />
 
-    <div className='px-6 pt-6'>
+    <div className='px-6 md:pt-6 pt-4'>
         <BreadCrumbs items={breadcrumbs} />
       </div>
 

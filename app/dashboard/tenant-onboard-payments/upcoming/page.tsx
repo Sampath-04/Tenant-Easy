@@ -483,6 +483,12 @@ export default function UpcomingTenantsPage() {
                      '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
                        color: 'inherit',
                      },
+                      "& .MuiInputBase-root":{
+                        marginRight:{xs: "4px", md: "16px"}
+                      },
+                      "& .MuiTablePaginationActions-root":{
+                        marginLeft:{xs: "0px", md: "16px"}
+                      }
                    }}
                  />
                </div>

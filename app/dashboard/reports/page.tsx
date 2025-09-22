@@ -343,7 +343,7 @@ export default function ReportsPage() {
         </div>
       )}
 
-      <div className='px-6 pt-6'>
+      <div className='px-6 md:pt-6 pt-4'>
         <BreadCrumbs items={breadcrumbs} />
       </div>
       

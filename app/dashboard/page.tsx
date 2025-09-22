@@ -249,7 +249,7 @@ function DashboardContent() {
         {/* Current Property Info */}
         <div className="md:mb-6 mb-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-200 dark:border-gray-700">
-            <div className="md:flex gap-2 grid items-center justify-between">
+            <div className="md:flex w-full gap-2 grid grid-cols-1 items-center justify-between">
               <div>
                 <h2 className="md:text-lg text-base font-semibold text-gray-900 dark:text-white mb-2">
                   Current Property
