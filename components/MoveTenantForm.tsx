@@ -184,7 +184,7 @@ export default function MoveTenantForm({
       >
         <div className="flex items-center gap-3">
           <HomeIcon className="text-blue-500" />
-          <p className="text-xl font-semibold text-gray-900 dark:text-white">Move Tenant</p>
+          <p className="md:text-xl text-base font-semibold text-gray-900 dark:text-white">Move Tenant</p>
         </div>
         <IconButton onClick={handleClose} disabled={isSubmitting}>
           <CloseIcon />
@@ -194,7 +194,8 @@ export default function MoveTenantForm({
       <DialogContent sx={(theme) => ({
         flex: 1,
         overflow: 'auto',
-        padding: {xs: '8px', md: '24px'},
+        padding: {xs: '12px!important', md: '24px'},
+        // paddingTop: {xs: '8px!important', md: '24px!important'},
         backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
         '&::-webkit-scrollbar': {
           width: '6px',
@@ -211,12 +212,12 @@ export default function MoveTenantForm({
           },
         },
       })}>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="md:space-y-6 space-y-4">
           {/* Current Room Info */}
           {tenant && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800">
-              <p className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-1">Current Room</p>
-              <p className="text-lg font-semibold text-blue-900 dark:text-blue-100">
+            <div className="bg-blue-50 dark:bg-blue-900/20 md:p-4 p-2 rounded-xl border border-blue-200 dark:border-blue-800 flex md:grid items-center gap-2">
+              <p className="text-base font-medium text-blue-800 dark:text-blue-200 mb-1">Current Room</p>
+              <p className="md:text-lg text-base md:font-semibold text-blue-900 dark:text-blue-100">
                 {tenant.room.roomNo} - {tenant.room.roomType}
               </p>
             </div>
@@ -363,7 +364,7 @@ export default function MoveTenantForm({
           </div>
 
           {/* Electricity Readings */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:gap-6 gap-2">
             {/* Current Room Electricity Reading */}
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -448,7 +449,7 @@ export default function MoveTenantForm({
       </DialogContent>
 
       <DialogActions sx={(theme) => ({
-        padding: '20px 24px',
+        padding: {xs: '12px!important', md: '24px'},
         borderTop: `1px solid ${theme.palette.mode === 'dark' ? '#374151' : '#e5e7eb'}`,
         backgroundColor: theme.palette.mode === 'dark' ? '#1a202c' : '#f8fafc',
         gap: '12px',
@@ -477,7 +478,7 @@ export default function MoveTenantForm({
             textTransform: 'none',
             fontWeight: 500,
             fontSize: '14px',
-            padding: '10px 20px',
+            padding: {xs: '10px 14px', md: '10px 20px'},
             borderRadius: '8px',
             transition: 'all 0.2s ease',
           })}
@@ -507,7 +508,7 @@ export default function MoveTenantForm({
             textTransform: 'none',
             fontWeight: 500,
             fontSize: '14px',
-            padding: '10px 20px',
+            padding: {xs: '10px 14px', md: '10px 20px'},
             borderRadius: '8px',
             transition: 'all 0.2s ease',
             display: 'flex',
