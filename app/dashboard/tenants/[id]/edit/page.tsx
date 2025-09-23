@@ -56,7 +56,7 @@ function TenantEditContent() {
         monthlyRent: tenant.foodOpted ? tenant.monthlyRent - (selectedProperty?.foodAmount || 0) : tenant.monthlyRent || 0,
         securityDepositTotal: tenant.securityDepositTotal || 0,
         securityDepositPaid: tenant.securityDepositPaid || 0,
-        checkInDate: tenant.checkInDate ? tenant.checkInDate.split('T')[0] : '',
+        checkInDate: tenant.checkInDate ? new Date(tenant.checkInDate).toLocaleDateString("en-CA") : '',
         includeFood: tenant.foodOpted || false,
       });
     }

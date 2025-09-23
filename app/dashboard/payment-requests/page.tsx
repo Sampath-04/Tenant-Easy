@@ -13,6 +13,7 @@ import {
   Button,
   Tooltip,
   Typography,
+  Theme,
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -195,7 +196,7 @@ export default function PaymentRequestsPage() {
 
       <div className=' mx-auto px-4 md:px-6 py-4'>
       {/* Filter Toggle and Clear */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center md:mb-6 mb-4">
         <div className="flex items-center gap-2">
           <Tooltip title="Toggle Filters">
             <IconButton
@@ -217,12 +218,9 @@ export default function PaymentRequestsPage() {
                 textTransform: 'none',
                 fontSize: '0.875rem',
                 fontWeight: 500,
-                padding: '6px 12px',
-                minWidth: 'auto',
               }}
-              startIcon={<ClearIcon />}
             >
-              Clear Filters
+              <span className='block md:hidden'>Clear All</span> 
             </Button>
           )}
         </div>
@@ -289,10 +287,10 @@ export default function PaymentRequestsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6  mx-auto px-4 md:px-6 py-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6  mx-auto px-4 md:px-6 md:py-4 pt-0">
           {paymentRequests.map((request) => (
             <div key={request.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-200">
-              <div className="p-6 grid h-full grid-rows-[auto_1fr_auto_auto] gap-3">
+              <div className="md:p-6 p-4 grid h-full grid-rows-[auto_1fr_auto_auto] gap-3">
                 {/* Header with Status */}
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -433,14 +431,27 @@ export default function PaymentRequestsPage() {
         onClose={handleCloseProofDialog}
         maxWidth="md"
         fullWidth
+        PaperProps={{
+        sx: (theme: Theme) => ({
+          borderRadius: '16px',
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+          backgroundColor: theme.palette.mode === 'dark' ? '#1A202C' : '#f8fafc',
+          display: 'flex',
+          flexDirection: 'column',
+          margin:{xs: '12px', md: '32px'},
+          width:{xs: '100%', md: '100%'},
+        })
+      }}
       >
-        <DialogTitle className="flex items-center justify-between">
+        <DialogTitle sx={{padding: {xs: '12px', md: '24px'}}} className="flex items-center justify-between">
           <span className="text-lg font-semibold">Payment Proof</span>
           <IconButton onClick={handleCloseProofDialog} size="small">
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{
+          padding: {xs: '12px', md: '24px'},
+        }}>
           {selectedProof && (
             <Box className="flex justify-center items-center">
               <img

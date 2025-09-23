@@ -33,7 +33,8 @@ import { useRentRecord } from '@/hooks/useRentRecords';
 import { formatDate, formatCurrency, getNextMonthRentPeriodFromRecord } from '@/lib/utils/formatters';
 import { useSubmitPaymentRequest } from '@/hooks/usePaymentRequests';
 import { toast } from 'react-toastify';
-
+import { CopyAll as CopyIcon } from '@mui/icons-material';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import { Suspense } from "react";
 
 export default function TenantPaymentWrapper() {
@@ -195,34 +196,34 @@ function TenantPaymentPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-4xl mx-auto md:px-4 px-2 sm:px-6 lg:px-8 md:py-6 py-4">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="md:text-3xl text-2xl font-bold text-gray-900 dark:text-white mb-2">
               Rent Details
             </h1>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto md:px-4 px-2 sm:px-6 lg:px-8 md:py-8 py-4">
         {/* Property Information */}
         {rentRecordResponse?.data?.property && (
-          <Card className="mb-6 shadow-lg border border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+          <Card className="md:mb-6 mb-4 shadow-lg border border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
             <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-3 md:mb-4 mb-2">
                 <BusinessIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
+                <p className="font-semibold text-gray-900 dark:text-white text-lg">
                   Property Information
-                </Typography>
+                </p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                  <p  className="text-gray-600 dark:text-gray-400 mb-1">
                     Property Name
-                  </Typography>
-                  <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
+                  </p>
+                  <p  className="font-semibold text-gray-900 dark:text-white">
                     {rentRecordResponse.data.property.propertyName}
-                  </Typography>
+                  </p>
                 </div>
                 <div>
                   <div className="flex items-start gap-2">
@@ -251,38 +252,38 @@ function TenantPaymentPage() {
 
         {/* Tenant Information */}
         {rentRecordResponse?.data?.tenant && (
-          <Card className="mb-6 shadow-lg border border-gray-200 dark:border-gray-700 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-4">
+          <Card className="md:mb-6 mb-4 shadow-lg border border-gray-200 dark:border-gray-700 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20">
+            <CardContent className="md:p-6 p-4">
+              <div className="flex items-center gap-3 md:mb-4 mb-2">
                 <PersonIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
-                <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
+                <p className="font-semibold text-gray-900 dark:text-white text-lg">
                   Tenant Information
-                </Typography>
+                </p>
               </div>
-              <div className="flex gap-6">
+              <div className="md:flex grid grid-cols-2 md:gap-6 gap-2">
                 <div>
-                  <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                  <p  className="text-gray-600 dark:text-gray-400 mb-1">
                     Tenant Name
-                  </Typography>
-                  <Typography className="font-semibold text-gray-900 dark:text-white">
+                  </p>
+                  <p  className="font-semibold text-gray-900 dark:text-white">
                     {rentRecordResponse.data.tenant.tenantName}
-                  </Typography>
+                  </p>
                 </div>
                 <div>
-                  <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                  <p  className="text-gray-600 dark:text-gray-400 mb-1">
                     Phone Number
-                  </Typography>
-                  <Typography className="font-semibold text-gray-900 dark:text-white text-sm">
+                  </p>
+                  <p  className="font-semibold text-gray-900 dark:text-white text-sm">
                     {rentRecordResponse.data.tenant.tenantNumber}
-                  </Typography>
+                  </p>
                 </div>
                 <div>
-                  <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                  <p  className="text-gray-600 dark:text-gray-400 mb-1">
                     Room Number
-                  </Typography>
-                  <Typography className="font-semibold text-gray-900 dark:text-white text-sm">
+                  </p>
+                  <p  className="font-semibold text-gray-900 dark:text-white text-sm">
                     {rentRecordResponse.data.room.roomNo} ({rentRecordResponse.data.room.roomType})
-                  </Typography>
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -360,28 +361,69 @@ function TenantPaymentPage() {
           </Card>
         )} */}
 
+        {/* UPI Payment Information */}
+        {hasPendingPayments && !hasPaymentRequest && (
+          <Card className="md:mb-6 mb-4 shadow-lg border border-blue-200 dark:border-blue-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+            <CardContent className="md:p-6 p-4">
+              <div className="flex items-center gap-3 md:mb-4 mb-2">
+                <AccountBalanceIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <p className="font-semibold text-gray-900 dark:text-white text-lg">
+                  Payment Information
+                </p>
+              </div>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-200 dark:border-blue-700 mb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">UPI ID</p>
+                    <p className="md:text-lg text-base font-semibold text-blue-900 dark:text-blue-100">
+                      {rentRecordResponse?.data?.property?.paymentInfo?.upiId || 'owner@paytm'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const upiId = rentRecordResponse?.data?.property?.paymentInfo?.upiId || 'owner@paytm';
+                      navigator.clipboard.writeText(upiId);
+                      toast.success('UPI ID copied to clipboard!');
+                    }}
+                    className="md:p-3 p-2 bg-blue-100 dark:bg-blue-800/50 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-700 transition-colors duration-200"
+                  >
+                    <CopyIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                <Typography variant="body2" className="text-yellow-800 dark:text-yellow-200 text-center">
+                  After making the payment, please submit your payment proof below for verification.
+                </Typography>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Payment Request Form */}
         {hasPendingPayments && !hasPaymentRequest && !submitPaymentRequestMutation.isSuccess && (
-          <Card className="mb-6 shadow-lg border border-blue-200 dark:border-blue-700 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+          <Card className="md:mb-6 mb-4 shadow-lg border border-blue-200 dark:border-blue-700 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-6 cursor-pointer">
                 <SendIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                <h3 className="text-xl font-semibold text-blue-900 dark:text-blue-100">
+                <h3 className="md:text-xl text-lg font-semibold text-blue-900 dark:text-blue-100">
                   Submit Payment Request
                 </h3>
               </div>
 
-              <div className="space-y-6">
+              <div className="md:space-y-6 space-y-4">
                 {/* Payment Amount Display */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Payment Amount</p>
-                      <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                      <p className="md:text-2xl text-xl font-bold text-blue-900 dark:text-blue-100">
                         {formatCurrency(rentRecordResponse?.data?.remainingAmount || 0)}
                       </p>
                     </div>
-                    <div className="p-3 bg-blue-100 dark:bg-blue-800/50 rounded-lg">
+                    <div className="md:p-3 p-2 bg-blue-100 dark:bg-blue-800/50 rounded-lg">
                       <PaymentIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                     </div>
                   </div>
@@ -405,7 +447,7 @@ function TenantPaymentPage() {
                       onDragLeave={handleDragLeave}
                       onDrop={handleDrop}
                       onClick={() => fileInputRef.current?.click()}
-                      className={`relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 ${
+                      className={`relative border-2 border-dashed rounded-xl md:p-8 p-4 text-center cursor-pointer transition-all duration-200 ${
                         isDragOver
                           ? 'border-blue-500 bg-blue-100 dark:bg-blue-900/30 scale-105'
                           : 'border-blue-300 dark:border-blue-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10'
@@ -425,7 +467,7 @@ function TenantPaymentPage() {
                         </div>
                         
                         <div>
-                          <p className="text-lg font-medium text-blue-900 dark:text-blue-100">
+                          <p className="md:text-lg text-base font-medium text-blue-900 dark:text-blue-100">
                             {isDragOver ? 'Drop your image here' : 'Upload Payment Proof'}
                           </p>
                           <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">
@@ -533,16 +575,16 @@ function TenantPaymentPage() {
         {/* Payment Request Status from Rent Record */}
         {hasPaymentRequest && (
           <Card className="mb-6 shadow-lg border border-green-200 dark:border-green-700 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-6">
+            <CardContent className="md:p-6 p-4">
+              <div className="flex items-center gap-3 md:mb-6 mb-4">
                 <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
-                <h3 className="text-xl font-semibold text-green-900 dark:text-green-100">
+                <h3 className="md:text-xl text-lg font-semibold text-green-900 dark:text-green-100">
                   Payment Request Status
                 </h3>
               </div>
 
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 md:gap-4 gap-3">
                   <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-green-200 dark:border-green-700">
                     <p className="text-sm text-green-600 dark:text-green-400 mb-1">Request ID</p>
                     <p className="font-medium text-green-900 dark:text-green-100">{hasPaymentRequest.id}</p>
@@ -599,10 +641,10 @@ function TenantPaymentPage() {
         {/* Payment Request Status from New Submission */}
         {submitPaymentRequestMutation.isSuccess && submitPaymentRequestMutation.data && (
           <Card className="mb-6 shadow-lg border border-green-200 dark:border-green-700 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-6">
+            <CardContent className="md:p-6 p-4">
+              <div className="flex items-center gap-3 md:mb-6 mb-4">
                 <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
-                <h3 className="text-xl font-semibold text-green-900 dark:text-green-100">
+                <h3 className="md:text-xl text-lg font-semibold text-green-900 dark:text-green-100">
                   Payment Request Submitted
                 </h3>
               </div>
@@ -665,39 +707,39 @@ function TenantPaymentPage() {
         {/* Rent Record Details */}
         {rentRecordResponse?.data && (
           <Card className="shadow-lg border border-gray-200 dark:border-gray-700">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-6">
+            <CardContent className="md:p-6 p-4">
+              <div className="flex items-center gap-3 md:mb-6 mb-4">
                 <CalendarIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
+                <p className="font-semibold text-gray-900 dark:text-white text-lg">
                   Rent Record Details
-                </Typography>
+                </p>
               </div>
 
               <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div>
-                    <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                    <p  className="text-gray-600 dark:text-gray-400 mb-1">
                       Next Cycle
-                    </Typography>
-                    <Typography className="font-semibold text-gray-900 dark:text-white">
+                    </p>
+                    <p  className="font-semibold text-gray-900 dark:text-white">
                       {(() => {
                         const nextPeriod = getNextMonthRentPeriodFromRecord(rentRecordResponse.data);
                         return `${formatDate(nextPeriod.startDateString)} to ${formatDate(nextPeriod.endDateString)}`;
                       })()}
-                    </Typography>
+                    </p>
                   </div>
                   <div>
-                    <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                    <p  className="text-gray-600 dark:text-gray-400 mb-1">
                       Total Amount
-                    </Typography>
-                    <Typography className="font-semibold text-gray-900 dark:text-white">
+                    </p>
+                    <p  className="font-semibold text-gray-900 dark:text-white">
                       {formatCurrency(rentRecordResponse.data.totalAmount)}
-                    </Typography>
+                    </p>
                   </div>
                   <div>
-                    <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                    <p  className="text-gray-600 dark:text-gray-400 mb-1">
                       Payment Status
-                    </Typography>
+                    </p>
                     <Chip
                       icon={getPaymentStatusIcon(rentRecordResponse.data.paymentStatus)}
                       label={rentRecordResponse.data.paymentStatus.replace('_', ' ')}
@@ -706,63 +748,63 @@ function TenantPaymentPage() {
                     />
                   </div>
                   <div>
-                    <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                    <p  className="text-gray-600 dark:text-gray-400 mb-1">
                       Due Date
-                    </Typography>
-                    <Typography variant="body2" className="font-medium text-gray-900 dark:text-white">
+                    </p>
+                    <p  className="font-medium text-gray-900 dark:text-white">
                       {formatDate(rentRecordResponse.data.dueDate)}
-                    </Typography>
+                    </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
-                    <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                      <p  className="text-gray-600 dark:text-gray-400 mb-1">
                       Rent Amount
-                    </Typography>
-                    <Typography variant="body2" className="font-medium text-gray-900 dark:text-white">
+                    </p>
+                    <p  className="font-medium text-gray-900 dark:text-white">
                       {formatCurrency(rentRecordResponse.data.rent)}
-                    </Typography>
+                    </p>
                   </div>
                   <div>
-                    <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                    <p  className="text-gray-600 dark:text-gray-400 mb-1">
                       Last Month Electricity Bill
-                    </Typography>
-                    <Typography variant="body2" className="font-medium text-gray-900 dark:text-white">
+                    </p>
+                    <p  className="font-medium text-gray-900 dark:text-white">
                       {formatCurrency(rentRecordResponse.data.electricityBill)}
-                    </Typography>
+                    </p>
                   </div>
                   <div>
-                    <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-1">
+                    <p  className="text-gray-600 dark:text-gray-400 mb-1">
                       Paid Amount
-                    </Typography>
-                    <Typography variant="body2" className="font-medium text-gray-900 dark:text-white">
+                    </p>
+                    <p  className="font-medium text-gray-900 dark:text-white">
                       {formatCurrency(rentRecordResponse.data.totalPaidAmount || 0)}
-                    </Typography>
+                    </p>
                   </div>
                 </div>
 
                 {rentRecordResponse.data.remainingAmount && rentRecordResponse.data.remainingAmount > 0 && (
                   <div className="mt-4 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                    <Typography variant="body2" className="text-red-800 dark:text-red-200 font-medium">
+                    <p  className="text-red-800 dark:text-red-200 font-medium">
                       Remaining Amount: {formatCurrency(rentRecordResponse.data.remainingAmount)}
-                    </Typography>
+                    </p>
                   </div>
                 )}
 
                 {rentRecordResponse.data.isOverdue && (
                   <div className="mt-4 p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                    <Typography variant="body2" className="text-orange-800 dark:text-orange-200 font-medium">
+                    <p  className="text-orange-800 dark:text-orange-200 font-medium">
                       Overdue by {rentRecordResponse.data.daysOverdue} days
-                    </Typography>
+                    </p>
                   </div>
                 )}
 
                 {rentRecordResponse.data.paymentTransactions && rentRecordResponse.data.paymentTransactions.length > 0 && (
                   <div className="mt-4">
-                    <Typography variant="body2" className="text-gray-600 dark:text-gray-400 mb-2">
+                    <p  className="text-gray-600 dark:text-gray-400 mb-2">
                       Payment History:
-                    </Typography>
+                    </p>
                     <div className="space-y-2">
                       {rentRecordResponse.data.paymentTransactions.map((payment) => (
                         <div key={payment._id} className="text-sm text-gray-700 dark:text-gray-300">
@@ -783,12 +825,12 @@ function TenantPaymentPage() {
           <Card className="shadow-lg border border-gray-200 dark:border-gray-700">
             <CardContent className="p-8 text-center">
               <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <Typography className="text-gray-900 dark:text-white mb-2">
+              <p  className="text-gray-900 dark:text-white mb-2">
                 No Rent Record ID Provided
-              </Typography>
-              <Typography variant="body2" className="text-gray-600 dark:text-gray-400">
+              </p>
+              <p  className="text-gray-600 dark:text-gray-400">
                 Please provide a valid rent record ID in the URL parameters.
-              </Typography>
+              </p>
             </CardContent>
           </Card>
         )}

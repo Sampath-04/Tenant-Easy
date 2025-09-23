@@ -380,6 +380,7 @@ export interface TenantHistoryRecord {
     propertyAddress: string;
     paymentInfo: {
       qrCodeLink: string;
+      upiId: string;
     };
   };
   room: {
