@@ -325,34 +325,35 @@ export default function ReportsPage() {
         title="Reports"
         subtitle={`Generate Excel reports for ${selectedProperty.name}`}
       />
-
-      {/* Global Loading Overlay */}
-      {isExporting && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-2xl flex flex-col items-center gap-4">
-            <CircularProgress size={40} />
-            <div className="text-center">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                Generating Report
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400 text-sm">
-                Please wait while we prepare your {loadingReport === 'profit-loss' ? 'Profit & Loss' : loadingReport === 'tenant-analysis' ? 'Tenant Analysis' : 'report'}...
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className='px-6 md:pt-6 pt-4'>
+      <div className='md:px-6 px-4 md:pt-6 pt-4'>
         <BreadCrumbs items={breadcrumbs} />
       </div>
       
-      <div className="px-4 sm:px-6 pt-3">
+      <div className="px-4 sm:px-6 md:pt-3 pt-0 relative">
         
+              {/* Global Loading Overlay */}
+        {isExporting && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-6">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl md:p-8 p-4 shadow-2xl flex flex-col items-center gap-4">
+              <div className="text-center grid gap-4 items-center justify-center">
+                <h3 className="md:text-lg text-base font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                  Generating Report
+                </h3>
+                <div className="flex items-center justify-center">
+                  <CircularProgress size={30} />
+                </div>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">
+                  Please wait while we prepare your {loadingReport === 'profit-loss' ? 'Profit & Loss' : loadingReport === 'tenant-analysis' ? 'Tenant Analysis' : 'report'}...
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 mt-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center md:mb-6 mb-4 md:mt-6 mt-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+            <h1 className="md:text-2xl text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">
               Available Reports
             </h1>
             <p className="text-slate-600 dark:text-slate-400">
@@ -362,13 +363,13 @@ export default function ReportsPage() {
         </div>
 
         {/* Reports Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 md:gap-6 gap-4 md:mt-6 mt-4 md:mb-6 mb-4">
           {reportOptions.map((report) => (
             <div
               key={report.id}
-              className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 hover:scale-105 transition-transform duration-200 grid grid-rows-[auto_1fr_auto] gap-2"
+              className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 md:p-6 p-3 hover:scale-105 transition-transform duration-200 grid grid-rows-[auto_1fr_auto] gap-2"
             >
-              <div className="flex items-center mb-4">
+              <div className="flex items-center md:mb-4 mb-2">
                 <div className={`p-3 rounded-xl ${report.color} text-white mr-4 shadow-lg`}>
                   {report.icon}
                 </div>
@@ -439,14 +440,14 @@ export default function ReportsPage() {
       >
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700 px-6 py-3 border-b border-slate-200 dark:border-slate-600">
+          <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700 md:px-6 px-4 md:py-3 py-2 border-b border-slate-200 dark:border-slate-600">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                   <DownloadIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                  <h2 className="md:text-xl text-base font-bold text-slate-900 dark:text-slate-100">
                     {selectedReport?.title}
                   </h2>
                 </div>
@@ -462,7 +463,7 @@ export default function ReportsPage() {
           </div>
 
           {/* Content */}
-          <div className="p-6 space-y-6 bg-white dark:bg-slate-800">
+          <div className="md:p-6 p-3 space-y-6 bg-white dark:bg-slate-800">
 
             {selectedReport?.requiresDateRange && (
               <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -471,7 +472,7 @@ export default function ReportsPage() {
                     <CalendarIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     Select Date Range
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     <div className="space-y-2">
                       <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
                         Start Date *
@@ -565,18 +566,18 @@ export default function ReportsPage() {
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 bg-slate-50 dark:bg-slate-700/50 border-t border-slate-200 dark:border-slate-600 flex justify-end gap-3">
+          <div className="md:px-6 px-4 md:py-4 py-3 bg-slate-50 dark:bg-slate-700/50 border-t border-slate-200 dark:border-slate-600 flex justify-end gap-3">
             <button
               onClick={handleClose}
               disabled={isExporting}
-              className="px-6 py-2.5 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-all duration-200 disabled:opacity-50 font-medium"
+              className="md:px-6 px-4 md:py-2.5 py-2 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-all duration-200 disabled:opacity-50 font-medium"
             >
               Cancel
             </button>
             <button
               onClick={handleExport}
               disabled={isExporting || (selectedReport?.requiresDateRange && (!startDate || !endDate))}
-              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-500 text-white rounded-lg transition-all duration-200 flex items-center gap-2 disabled:opacity-50 font-semibold shadow-lg hover:shadow-xl"
+              className="md:px-6 px-4 md:py-2.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-500 text-white rounded-lg transition-all duration-200 flex items-center gap-2 disabled:opacity-50 font-semibold shadow-lg hover:shadow-xl text-sm md:text-base"
             >
               {isExporting ? (
                 <>
@@ -585,8 +586,11 @@ export default function ReportsPage() {
                 </>
               ) : (
                 <>
-                  <DownloadIcon className="h-4 w-4" />
-                  Generate Excel Report
+                  <div className='md:h-4 md:w-4 h-3 w-3 hidden md:block'>
+                    <DownloadIcon />
+                    </div>
+                    <span className='md:text-base text-sm hidden md:block'>Generate Excel Report</span>
+                    <span className='md:hidden text-sm'>Generate</span>
                 </>
               )}
             </button>
@@ -611,14 +615,14 @@ export default function ReportsPage() {
       >
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700 px-6 py-3 border-b border-slate-200 dark:border-slate-600">
+          <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700 md:px-6 px-4 md:py-3 py-2 border-b border-slate-200 dark:border-slate-600">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
                   <PieChartIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                  <h2 className="md:text-xl text-base font-bold text-slate-900 dark:text-slate-100">
                     Profit & Loss Report
                   </h2>
                 </div>
@@ -634,16 +638,16 @@ export default function ReportsPage() {
           </div>
 
           {/* Content */}
-          <div className="p-6 space-y-6 bg-white dark:bg-slate-800">
+          <div className="md:p-6 p-4 space-y-6 bg-white dark:bg-slate-800">
             <div className="space-y-4">
               
 
-              <div className='flex justify-between items-center gap-4'>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <div className='flex flex-col md:flex-row justify-between items-center gap-4'>
+                <h3 className="md:text-lg text-base font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                   <CalendarIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                   Select Month Range & Year
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-1 gap-4 w-48">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4 md:w-48 w-full">
                   <FormControl fullWidth size="small">
                     <InputLabel 
                       sx={{
@@ -762,7 +766,7 @@ export default function ReportsPage() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <FormControl fullWidth size="small">
                   <InputLabel 
                     sx={{
@@ -1007,18 +1011,18 @@ export default function ReportsPage() {
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 bg-slate-50 dark:bg-slate-700/50 border-t border-slate-200 dark:border-slate-600 flex justify-end gap-3">
+          <div className="md:px-6 px-4 md:py-4 py-3 bg-slate-50 dark:bg-slate-700/50 border-t border-slate-200 dark:border-slate-600 flex justify-end gap-3">
             <button
               onClick={handleProfitLossClose}
               disabled={isExporting}
-              className="px-6 py-2.5 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-all duration-200 disabled:opacity-50 font-medium"
+              className="md:px-6 px-4 md:py-2.5 py-2 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-all duration-200 disabled:opacity-50 font-medium"
             >
               Cancel
             </button>
             <button
               onClick={handleProfitLossExport}
               disabled={isExporting || !monthFrom || !monthTo || !year}
-              className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-500 text-white rounded-lg transition-all duration-200 flex items-center gap-2 disabled:opacity-50 font-semibold shadow-lg hover:shadow-xl"
+              className="md:px-6 px-4 md:py-2.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-500 text-white rounded-lg transition-all duration-200 flex items-center gap-2 disabled:opacity-50 font-semibold shadow-lg hover:shadow-xl text-sm md:text-base"
             >
               {isExporting ? (
                 <>
@@ -1027,8 +1031,11 @@ export default function ReportsPage() {
                 </>
               ) : (
                 <>
-                  <DownloadIcon className="h-4 w-4" />
-                  Generate Excel Report
+                  <div className='md:h-4 md:w-4 h-3 w-3 hidden md:block'>
+                    <DownloadIcon />
+                  </div>
+                  <span className='md:text-base text-sm hidden md:block'>Generate Excel Report</span>
+                  <span className='md:hidden text-sm'>Generate</span>
                 </>
               )}
             </button>
