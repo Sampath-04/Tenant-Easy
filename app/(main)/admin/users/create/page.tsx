@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import UserCreationForm from '../../../components/UserCreationForm';
+import UserCreationForm from '../../../../components/UserCreationForm';
 import { toast } from 'react-toastify';
-import { showSuccessToast, showErrorToast } from '../../../../lib/toast-config';
-import { AuthGuard, useAuth } from '../../../../contexts/AuthContext';
+import { showSuccessToast, showErrorToast } from '../../../../../lib/toast-config';
+import { AuthGuard, useAuth } from '../../../../../contexts/AuthContext';
 
 function CreateUserPageContent() {
     const { logout } = useAuth();

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { colors } from '../../lib/colors';
+import { useAuth } from '../../../contexts/AuthContext';
+import { colors } from '../../../lib/colors';
 import Link from 'next/link';
 
 interface LoginFormData {

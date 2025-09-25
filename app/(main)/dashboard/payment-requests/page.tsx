@@ -45,6 +45,7 @@ export default function PaymentRequestsPage() {
   const [showFilters, setShowFilters] = useState(true);
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
   const [approvedRequest, setApprovedRequest] = useState<any>(null);
+  const [processingRequestId, setProcessingRequestId] = useState<string | null>(null);
 
   // Get rooms for filter dropdown
   const { data: roomsResponse } = useRooms(selectedProperty?.id || '', 1, 100);
@@ -65,6 +66,7 @@ export default function PaymentRequestsPage() {
   const rejectMutation = useRejectPaymentRequest();
 
   const handleApprove = async (requestId: string) => {
+    setProcessingRequestId(requestId);
     approveMutation.mutate(requestId, {
       onSuccess: (data) => {
         toast.success('Payment request approved successfully!');
@@ -74,20 +76,25 @@ export default function PaymentRequestsPage() {
           setApprovedRequest(data);
           setReceiptDialogOpen(true);
         }
+        setProcessingRequestId(null);
       },
       onError: (error: any) => {
         toast.error(error?.message || 'Failed to approve payment request');
+        setProcessingRequestId(null);
       },
     });
   };
 
   const handleReject = async (requestId: string) => {
+    setProcessingRequestId(requestId);
     rejectMutation.mutate(requestId, {
       onSuccess: () => {
         toast.success('Payment request rejected successfully!');
+        setProcessingRequestId(null);
       },
       onError: (error: any) => {
         toast.error(error?.message || 'Failed to reject payment request');
+        setProcessingRequestId(null);
       },
     });
   };
@@ -220,7 +227,7 @@ export default function PaymentRequestsPage() {
                 fontWeight: 500,
               }}
             >
-              <span className='block md:hidden'>Clear All</span> 
+              <span className='block'>Clear All</span> 
             </Button>
           )}
         </div>
@@ -385,10 +392,10 @@ export default function PaymentRequestsPage() {
                   <div className="flex gap-2 items-end">
                     <button
                       onClick={() => handleApprove(request.id)}
-                      disabled={approveMutation.isPending || rejectMutation.isPending}
+                      disabled={processingRequestId === request.id}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white dark:text-white  dark:bg-[#059669] hover:bg-[#059669] disabled:bg-[#059669] bg-[#10b981] rounded-lg transition-colors duration-200 cursor-pointer disabled:opacity-70"
                     >
-                      {approveMutation.isPending ? (
+                      {processingRequestId === request.id && approveMutation.isPending ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                           Approving...
@@ -402,10 +409,10 @@ export default function PaymentRequestsPage() {
                     </button>
                     <button
                       onClick={() => handleReject(request.id)}
-                      disabled={approveMutation.isPending || rejectMutation.isPending}
+                      disabled={processingRequestId === request.id}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white dark:text-white dark:bg-[#b91c1c] hover:bg-[#b91c1c] disabled:bg-[#b91c1c] bg-[#ef4444] rounded-lg transition-colors duration-200 cursor-pointer disabled:opacity-70"
                     >
-                      {rejectMutation.isPending ? (
+                      {processingRequestId === request.id && rejectMutation.isPending ? (
                         <>
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                           Rejecting...

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { AuthGuard, useAuth } from '../../contexts/AuthContext';
+import { AuthGuard, useAuth } from '../../../contexts/AuthContext';
 
 function AdminDashboardContent() {
   const { user, logout } = useAuth();

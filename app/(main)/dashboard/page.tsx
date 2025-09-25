@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useAuth } from '../../contexts/AuthContext';
-import { useProperty } from '../../contexts/PropertyContext';
+import { useAuth } from '../../../contexts/AuthContext';
+import { useProperty } from '../../../contexts/PropertyContext';
 import { useEffect } from 'react';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 import { AppHeader } from '@/components/AppHeader';

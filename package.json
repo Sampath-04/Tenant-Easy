@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "tunnel": "ngrok http 3000 --authtoken 335rRKDAXSbTxszmSs72jCt9Wi1_6wTg5YNxeLFXNLEk2w9pj"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
