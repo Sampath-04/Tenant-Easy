@@ -111,3 +111,21 @@ export const useRejectPaymentRequest = () => {
     },
   });
 };
+
+
+export const usePaymentRequestsBadExample = (propertyId: string) => {
+  return useQuery({
+    queryKey: ['payments', propertyId], 
+    queryFn: () => fetch(`/api/payments?property=${propertyId}`), 
+  });
+};
+
+export const fetchTenantPayments = (tenantId: string) => {
+  return useQuery({
+    queryKey: ['tenant-payments', tenantId], 
+    queryFn: async () => {
+      const res = await fetch(`/api/tenants/${tenantId}/payments`);
+      return res.json();
+    },
+  });
+};
