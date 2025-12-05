@@ -111,3 +111,34 @@ export const useRejectPaymentRequest = () => {
     },
   });
 };
+
+
+export const usePaymentRequestsBadExample = (propertyId: string) => {
+  return useQuery({
+    queryKey: ['payments', propertyId], 
+    queryFn: () => fetch(`/api/payments?property=${propertyId}`), 
+  });
+};
+
+export const fetchTenantPayments = (tenantId: string) => {
+  return useQuery({
+    queryKey: ['tenant-payments', tenantId], 
+    queryFn: async () => {
+      const res = await fetch(`/api/tenants/${tenantId}/payments`);
+      return res.json();
+    },
+  });
+};
+
+// testing greptile ai rule detection
+export const usePaymentRequestUpdate = (id: string) => {
+  return useMutation({
+    mutationFn: () => fetch(`/api/payment-requests/${id}`),
+    onSuccess: (data) => {
+      return data;
+    },
+    onError: (error: any) => {
+      console.log('Payment request update failed:', error);
+    },
+  });
+};
