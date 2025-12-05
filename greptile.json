@@ -1,0 +1,96 @@
+{
+    "labels": [
+        "feature",
+        "bug",
+        "bugfix",
+        "hotfix",
+        "enhancement",
+        "optimization",
+        "performance",
+        "refactor",
+        "security",
+        "test",
+        "chore",
+        "breaking-change",
+        "dependency",
+        "ci-cd"
+    ],
+    "comment": "Disclaimer: This is AI-generated.",
+    "commentTypes": ["logic", "syntax", "style"],
+    "ignoreKeywords": "rename\nlinter\nprettier\ngreptile-ignor\ndoc update",
+    "ignorePatterns": "greptile.json\ntesting/**/*.py\n*.md\n*.txt\n*.json",
+    "patternRepositories": ["Saleos-Sam/easy-tenant-backend"],
+    "triggerOnUpdates": true,
+    "shouldUpdateDescription": false,
+    "disabledLabels": ["docs"],
+    "includeAuthors": ["Sampath-04"],
+    "excludeAuthors": [],
+    "strictness": 2,
+    "fixWithAI": false,
+    "includeBranches": ["main", "develop"],
+    "statusCheck": true,
+    "summarySection": {
+      "included": true,
+      "collapsible": false,
+      "defaultOpen": false
+    },
+    "issuesTableSection": {
+      "included": true,
+      "collapsible": false,
+      "defaultOpen": false
+    },
+    "confidenceScoreSection": {
+      "included": true,
+      "collapsible": false,
+      "defaultOpen": false
+    },
+    "sequenceDiagramSection": {
+      "included": false,
+      "collapsible": false,
+      "defaultOpen": false
+    },
+    "customContext": {
+      "rules": [
+        {
+          "scope": ["hooks/**/*.ts"],
+          "rule": "What: Use TanStack Query hooks with proper query keys structure for data fetching\n\nWhy: Ensures consistent caching, invalidation, and data synchronization across the app\n\nGood:\nexport const paymentRequestKeys = {\n  all: ['paymentRequests'] as const,\n  byProperty: (propertyId: string) => [...paymentRequestKeys.all, 'property', propertyId] as const,\n};\n\nexport const usePaymentRequestsByProperty = (propertyId: string) => {\n  return useQuery({\n    queryKey: paymentRequestKeys.byProperty(propertyId),\n    queryFn: () => getPaymentRequestsByProperty(propertyId),\n  });\n};\n\nBad:\nexport const usePaymentRequests = (propertyId: string) => {\n  return useQuery({\n    queryKey: ['payments', propertyId], // No centralized key structure\n    queryFn: () => fetch(`/api/payments?property=${propertyId}`),\n  });\n};"
+        },
+        {
+          "scope": ["**/*.ts", "**/*.tsx"],
+          "rule": "What: Use console.error with context instead of console.log for error scenarios\n\nWhy: Makes debugging easier by providing context and proper error severity levels\n\nGood:\nconsole.error('Payment request approval failed:', error);\n\nBad:\nconsole.log(error);"
+        },
+        {
+          "scope": ["lib/api/**/*.ts"],
+          "rule": "What: Use the centralized apiClient from lib/api/client.ts instead of direct fetch calls\n\nWhy: Ensures consistent auth headers, error handling, and request formatting across all API calls\n\nGood:\nimport { apiClient } from './client';\nexport async function getRentHistory(id: string) {\n  return apiClient.get<RentHistoryResponse>(`/rent-history/${id}`);\n}\n\nBad:\nexport async function getRentHistory(id: string) {\n  const token = localStorage.getItem('authToken');\n  const response = await fetch(`${API_URL}/rent-history/${id}`, {\n    headers: { Authorization: `Bearer ${token}` }\n  });\n  return response.json();\n}"
+        },
+        {
+          "scope": ["lib/api/**/*.ts"],
+          "rule": "What: Export all TypeScript interfaces and types used in API responses\n\nWhy: Enables type reuse across components and ensures type safety throughout the application\n\nGood:\nexport interface RentHistoryItem {\n  _id: string;\n  tenant: TenantInfo;\n  room: RoomInfo;\n  totalAmount: number;\n}\n\nBad:\ninterface RentHistoryItem { // Not exported\n  _id: string;\n  tenant: any;\n  room: any;\n}"
+        },
+        {
+          "scope": ["app/**/page.tsx"],
+          "rule": "What: Wrap page components with AuthGuard and specify allowedRoles for role-based access control\n\nWhy: Prevents unauthorized access and ensures users only see pages appropriate for their role\n\nGood:\nexport default function AdminDashboard() {\n  return (\n    <AuthGuard allowedRoles={['admin']}>\n      <AdminDashboardContent />\n    </AuthGuard>\n  );\n}\n\nBad:\nexport default function AdminDashboard() {\n  const { user } = useAuth();\n  if (user?.role !== 'admin') return null;\n  return <AdminDashboardContent />;\n}"
+        },
+        {
+          "scope": ["lib/api/**/*.ts"],
+          "rule": "What: Use FormData for API requests that include file uploads instead of JSON\n\nWhy: Proper file upload handling and multipart/form-data content type\n\nGood:\nconst formData = new FormData();\nformData.append('amount', data.amount.toString());\nif (data.paymentProof) {\n  formData.append('paymentProof', data.paymentProof);\n}\nreturn apiClient.post('/payments', formData);\n\nBad:\nreturn apiClient.post('/payments', {\n  amount: data.amount,\n  paymentProof: data.paymentProof // File object in JSON\n});"
+        },
+        {
+          "scope": ["hooks/**/*.ts"],
+          "rule": "What: Always invalidate related queries in mutation onSuccess handlers to keep data fresh\n\nWhy: Ensures UI reflects the latest data after mutations without manual refetching\n\nGood:\nexport const useApprovePaymentRequest = () => {\n  const queryClient = useQueryClient();\n  return useMutation({\n    mutationFn: approvePaymentRequest,\n    onSuccess: (data) => {\n      queryClient.invalidateQueries({\n        queryKey: paymentRequestKeys.byProperty(data.property._id),\n      });\n    },\n  });\n};\n\nBad:\nexport const useApprovePaymentRequest = () => {\n  return useMutation({\n    mutationFn: approvePaymentRequest,\n    // No cache invalidation\n  });\n};"
+        },
+        {
+          "scope": ["app/**/*.tsx", "components/**/*.tsx", "contexts/**/*.tsx"],
+          "rule": "What: Add 'use client' directive at the top of components that use React hooks or browser APIs\n\nWhy: Next.js App Router requires explicit client component marking for client-side features\n\nGood:\n'use client';\n\nimport { useState } from 'react';\nexport function MyComponent() {\n  const [state, setState] = useState();\n  return <div>...</div>;\n}\n\nBad:\nimport { useState } from 'react';\nexport function MyComponent() {\n  const [state, setState] = useState();\n  return <div>...</div>;\n}"
+        },
+        {
+          "scope": ["lib/api/**/*.ts"],
+          "rule": "What: Define and use consistent response wrapper types for all API endpoints\n\nWhy: Standardizes error handling and response parsing across the application\n\nGood:\nexport interface ApiResponse<T> {\n  success: boolean;\n  data: T;\n  message?: string;\n}\n\nexport async function getProperties(): Promise<ApiResponse<Property[]>> {\n  return apiClient.get<ApiResponse<Property[]>>('/properties');\n}\n\nBad:\nexport async function getProperties(): Promise<Property[]> {\n  const response = await apiClient.get('/properties');\n  return response.data; // Assuming structure\n}"
+        },
+        {
+          "scope": ["**/*.ts", "**/*.tsx"],
+          "rule": "What: Use NEXT_PUBLIC_ prefix for client-side environment variables and access them through config.ts\n\nWhy: Ensures proper environment variable exposure and centralized configuration management\n\nGood:\n// lib/config.ts\nexport const config = {\n  api: {\n    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1',\n  },\n};\n\n// Usage\nimport { config } from '@/lib/config';\nconst apiUrl = config.api.baseUrl;\n\nBad:\nconst apiUrl = process.env.API_URL; // Not exposed to client\nconst apiUrl = process.env.NEXT_PUBLIC_API_URL; // Direct access, not centralized"
+        }
+      ]
+    }
+  }
