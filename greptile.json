@@ -19,7 +19,6 @@
     "commentTypes": ["logic", "syntax", "style"],
     "ignoreKeywords": "rename\nlinter\nprettier\ngreptile-ignor\ndoc update",
     "ignorePatterns": "greptile.json\ntesting/**/*.py\n*.md\n*.txt\n*.json",
-    "patternRepositories": ["Saleos-Sam/easy-tenant-backend"],
     "triggerOnUpdates": true,
     "shouldUpdateDescription": false,
     "disabledLabels": ["docs"],
