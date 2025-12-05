@@ -129,3 +129,16 @@ export const fetchTenantPayments = (tenantId: string) => {
     },
   });
 };
+
+// testing greptile ai rule detection
+export const usePaymentRequestUpdate = (id: string) => {
+  return useMutation({
+    mutationFn: () => fetch(`/api/payment-requests/${id}`),
+    onSuccess: (data) => {
+      return data;
+    },
+    onError: (error: any) => {
+      console.log('Payment request update failed:', error);
+    },
+  });
+};
