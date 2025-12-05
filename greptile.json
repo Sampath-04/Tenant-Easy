@@ -27,7 +27,7 @@
     "excludeAuthors": [],
     "strictness": 2,
     "fixWithAI": false,
-    "includeBranches": ["main", "develop"],
+    "includeBranches": ["main","master","develop"],
     "statusCheck": true,
     "summarySection": {
       "included": true,
